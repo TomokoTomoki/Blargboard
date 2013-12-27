@@ -1,0 +1,1 @@
+<?php require 'lib/hpsecurity.php'; echo securityFilter(@file_get_contents('homepage.txt')); ?>
