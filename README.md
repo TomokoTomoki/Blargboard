@@ -1,5 +1,7 @@
 Blargboard
 
+
+
 Board software written in PHP. Uses MySQL for storage.
 
 This is the software that powers Kuribo64 (http://kuribo64.net/). Or well, not quite.
@@ -9,6 +11,7 @@ It is based off ABXD, which is made by Dirbaio, Nina, GlitchMr & co, and was ori
 Kawa's project.
 
 It uses Font Awesome. And possibly some other funny things I forgot about.
+
 
 
 How to install and use
@@ -29,16 +32,19 @@ First user to register gets full access. For this reason, avoid disclosing the b
 before you are done installing it.
 
 
+
 Board owner's tips
 
 http://board.example/?page=makelr -> browse there after adding categories/forums. Regenerates
 the L/R tree used for subforums and such.
 
 
+
 Blargboard is provided as-is, with no guarantee that it'll be useful or even work. I'm not
 responsible if it explodes in your face. Use that thing at your own risk.
 
 Oh well, it should work rather well. See Kuribo64. But uh, we never know.
+
 
 
 Have fun.
