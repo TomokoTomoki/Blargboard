@@ -7,30 +7,7 @@
 </head>
 <?php
 	
-	include('k64tabs.php');
-	
-	$funnytitles = array
-	(
-		'Kuribo64, your daily source of fresh mushrooms',
-		'Eat 5 mushrooms a day to stay fit!',
-		'Mario\'s main weakness is... zZzZzz...',
-		'Relax, take it eaaaaaaasy ~',
-		'Did you know that the world speed record has been beaten by a Goomba?',
-		'64 pot chestnut',
-		
-		'Banner by LordFalcon',
-	);
-	$funnytitle = $funnytitles[rand(0,count($funnytitles)-1)];
-	
-	function xmas($str, $s)
-	{
-		$l = strlen($str);
-		$ret = '';
-		$c = 0;
-		for ($i = 0; $i < $l; $i++)
-			$ret .= ($str[$i]==' ')?' ':'<span id="xmas'.($s+$c++).'">'.$str[$i].'</span>';
-		return $ret;
-	}
+	include('links.php');
 	
 ?>
 <body style="width:100%; font-size: <?php echo $loguser['fontsize']; ?>%;">
@@ -45,7 +22,7 @@
 					<tr>
 					<td>
 						<a href="./">
-							<img id="theme_banner" src="<?php echo htmlspecialchars($layout_logopic); ?>" alt="Kuribo64 banner" title="<?php echo $funnytitle; ?>" />
+							<img id="theme_banner" src="<?php echo htmlspecialchars($layout_logopic); ?>" alt="[banner]" title="<?php echo htmlspecialchars(Settings::get('boardName')); ?>" />
 						</a>
 					</td>
 					<td>

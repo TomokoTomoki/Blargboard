@@ -5,9 +5,6 @@ $headerlinks = array
 	$boardroot => Settings::get('breadcrumbsMainName'), 
 	actionLink('news') => 'News',
 	actionLink('board') => 'Forums',
-	actionLink('downloads') => 'Downloads',
-	actionLink('wiki') => 'Wiki',
-	actionLink('irc') => 'IRC',
 );
 
 $sidelinks = array
@@ -22,10 +19,10 @@ $sidelinks = array
 		actionLink('ranks') => 'Ranks',
 		actionLink('online') => 'Online users',
 		actionLink('lastposts') => 'Last posts',
-		actionLink('calendar') => 'Calendar',
-		actionLink('uploader') => 'Uploader',
 		actionLink('search') => 'Search',
 	),
 );
+
+$bucket = "links"; include("./lib/pluginloader.php");
 
 ?>

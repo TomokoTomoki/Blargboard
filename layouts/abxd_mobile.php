@@ -14,7 +14,7 @@
 </head>
 <?php
 	
-	include('k64tabs.php');
+	include('links.php');
 	
 ?>
 <body style="width:100%; font-size:80%;">
