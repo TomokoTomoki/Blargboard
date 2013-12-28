@@ -22,7 +22,6 @@ if(isset($_GET['snooping']))
 	{
 		$rPM = Query("select * from {pmsgs} left join {pmsgs_text} on pid = {pmsgs}.id where {pmsgs}.id = {0}", $id);
 		
-		// log who's being Xkeeper
 		Query("INSERT INTO {spieslog} (userid,date,pmid) VALUES ({0},UNIX_TIMESTAMP(),{1})", $loguserid, $id);
 	}
 	else

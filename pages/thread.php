@@ -294,7 +294,7 @@ if ($nextolder > 0) $extralinks .= actionLinkTagItem('Next older thread', 'threa
 if ($extralinks)
 	$extralinks = '<span style="float:right;"><ul class="pipemenu">'.$extralinks.'</ul></span>';
 
-echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '').$extralinks."</div>";
+echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '&nbsp;').$extralinks."</div>";
 
 if(NumRows($rPosts))
 {
@@ -306,7 +306,7 @@ if(NumRows($rPosts))
 	}
 }
 
-echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '').$extralinks."</div>";
+echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '&nbsp;').$extralinks."</div>";
 
 if($loguserid && HasPermission('forum.postreplies', $fid) && (!$thread['closed'] || HasPermission('mod.closethreads', $fid)) && !isset($replyWarning))
 {
