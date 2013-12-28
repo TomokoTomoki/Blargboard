@@ -132,38 +132,48 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 		'newsForum' => array(
 			'type' => 'forum',
 			'default' => '0',
-			'name' => 'Latest News forum'
+			'name' => 'Latest News forum',
+			'category' => 'Forum settings',
 		),
 		'anncForum' => array(
 			'type' => 'forum',
 			'default' => '0',
-			'name' => 'Announcements forum'
+			'name' => 'Announcements forum',
+			'category' => 'Forum settings',
 		),
 		"trashForum" => array (
 			"type" => "forum",
 			"default" => "1",
 			"name" => "Trash forum",
+			'category' => 'Forum settings',
 		),
 		"secretTrashForum" => array (
 			"type" => "forum",
 			"default" => "1",
 			"name" => "Deleted threads forum",
+			'category' => 'Forum settings',
 		),
 		
 		'defaultGroup' => array (
 			'type' => 'group',
 			'default' => 0,
 			'name' => 'Group for new users',
+			'category' => 'Group settings',
+			'rootonly' => 1,
 		),
 		'rootGroup' => array (
 			'type' => 'group',
 			'default' => 4,
 			'name' => 'Group for root users',
+			'category' => 'Group settings',
+			'rootonly' => 1,
 		),
 		'bannedGroup' => array (
 			'type' => 'group',
 			'default' => -1,
 			'name' => 'Group for banned users',
+			'category' => 'Group settings',
+			'rootonly' => 1,
 		),
 	);
 ?>

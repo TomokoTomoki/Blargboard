@@ -35,6 +35,10 @@ if(isset($_POST["_plugin"]))
 
 		//Don't accept unexisting settings.
 		if(!isset($settings[$key])) continue;
+		
+		// don't save settings if the user isn't allowed to change them
+		if ($settings[$key]['rootonly'] && !$loguser['root'])
+			continue;
 
 		//Save the entered settings for re-editing
 		$oursettings[$key] = $value;
@@ -62,7 +66,7 @@ if(isset($_POST["_plugin"]))
 			Alert(__("Settings were successfully saved!"));
 	}
 	else
-		Alert(__("Settings were NOT saved because there were invalid values. Please correct them and try again."));
+		Alert(__("Settings were not saved because there were invalid values. Please correct them and try again."));
 }
 
 $plugintext = "";
@@ -79,10 +83,14 @@ print "
 				</th>
 			</tr>";
 
-$class = 0;
+$settingfields = array();
+$settingfields[''] = ''; // ensures the uncategorized entries come first
 
 foreach($settings as $name => $data)
 {
+	if ($data['rootonly'] && !$loguser['root'])
+		continue;
+		
 	$friendlyname = $name;
 	if(isset($data["name"]))
 		$friendlyname = $data["name"];
@@ -124,23 +132,29 @@ foreach($settings as $name => $data)
 		$invalidicon = "[INVALID]";
 
 	if($help)
-		$help = "<img src=\"".resourceLink("img/icons/icon4.png")."\" title=\"$help\" alt=\"[!]\" />";
+		$help = "<br><small>$help</small>";
 
-	print "<tr class=\"cell$class\">
-				<td>
-					<label for=\"$name\">$friendlyname</label>
+	$settingfields[$data['category']] .= "<tr class=\"cell0\">
+				<td class=\"cell1 center\">
+					<label for=\"$name\">$friendlyname</label>$help
 				</td>
 				<td>
 					$input
-					$help
 					$invalidicon
 				</td>
 			</tr>";
-	$class = ($class+1)%2;
 }
 
-print "			<tr class=\"cell2\">
-				<td>
+foreach ($settingfields as $cat=>$fields)
+{
+	if ($cat) echo '<tr class="header1"><th colspan=2>'.htmlspecialchars($cat).'</th></tr>';
+	
+	echo $fields;
+}
+
+print "			<tr class=\"header1\"><th colspan=2>&nbsp;</th></tr>
+				<tr class=\"cell2\">
+				<td style=\"width:20%;\">
 				</td>
 				<td>
 					<input type=\"submit\" name=\"_exit\" value=\"".__("Save and Exit")."\" />
