@@ -2,13 +2,6 @@
 //  AcmlmBoard XD - Realtime visitor statistics page
 //  Access: all
 
-/*if ($loguserid == 85) Kill('Stop being nosey, MG3.');
-else if (!$loguserid)
-{
-	$ip = FetchResult("SELECT lastip FROM {users} WHERE id=85");
-	if ($_SERVER['REMOTE_ADDR'] == $ip) Kill('Nice try MG3, but no.');
-}*/
-
 $title = __("Online users");
 MakeCrumbs(array(actionLink("online") => __("Online users")), $links);
 

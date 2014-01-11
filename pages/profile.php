@@ -24,7 +24,7 @@ if($id == $loguserid)
 
 $canDeleteComments = ($id == $loguserid && HasPermission('user.deleteownusercomments')) || HasPermission('admin.adminusercomments');
 $canComment = (HasPermission('user.postusercomments') && $user['primarygroup'] != Settings::get('bannedGroup')) || HasPermission('admin.adminusercomments');
-$canVote = ($loguserid != $id) && (((time()-$loguser['regdate'])/86400) > 9) && HasPermission('user.rateusers');
+$canVote = ($loguserid != $id) && (((time()-$loguser['regdate'])/86400) > 9) && HasPermission('user.rateusers'); // useless
 
 if($loguserid && $_REQUEST['token'] == $loguser['token'])
 {
@@ -51,20 +51,6 @@ if($loguserid && $_REQUEST['token'] == $loguser['token'])
 
 	if(isset($_POST['actionpost']) && IsReallyEmpty($_POST['text']) && $canComment)
 	{
-		if ($loguserid == 154) // derp Thierry
-		{
-			//Kill('Failed to post the comment: error -17 while executing a SQL query. Try again later.');
-			
-			$lastcmts = Query("SELECT cid FROM {usercomments} WHERE uid={0} ORDER BY date DESC LIMIT 2", $id);
-			$cmt1 = Fetch($lastcmts); $cmt2 = Fetch($lastcmts);
-			
-			if ($cmt1['cid'] == $loguserid && $cmt2['cid'] == $loguserid)
-				Kill('Calm down, Thierry. You posted enough comments on that profile for now.');
-			
-			$cmt = explode(' ', $_POST['text']);
-			if (count($cmt) < 3) Kill('Your comment isn\'t interesting. Try harder.');
-		}
-		
 		$rComment = Query("insert into {usercomments} (uid, cid, date, text) values ({0}, {1}, {2}, {3})", $id, $loguserid, time(), $_POST['text']);
 		if($loguserid != $id)
 			Query("update {users} set newcomments = 1 where id={0}", $id);
