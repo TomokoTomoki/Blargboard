@@ -7,10 +7,9 @@ function Alert($s, $t="")
 	if($t=="")
 		$t = __("Notice");
 
-	print '<table class="message outline margin">
-		<tr class="header0"><th>'.$t.'</th></tr>
-		<tr class="cell0"><td><br>'.$s.'<br><br></td></tr>
-	</table>';
+	RenderTemplate('messagebox', 
+		array(	'msgtitle' => $t,
+				'message' => $s));
 }
 
 function Kill($s, $t="")

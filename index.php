@@ -208,9 +208,9 @@ else
 
 $layout = 'abxd';
 
-if($debugMode)
-	$layout_contents.="<table class=\"outline margin width100\"><tr class=header0><th colspan=4>List of queries
-	                   <tr class=header1><th>Query<th>Backtrace$querytext</table>";
+//if($debugMode)
+//	$layout_contents.="<table class=\"outline margin width100\"><tr class=header0><th colspan=4>List of queries
+//	                   <tr class=header1><th>Query<th>Backtrace$querytext</table>";
 
 if(!file_exists("layouts/$layout.php"))
 	$layout = "abxd";

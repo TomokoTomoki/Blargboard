@@ -97,9 +97,6 @@ if($ipban)
 	exit();
 }
 
-if(FetchResult("select count(*) from {proxybans} where instr({0}, ip)=1", $_SERVER['REMOTE_ADDR']))
-	die("No.");
-
 function doHash($data)
 {
 	return hash('sha256', $data, FALSE);
@@ -142,6 +139,13 @@ if ($loguser['flags'] & 0x1)
 	die(header('Location: '.$_SERVER['REQUEST_URI']));
 }
 
+if ($mobileLayout)
+{
+	$loguser['blocklayouts'] = 1;
+	//$loguser['dateformat'] = 'm/d/y';
+	//$loguser['timeformat'] = 'H:i';
+}
+
 
 function setLastActivity()
 {
@@ -164,13 +168,6 @@ function setLastActivity()
 		Query("update {users} set lastactivity={0}, lastip={1}, lasturl={2}, lastknownbrowser={3}, loggedin=1 where id={4}",
 			time(), $_SERVER['REMOTE_ADDR'], getRequestedURL(), $lastKnownBrowser, $loguserid);
 	}
-}
-
-if ($mobileLayout)
-{
-	$loguser['blocklayouts'] = 1;
-	//$loguser['dateformat'] = 'm/d/y';
-	//$loguser['timeformat'] = 'H:i';
 }
 
 ?>

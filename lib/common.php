@@ -91,6 +91,10 @@ include('lib/layout.php');
 //Classes
 include("PipeMenuBuilder.php");
 
+include('smarty/Smarty.class.php');
+$tpl = new Smarty;
+$tpl->assign('config', array('date' => $loguser['dateformat'], 'time' => $loguser['timeformat']));
+
 $mainPage = "board";
 $bucket = "init"; include('lib/pluginloader.php');
 

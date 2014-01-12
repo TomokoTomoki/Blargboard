@@ -4,6 +4,24 @@
 // --- General layout functions
 // ----------------------------------------------------------------------------
 
+function RenderTemplate($template, $options=null)
+{
+	global $tpl, $mobileLayout;
+	
+	if ($mobileLayout)
+	{
+		$tplname = 'templates/mobile/'.$template.'.tpl';
+		if (!file_exists($tplname)) $tplname = 'templates/'.$template.'.tpl';
+	}
+	else
+		$tplname = 'templates/'.$template.'.tpl';
+	
+	if ($options)
+		$tpl->assign($options);
+	
+	$tpl->display($tplname);
+}
+
 function gfxnumber($num)
 {
 	return $num;
@@ -176,8 +194,8 @@ function doThreadPreview($tid)
 // --- Layout-specific functions
 // ----------------------------------------------------------------------------
 
-if ($mobileLayout) require('layout_mobile.php');
-else
+/*if ($mobileLayout) require('layout_mobile.php');
+else*/
 {
 
 function makeCrumbs($path, $links='')
@@ -230,8 +248,6 @@ function makeForumListing($parent, $board='')
 	$viewableforums = ForumsWithPermission('forum.viewforum');
 	$viewhidden = HasPermission('user.viewhiddenforums');
 
-	$lastCatID = -1;
-	$firstCat = true;
 	$rFora = Query("	SELECT f.*,
 							c.name cname,
 							".($loguserid ? "(NOT ISNULL(i.fid))" : "0")." ignored,
@@ -276,7 +292,7 @@ function makeForumListing($parent, $board='')
 	while($mod = Fetch($rMods))
 		$mods[$mod['p_arg']][] = $mod['p_applyto'] ? getDataPrefix($mod, "u_") : array('groupid' => $mod['p_id']);
 
-	$theList = "";
+	$categories = array();
 	while($forum = Fetch($rFora))
 	{
 		$skipThisOne = false;
@@ -284,13 +300,18 @@ function makeForumListing($parent, $board='')
 		if($skipThisOne)
 			continue;
 			
+		if (!$categories[$forum['catid']])
+			$categories[$forum['catid']] = array('id' => $forum['catid'], 'name' => ($parent==0)?$forum['cname']:'Subforums', 'forums' => array());
+			
+		$fdata = array('id' => $forum['id']);
+			
 		if ($forum['redirect'])
 		{
 			$redir = $forum['redirect'];
 			if ($redir[0] == ':')
 			{
 				$redir = explode(':', $redir);
-				$forumlink = actionLinkTag($forum['title'], $redir[1], $redir[2], $redir[3], $redir[4]);
+				$fdata['link'] = actionLinkTag($forum['title'], $redir[1], $redir[2], $redir[3], $redir[4]);
 				$forum['numthreads'] = '-';
 				$forum['numposts'] = '-';
 				
@@ -337,44 +358,23 @@ function makeForumListing($parent, $board='')
 				}
 			}
 			else
-				$forumlink = '<a href="'.htmlspecialchars($redir).'">'.$forum['title'].'</a>';
+				$fdata['link'] = '<a href="'.htmlspecialchars($redir).'">'.$forum['title'].'</a>';
 		}
 		else
-			$forumlink = actionLinkTag($forum['title'], "forum",  $forum['id'], '', 
+			$fdata['link'] = actionLinkTag($forum['title'], "forum",  $forum['id'], '', 
 				HasPermission('forum.viewforum', $forum['id'], true) ? $forum['title'] : '');
-
-		if($firstCat || $forum['catid'] != $lastCatID)
-		{
-			$theList .= format(
-"
-		".($firstCat ? '':'</tbody></table>')."
-	<table class=\"outline margin\">
-		<tbody>
-			<tr class=\"header1\">
-				<th style=\"width:32px;\"></th>
-				<th>{0}</th>
-				<th style=\"width:75px;\">".__("Threads")."</th>
-				<th style=\"width:50px;\">".__("Posts")."</th>
-				<th style=\"min-width:150px; width:15%;\">".__("Last post")."</th>
-			</tr>
-		</tbody>
-		<tbody>
-", ($parent==0)?$forum['cname']:'Subforums', $forum['catid']);
-	
-			$lastCatID = $forum['catid'];
-			$firstCat = false;
-		}
+				
+		$fdata['ignored'] = $forum['ignored'];
 
 		$newstuff = 0;
-		$NewIcon = '';
 		$localMods = '';
 		$subforaList = '';
 
 		$newstuff = $forum['ignored'] ? 0 : $forum['numnew'];
-		$ignoreClass = $forum['ignored'] ? " class=\"ignored\"" : "";
-
 		if ($newstuff > 0)
-			$NewIcon = "<div class=\"statusIcon new\"></div><br>".gfxnumber($newstuff);
+			$fdata['new'] = "<div class=\"statusIcon new\"></div><br>".gfxnumber($newstuff);
+			
+		$fdata['description'] = $forum['description'];
 
 		if (isset($mods[$forum['id']]))
 		{
@@ -388,7 +388,7 @@ function makeForumListing($parent, $board='')
 		}
 
 		if($localMods)
-			$localMods = "<br /><small>".__("Moderated by:")." ".substr($localMods,0,-2)."</small>";
+			$fdata['localmods'] = 'Moderated by: '.substr($localMods,0,-2);
 			
 		if (isset($subfora[$forum['id']]))
 		{
@@ -407,55 +407,26 @@ function makeForumListing($parent, $board='')
 		}
 			
 		if($subforaList)
-			$subforaList = "<br /><small>".__("Subforums:")." ".substr($subforaList,0,-2)."</small>";
+			$fdata['subforums'] = 'Subforums: '.substr($subforaList,0,-2);
+			
+		$fdata['threads'] = $forum['numthreads'];
+		$fdata['posts'] = $forum['numposts'];
 
 		if($forum['lastpostdate'])
 		{
 			$user = getDataPrefix($forum, "lu_");
 
-			$lastLink = "";
-			if($forum['lastpostid'])
-				$lastLink = actionLinkTag("&raquo;", "post", $forum['lastpostid']);
-			$lastLink = format("{0}<br />".__("by")." {1} {2}", formatdate($forum['lastpostdate']), UserLink($user), $lastLink);
+			$fdata['lastpostdate'] = formatdate($forum['lastpostdate']);
+			$fdata['lastpostuser'] = UserLink($user);
+			$fdata['lastpostlink'] = actionLink('post', $forum['lastpostid']);
 		}
 		else
-			$lastLink = "----";
-
-
-		$theList .=
-"
-		<tr class=\"cell1\">
-			<td class=\"cell2 newMarker\">
-				$NewIcon
-			</td>
-			<td>
-				<h4 $ignoreClass>".
-					$forumlink . "
-				</h4>
-				<span $ignoreClass>
-					{$forum['description']}
-					$localMods
-					$subforaList
-				</span>
-			</td>
-			<td class=\"center cell2\">
-				{$forum['numthreads']}
-			</td>
-			<td class=\"center cell2\">
-				{$forum['numposts']}
-			</td>
-			<td class=\"smallFonts center\">
-				$lastLink
-			</td>
-		</tr>";
+			$fdata['lastpostdate'] = 0;
+			
+		$categories[$forum['catid']]['forums'][$forum['id']] = $fdata;
 	}
-
-	write(
-"
-	{0}
-	</tbody>
-</table>
-",	$theList);
+	
+	RenderTemplate('forumlist', array('categories' => $categories));
 }
 
 function listThread($thread, $cellClass, $dostickies = true, $showforum = false)
