@@ -65,8 +65,9 @@ function getPluginData($plugin, $load = true)
 			$minver = (int)$setting[1];
 	}
 
-	if($minver > $abxd_version)
-		throw new BadPluginException(__("Plugin meant for a later version"));
+	// where the fuck is $abxd_version supposed to be set
+	//if($minver > $abxd_version)
+	//	throw new BadPluginException(__("Plugin meant for a later version"));
 
 	$plugindata["buckets"] = array();
 	$plugindata["pages"] = array();
