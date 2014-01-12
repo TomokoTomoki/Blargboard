@@ -70,9 +70,13 @@ function isIPBanned($ip)
 {
 	$rIPBan = Query("select * from {ipbans} where instr({0}, ip)=1", $ip);
 	
-	if(numRows($rIPBan))
+	while ($ipban = Fetch($rIPBan))
 	{
-		$ipban = Fetch($rIPBan);
+		// check if this IP ban is actually good
+		// if the last character is a number, IPs have to match precisely
+		if (ctype_alnum(substr($ipban['ip'],-1)) && ($ip !== $ipban['ip']))
+			continue;
+		
 		return $ipban;
 	}
 	return false;
@@ -81,12 +85,15 @@ function isIPBanned($ip)
 $ipban = isIPBanned($_SERVER['REMOTE_ADDR']);
 
 if($ipban)
-	//$_GET["page"] = "ipbanned"; // reverted to oldstyle IP-banning because the efficientness of this method is doubtful
 {
+	$admin = Fetch(Query("SELECT name,email FROM {users} WHERE id=1"));
+	$adminname = htmlspecialchars($admin['name']);
+	$adminemail = htmlspecialchars($admin['email']);
+	$adminemail = str_replace(array('@','.'), array('<span> [a</span>t] ', ' [do<span>t] </span>'), $adminemail);
+	
 	print "You have been IP-banned from this board".($ipban['date'] ? " until ".gmdate("M jS Y, G:i:s",$ipban['date'])." (GMT). That's ".TimeUnits($ipban['date']-time())." left" : "").". Attempting to get around this in any way will result in worse things.";
 	print '<br>Reason: '.$ipban['reason'];
-	print '<br><br><strong>Contact information:</strong><br>Mega-Mario: the<span>totalwor</span>m <span>a</span>t gma<span>il</span> do<span></span>t com';
-	//$bucket = "ipbanned"; include('lib/pluginloader.php');
+	print '<br><br><strong>Contact information:</strong><br>'.$adminname.': '.$adminemail;
 	exit();
 }
 
