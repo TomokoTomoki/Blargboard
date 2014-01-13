@@ -45,37 +45,9 @@ if($pagelinks)
 
 if(NumRows($rThreads))
 {
-	$forumList = "";
-	$cellClass = 0;
-	$haveStickies = 0;
-
-	while($thread = Fetch($rThreads))
-	{
-		$forumList .= listThread($thread, $cellClass, false, !$forum);
-		$cellClass = ($cellClass + 1) % 2;
-	}
-
-
-	Write(
-"
-	<table class=\"outline margin width100\">
-		<tr class=\"header1\">
-			<th style=\"width: 20px;\">&nbsp;</th>
-			<th style=\"width: 16px;\">&nbsp;</th>". (
-			!$forum?"
-			<th style=\"width: 35%;\">".__("Title")."</th>
-			<th style=\"width: 25%;\">".__("Forum")."</th>":
-"			<th style=\"width: 60%;\">".__("Title")."</th>"
-			)."
-			<th>".__("Started by")."</th>
-			<th>".__("Replies")."</th>
-			<th>".__("Views")."</th>
-			<th style=\"min-width:150px\">".__("Last post")."</th>
-		</tr>
-		{0}
-	</table>
-",	$forumList);
-} else
+	makeThreadListing($rThreads, false, !$forum);
+} 
+else
 	Alert(format(__("Tag {0} was not found in any thread."), htmlspecialchars($tag)), __("No threads found."));
 
 if($pagelinks)

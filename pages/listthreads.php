@@ -56,43 +56,10 @@ if(!$ppp) $ppp = 20;
 
 if(NumRows($rThreads))
 {
-	$forumList = "";
-	$haveStickies = 1;
-	$cellClass = 0;
-
-	while($thread = Fetch($rThreads))
-	{
-		$forumList .= listThread($thread, $cellClass, false, true);
-		$cellClass = ($cellClass + 1) % 2;
-	}
-
-	Write($mobileLayout ?
-"
-	<table class=\"outline margin width100\">
-		<tr class=\"header1\">
-			<th>".__("Threads")."</th>
-		</tr>
-		{0}
-	</table>
-" :
-"
-	<table class=\"outline margin width100\">
-		<tr class=\"header1\">
-			<th style=\"width: 20px;\">&nbsp;</th>
-			<th style=\"width: 16px;\">&nbsp;</th>
-			<th style=\"width: 35%;\">".__("Title")."</th>
-			<th style=\"width: 25%;\">".__("Forum")."</th>
-			<th>".__("Started by")."</th>
-			<th>".__("Replies")."</th>
-			<th>".__("Views")."</th>
-			<th style=\"min-width:150px\">".__("Last post")."</th>
-		</tr>
-		{0}
-	</table>
-",	$forumList);
+	makeThreadListing($rThreads, false, true);
 }
 else
-	Alert(__("No threads found."), __("Error"));
+	Alert(__("No threads found."), __("Notice"));
 
 if($pagelinks)
 	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);

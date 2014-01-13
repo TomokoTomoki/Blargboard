@@ -388,7 +388,7 @@ function makeForumListing($parent, $board='')
 		}
 
 		if($localMods)
-			$fdata['localmods'] = 'Moderated by: '.substr($localMods,0,-2);
+			$fdata['localmods'] = substr($localMods,0,-2);
 			
 		if (isset($subfora[$forum['id']]))
 		{
@@ -407,7 +407,7 @@ function makeForumListing($parent, $board='')
 		}
 			
 		if($subforaList)
-			$fdata['subforums'] = 'Subforums: '.substr($subforaList,0,-2);
+			$fdata['subforums'] = substr($subforaList,0,-2);
 			
 		$fdata['threads'] = $forum['numthreads'];
 		$fdata['posts'] = $forum['numposts'];
@@ -429,135 +429,98 @@ function makeForumListing($parent, $board='')
 	RenderTemplate('forumlist', array('categories' => $categories));
 }
 
-function listThread($thread, $cellClass, $dostickies = true, $showforum = false)
+function makeThreadListing($threads, $dostickies = true, $showforum = false)
 {
-	global $haveStickies, $loguserid, $loguser, $misc;
+	global $loguserid, $loguser, $misc;
 
-	$forumList = "";
-
-	$starter = getDataPrefix($thread, "su_");
-	$last = getDataPrefix($thread, "lu_");
-	
-	$ispublic = HasPermission('forum.viewforum', $thread['forum'], true);
-	$tags = ParseThreadTags($thread['title']);
-	$urlname = $ispublic ? $tags[0] : '';
-
-	$threadlink = actionLinkTag($tags[0], 'thread', $thread['id'], '', $urlname);
-	$threadlink = (Settings::get("tagsDirection") === 'Left') ? $tags[1].' '.$threadlink : $threadlink.' '.$tags[1];
-
-
-	$NewIcon = "";
-	$newstuff = 0;
-	if($thread['closed'])
-		$NewIcon = "off";
-	if($thread['replies'] >= $misc['hotcount'])
-		$NewIcon .= "hot";
-	if((!$loguserid && $thread['lastpostdate'] > time() - 900) ||
-		($loguserid && $thread['lastpostdate'] > $thread['readdate']) &&
-		!$isIgnored)
+	$threadlist = array();
+	while ($thread = Fetch($threads))
 	{
-		$NewIcon .= "new";
-		$newstuff++;
-	}
-	else if(!$thread['closed'] && !$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['lastpostdate'] < time() - (2592000 * Settings::get("oldThreadThreshold")))
-		$NewIcon = "old";
+		$tdata = array('id' => $thread['id']);
+		$starter = getDataPrefix($thread, 'su_');
+		$last = getDataPrefix($thread, 'lu_');
+		
+		$ispublic = HasPermission('forum.viewforum', $thread['forum'], true);
+		$tags = ParseThreadTags($thread['title']);
+		$urlname = $ispublic ? $tags[0] : '';
 
-	if($NewIcon)
-		$NewIcon = '<div class="statusIcon '.$NewIcon.'"></div>';
-		//$NewIcon = "<img src=\"".resourceLink("img/status/".$NewIcon.".png")."\" alt=\"\"/>";
-
-	if($thread['icon'])
-	{
-		//This is a hack, but given how icons are stored in the DB, I can do nothing about it without breaking DB compatibility.
-		if(startsWith($thread['icon'], "img/"))
-			$thread['icon'] = resourceLink($thread['icon']);
-		$ThreadIcon = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\"/>";
-	}
-	else
-		$ThreadIcon = "";
+		$threadlink = actionLinkTag($tags[0], 'thread', $thread['id'], '', $urlname);
+		$tdata['link'] = (Settings::get("tagsDirection") === 'Left') ? $tags[1].' '.$threadlink : $threadlink.' '.$tags[1];
 
 
-	if($thread['sticky'] == 0 && $haveStickies == 1 && $dostickies)
-	{
-		$haveStickies = 2;
-		$forumList .= "<tr class=\"header1\"><th colspan=\"".($showforum?'8':'7')."\" style=\"height: 8px;\"></th></tr>";
-	}
-	if($thread['sticky'] && $haveStickies == 0) $haveStickies = 1;
+		$NewIcon = '';
+		if($thread['closed'])
+			$NewIcon = 'off';
+		if($thread['replies'] >= $misc['hotcount'])
+			$NewIcon .= 'hot';
+		if((!$loguserid && $thread['lastpostdate'] > time() - 900) ||
+			($loguserid && $thread['lastpostdate'] > $thread['readdate']))
+			$NewIcon .= 'new';
+		else if(!$thread['closed'] && !$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['lastpostdate'] < time() - (2592000 * Settings::get("oldThreadThreshold")))
+			$NewIcon = 'old';
 
-	$poll = ($thread['poll'] ? "<img src=\"".resourceLink("img/poll.png")."\" alt=\"Poll\"/> " : "");
+		if($NewIcon)
+			$tdata['new'] = '<div class="statusIcon '.$NewIcon.'"></div>';
+		else
+			$tdata['new'] = '';
+			
+		$tdata['sticky'] = $thread['sticky'];
+
+		if($thread['icon'])
+		{
+			//This is a hack, but given how icons are stored in the DB, I can do nothing about it without breaking DB compatibility.
+			if(startsWith($thread['icon'], "img/"))
+				$thread['icon'] = resourceLink($thread['icon']);
+			$tdata['icon'] = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\"/>";
+		}
+		else
+			$tdata['icon'] = '';
+
+		$tdata['poll'] = ($thread['poll'] ? "<img src=\"".resourceLink("img/poll.png")."\" alt=\"Poll\"/>" : "");
 
 
-	$n = 4;
-	$total = $thread['replies'];
+		$n = 4;
+		$total = $thread['replies'];
 
-	$ppp = $loguser['postsperpage'];
-	if(!$ppp) $ppp = 20;
+		$ppp = $loguser['postsperpage'];
+		if(!$ppp) $ppp = 20;
 
-	$numpages = floor($total / $ppp);
-	$pl = "";
-	if($numpages <= $n * 2)
-	{
-		for($i = 1; $i <= $numpages; $i++)
+		$numpages = floor($total / $ppp);
+		$pl = '';
+		if($numpages <= $n * 2)
+		{
+			for($i = 1; $i <= $numpages; $i++)
+				$pl .= " ".actionLinkTag($i+1, "thread", $thread['id'], "from=".($i * $ppp), $urlname);
+		}
+		else
+		{
+			for($i = 1; $i < $n; $i++)
 			$pl .= " ".actionLinkTag($i+1, "thread", $thread['id'], "from=".($i * $ppp), $urlname);
+			$pl .= " &hellip; ";
+			for($i = $numpages - $n + 1; $i <= $numpages; $i++)
+				$pl .= " ".actionLinkTag($i+1, "thread", $thread['id'], "from=".($i * $ppp), $urlname);
+		}
+		if($pl)
+			$tdata['pagelinks'] = actionLinkTag(1, "thread", $thread['id'], '', $urlname).$pl;
+		else
+			$tdata['pagelinks'] = '';
+			
+		if ($showforum)
+			$tdata['forumlink'] = actionLinkTag(htmlspecialchars($thread["f_title"]), "forum", $thread["f_id"], "", $ispublic?$thread["f_title"]:'');
+			
+		$tdata['startuser'] = UserLink($starter);
+		
+		$tdata['replies'] = $thread['replies'];
+		$tdata['views'] = $thread['views'];
+
+		$tdata['lastpostdate'] = formatdate($thread['lastpostdate']);
+		$tdata['lastpostuser'] = UserLink($last);
+		$tdata['lastpostlink'] = actionLink("post", $thread['lastpostid']);
+		
+		$threadlist[$tdata['id']] = $tdata;
 	}
-	else
-	{
-		for($i = 1; $i < $n; $i++)
-		$pl .= " ".actionLinkTag($i+1, "thread", $thread['id'], "from=".($i * $ppp), $urlname);
-		$pl .= " &hellip; ";
-		for($i = $numpages - $n + 1; $i <= $numpages; $i++)
-			$pl .= " ".actionLinkTag($i+1, "thread", $thread['id'], "from=".($i * $ppp), $urlname);
-	}
-	if($pl)
-		$pl = " <span class=\"smallFonts\">[".
-			actionLinkTag(1, "thread", $thread['id'], '', $urlname). $pl . "]</span>";
 	
-	$extra = ''; 
-	if ($thread['forum'] == 3) // hax
-	{
-		$m = array();
-		if (preg_match('@\(#?(\d+)\)@', $thread['title'], $m))
-			$extra = ' <small>('.actionLinkTag('view profile', 'profile', $m[1]).')</small>';
-	}
-
-	$lastLink = "";
-	if($thread['lastpostid'])
-		$lastLink = " ".actionLinkTag("&raquo;", "post", $thread['lastpostid']);
-
-
-	$forumcell = "";
-	if($showforum)
-	{
-		$forumcell = "<td class=\"center\">".actionLinkTag(htmlspecialchars($thread["f_title"]), "forum", $thread["f_id"], "", $ispublic?$thread["f_title"]:'')."</td>";
-	}
-	$forumList .= "
-	<tr class=\"cell$cellClass\">
-		<td class=\"cell2 threadIcon\"> $NewIcon</td>
-		<td class=\"threadIcon\" style=\"border-right: 0px none;\">
-			 $ThreadIcon
-		</td>
-		<td style=\"border-left: 0px none;\">
-			$poll
-			$threadlink
-			$pl
-			$extra
-		</td>
-		$forumcell
-		<td class=\"center\">
-			".UserLink($starter)."
-		</td>
-		<td class=\"center\">
-			{$thread['replies']}
-		</td>
-		<td class=\"center\">
-			{$thread['views']}
-		</td>
-		<td class=\"smallFonts center\">
-			".formatdate($thread['lastpostdate'])."<br />
-			".__("by")." ".UserLink($last)." {$lastLink}</td>
-	</tr>";
-
-	return $forumList;
+	RenderTemplate('threadlist', array('threads' => $threadlist, 'dostickies' => $dostickies, 'showforum' => $showforum));
 }
 
 function makeAnncBar()
@@ -582,33 +545,21 @@ function makeAnncBar()
 		if ($annc && NumRows($annc))
 		{
 			$annc = Fetch($annc);
+			$adata = array();
 			
-			$status = '&nbsp;';
+			$adata['new'] = '';
 			if ((!$loguserid && $annc['anncdate'] > (time()-900)) ||
 				($loguserid && $annc['anncdate'] > $annc['readdate']))
-				$status = "<div class=\"statusIcon new\"></div>";
+				$adata['new'] = "<div class=\"statusIcon new\"></div>";
 			
-			$poll = ($annc['poll'] ? "<img src=\"".resourceLink('img/poll.png')."\" alt=\"Poll\"/> " : '');
+			$adata['poll'] = ($annc['poll'] ? "<img src=\"".resourceLink('img/poll.png')."\" alt=\"Poll\"/> " : '');
+			$adata['link'] = MakeThreadLink($annc);
 			
 			$user = getDataPrefix($annc, 'u_');
+			$adata['user'] = UserLink($user);
+			$adata['date'] = formatdate($annc['anncdate']);
 			
-			echo "
-		<table class=\"outline margin width100\">
-			<tr class=\"header1\">
-				<th colspan=\"2\">
-					Announcement
-				</th>
-			</tr>
-			<tr class=\"cell1\">
-				<td class=\"cell2 newMarker\">
-					{$status}
-				</td>
-				<td>
-					{$poll}".makeThreadLink($annc)." &mdash; Posted by ".userLink($user)." on ".formatdate($annc['anncdate'])."
-				</td>
-			</tr>
-		</table>
-";
+			RenderTemplate('anncbar', array('annc' => $adata));
 		}
 	}
 }

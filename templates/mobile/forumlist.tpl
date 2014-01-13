@@ -14,7 +14,7 @@
 					{else}
 						No posts
 					{/if}
-					{if $forum.subforums}<br>{$forum.subforums}{/if}
+					{if $forum.subforums}<br>Subforums: {$forum.subforums}{/if}
 				</span>
 			</td>
 		</tr>

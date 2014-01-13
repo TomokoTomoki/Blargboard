@@ -102,35 +102,9 @@ if(!$ppp) $ppp = 20;
 
 if(NumRows($rThreads))
 {
-	$forumList = "";
-	$haveStickies = 0;
-	$cellClass = 0;
-
-	while($thread = Fetch($rThreads))
-	{
-		$forumList .= listThread($thread, $cellClass);
-		$cellClass = ($cellClass + 1) % 2;
-	}
-
-	Write(
-"
-	<table class=\"outline margin width100\">
-		<tr class=\"header1\">
-			".($mobileLayout?
-			"<th>".__('Thread')."</th>":
-			"<th style=\"width: 28px;\">&nbsp;</th>
-			<th style=\"width: 16px;\">&nbsp;</th>
-			<th style=\"width: 60%;\">".__("Title")."</th>
-			<th>".__("Started by")."</th>
-			<th>".__("Replies")."</th>
-			<th>".__("Views")."</th>
-			<th style=\"min-width:150px\">".__("Last post")."</th>"
-			)."
-		</tr>
-		{0}
-	</table>
-",	$forumList);
-} else
+	makeThreadListing($rThreads);
+} 
+else
 	if(!HasPermission('forum.postthreads', $fid))
 		Alert(__("You cannot start any threads here."), __("Empty forum"));
 	elseif($loguserid)
