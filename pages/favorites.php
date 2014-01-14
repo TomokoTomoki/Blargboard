@@ -46,7 +46,9 @@ $links = actionLinkTagItem(__("Mark threads read"), 'favorites', 0, 'action=mark
 
 MakeCrumbs(array(actionLink('favorites') => 'Favorites'), $links);
 
-$total = $forum['numthreads'];
+$viewableforums = ForumsWithPermission('forum.viewforum');
+
+$total = FetchResult("SELECT COUNT(*) FROM {threads} t INNER JOIN {favorites} fav ON fav.user={0} AND fav.thread=t.id WHERE t.forum IN ({1c})", $loguserid, $viewableforums);
 $tpp = $loguser['threadsperpage'];
 if(isset($_GET['from']))
 	$from = (int)$_GET['from'];
@@ -70,28 +72,17 @@ $rThreads = Query("	SELECT
 						LEFT JOIN {forums} f ON f.id=t.forum
 					WHERE f.id IN ({3c})
 					ORDER BY sticky DESC, lastpostdate DESC LIMIT {1u}, {2u}", 
-					$loguserid, $from, $tpp, ForumsWithPermission('forum.viewforum'));
+					$loguserid, $from, $tpp, $viewableforums);
 
 $numonpage = NumRows($rThreads);
 
-$pagelinks = PageLinks(actionLink("forum", $fid, "from="), $tpp, $from, $total);
-
-if($pagelinks)
-	echo "<div class=\"smallFonts pages\">".__("Pages:")." ".$pagelinks."</div>";
-
-$ppp = $loguser['postsperpage'];
-if(!$ppp) $ppp = 20;
+$pagelinks = PageLinks(actionLink('favorites', '', 'from='), $tpp, $from, $total);
 
 if(NumRows($rThreads))
 {
-	makeThreadListing($rThreads, true, true);
+	makeThreadListing($rThreads, $pagelinks, true, true);
 } 
 else
 	Alert(__("You do not have any favorite threads."), __("Notice"));
-
-if($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
-
-if (!$mobileLayout) printRefreshCode();
 
 ?>

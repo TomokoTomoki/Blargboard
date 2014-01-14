@@ -5,7 +5,7 @@ if(NumRows($rFora))
 {
 	$forum = Fetch($rFora);
 	if(!HasPermission('forum.viewforum', $forum['id']))
-		Kill(__("Kuriblog plugin not configured right. It shouldn't be set to use a restricted forum."));
+		Kill(__("News forum is a restricted forum."));
 } else
 	Kill(__("Unknown forum ID."));
 
@@ -20,7 +20,7 @@ if(isset($_GET['from']))
 else
 	$from = 0;
 
-$tpp = 10;
+$tpp = 5;
 
 //echo '<br>';
 $links = '<li><a href="'.$boardroot.'rss.php">RSS feed</a></li>';
@@ -28,6 +28,74 @@ if (HasPermission('forum.postthreads', $forum['id']))
 	$links .= actionLinkTagItem('Post new', 'newthread', $forum['id']);
 
 MakeCrumbs(array(actionLink('news') => 'Latest news'), $links);
+
+/*$lastposts = '';
+$lp = Query("
+	SELECT 
+		t.title,
+		f.title,
+		COUNT(p.thread) nposts, 
+		p2.id, p2.date,
+		u.(_userfields)
+	FROM 
+		{threads} t 
+		LEFT JOIN {forums} f ON f.id=t.forum
+		LEFT JOIN {posts} p ON p.thread=t.id 
+		LEFT JOIN {posts} p2 ON p2.date=MIN(p.date)
+		LEFT JOIN {users} u ON u.id=p2.user
+	WHERE f.id IN ({1c})
+	ORDER BY MAX(p.date)
+	GROUP BY p.thread",
+	ForumsWithPermission('forum.viewforum'));*/
+
+?>
+	<table class="layout-table"><tr>
+		<td style="width:50%; vertical-align:top; padding-right:0.5em;">
+			<table class="outline margin">
+				<tr class="cell1">
+					<td>
+						<big>Welcome to the board</big><br>
+						<br>
+						This is some text about the board and all that shit<br>
+						<br>
+						have fun<br>
+						<br>
+						<br>
+						<br>
+						blah blah blah<br>
+						<br>
+						<br>
+						blarg<br>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td style="vertical-align:top; padding-left:0.5em;">
+			<table class="outline margin">
+				<tr class="header1"><th>Last posts</th></tr>
+				<?php echo $lastposts; ?>
+				<tr class="cell1">
+					<td>
+						<a href="#" title="link to last post goes here">Some dumb thread</a> (<a href="#">Sample forum</a>)<br>
+						<small>4 new posts, last by <a href="#"><strong style="color:#97acef;">blargman</strong></a> 7 minutes ago
+					</td>
+				</tr>
+				<tr class="cell1">
+					<td>
+						<a href="#">Another derp thread</a> (<a href="#">Sample forum</a>)<br>
+						<small>1 new post by <a href="#"><strong style="color:#affabe;">trololo</strong></a> 13 minutes ago
+					</td>
+				</tr>
+				<tr class="cell1">
+					<td>
+						<a href="#">Intelligent thread!</a> (<a href="#">Sample forum</a>)<br>
+						<small>3 new posts, last by <a href="#"><strong style="color:#00aa55;">crazyposter</strong></a> 1 hour ago
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr></table>
+<?php
 
 $rThreads = Query("	SELECT 
 						t.id, t.title, t.closed, t.replies, t.lastpostid,

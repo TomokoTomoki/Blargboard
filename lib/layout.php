@@ -429,7 +429,7 @@ function makeForumListing($parent, $board='')
 	RenderTemplate('forumlist', array('categories' => $categories));
 }
 
-function makeThreadListing($threads, $dostickies = true, $showforum = false)
+function makeThreadListing($threads, $pagelinks, $dostickies = true, $showforum = false)
 {
 	global $loguserid, $loguser, $misc;
 
@@ -520,7 +520,7 @@ function makeThreadListing($threads, $dostickies = true, $showforum = false)
 		$threadlist[$tdata['id']] = $tdata;
 	}
 	
-	RenderTemplate('threadlist', array('threads' => $threadlist, 'dostickies' => $dostickies, 'showforum' => $showforum));
+	RenderTemplate('threadlist', array('threads' => $threadlist, 'pagelinks' => $pagelinks, 'dostickies' => $dostickies, 'showforum' => $showforum));
 }
 
 function makeAnncBar()

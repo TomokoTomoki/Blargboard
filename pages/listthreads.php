@@ -15,11 +15,13 @@ if($user["displayname"])
 
 MakeCrumbs(array(actionLink("profile", $uid, "", $user["name"]) => htmlspecialchars($uname), '' => __("List of threads")), $links);
 
+$viewableforums = ForumsWithPermission('forum.viewforum');
+
 $total = FetchResult("SELECT
 						count(*)
 					FROM
 						{threads} t
-					WHERE t.user={0} AND t.forum IN ({1c})", $uid, ForumsWithPermission('forum.viewforum'));
+					WHERE t.user={0} AND t.forum IN ({1c})", $uid, $viewableforums);
 
 $tpp = $loguser['threadsperpage'];
 if(isset($_GET['from']))
@@ -42,25 +44,18 @@ $rThreads = Query("	SELECT
 						LEFT JOIN {users} lu ON lu.id=t.lastposter
 						LEFT JOIN {forums} f ON f.id=t.forum
 					WHERE t.user={0} AND f.id IN ({5c})
-					ORDER BY lastpostdate DESC LIMIT {2u}, {3u}", $uid, null, $from, $tpp, $loguserid, ForumsWithPermission('forum.viewforum'));
-
-$numonpage = NumRows($rThreads);
+					ORDER BY lastpostdate DESC LIMIT {2u}, {3u}", $uid, null, $from, $tpp, $loguserid, $viewableforums);
 
 $pagelinks = PageLinks(actionLink("listthreads", $uid, "from=", $user['name']), $tpp, $from, $total);
-
-if($pagelinks)
-	echo "<div class=\"smallFonts pages\">".__("Pages:")." ".$pagelinks."</div>";
 
 $ppp = $loguser['postsperpage'];
 if(!$ppp) $ppp = 20;
 
 if(NumRows($rThreads))
 {
-	makeThreadListing($rThreads, false, true);
+	makeThreadListing($rThreads, $pagelinks, false, true);
 }
 else
 	Alert(__("No threads found."), __("Notice"));
 
-if($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
-
+?>

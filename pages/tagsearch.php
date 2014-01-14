@@ -1,15 +1,17 @@
 <?php
 
-$tag = $_GET["tag"];
+$viewableforums = ForumsWithPermission('forum.viewforum');
+
+$tag = $_GET['tag'];
 $tagcode = '"['.$tag.']"';
-$forum = $_GET["fid"];
+$forum = $_GET['fid'];
 
 $cond = "WHERE MATCH (t.title) AGAINST ({0} IN BOOLEAN MODE)";
 
 if($forum)
 	$cond .= " AND t.forum = {1}";
 
-$total = Fetch(Query("SELECT count(*) from threads t $cond", $tag, $forum));
+$total = Fetch(Query("SELECT count(*) from threads t $cond AND t.forum IN ({2c})", $tag, $forum, $viewableforums));
 $total = $total[0];
 
 $tpp = $loguser['threadsperpage'];
@@ -34,23 +36,15 @@ $rThreads = Query("	SELECT
 						LEFT JOIN forums f ON f.id=t.forum
 					$cond AND f.id IN ({5c})
 					ORDER BY sticky DESC, lastpostdate DESC LIMIT {3u}, {4u}",
-					$tagcode, $forum, $loguserid, $from, $tpp, ForumsWithPermission('forum.viewforum'));
-
-$numonpage = NumRows($rThreads);
+					$tagcode, $forum, $loguserid, $from, $tpp, $viewableforums);
 
 $pagelinks = PageLinks(actionLink("tagsearch", "", "tag=$tag&fid=$forum&from="), $tpp, $from, $total);
 
-if($pagelinks)
-	echo "<div class=\"smallFonts pages\">".__("Pages:")." ".$pagelinks."</div>";
-
 if(NumRows($rThreads))
 {
-	makeThreadListing($rThreads, false, !$forum);
+	makeThreadListing($rThreads, $pagelinks, false, !$forum);
 } 
 else
 	Alert(format(__("Tag {0} was not found in any thread."), htmlspecialchars($tag)), __("No threads found."));
 
-if($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
-
-
+?>

@@ -64,7 +64,10 @@ $metaStuff['tags'] = getKeywords(strip_tags($forum['title']));
 $OnlineUsersFid = $fid;
 MakeCrumbs(forumCrumbs($forum), $links);
 
+makeAnncBar();
+
 makeForumListing($fid);
+
 
 $total = $forum['numthreads'];
 $tpp = $loguser['threadsperpage'];
@@ -88,21 +91,14 @@ $rThreads = Query("	SELECT
 					WHERE forum={0}
 					ORDER BY sticky DESC, lastpostdate DESC LIMIT {1u}, {2u}", $fid, $from, $tpp, $loguserid);
 
-$numonpage = NumRows($rThreads);
-
 $pagelinks = PageLinks(actionLink("forum", $fid, "from=", $urlname), $tpp, $from, $total);
-
-if($pagelinks)
-	echo "<div class=\"smallFonts pages\">".__("Pages:")." ".$pagelinks."</div>";
 	
-makeAnncBar();
-
 $ppp = $loguser['postsperpage'];
 if(!$ppp) $ppp = 20;
 
 if(NumRows($rThreads))
 {
-	makeThreadListing($rThreads);
+	makeThreadListing($rThreads, $pagelinks);
 } 
 else
 	if(!HasPermission('forum.postthreads', $fid))
@@ -111,9 +107,6 @@ else
 		Alert(format(__("Would you like to {0}?"), actionLinkTag(__("post something"), "newthread", $fid)), __("Empty forum"));
 	else
 		Alert(format(__("{0} so you can post something."), actionLinkTag(__("Log in"), "login")), __("Empty forum"));
-
-if($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
 
 if (!$mobileLayout)
 {

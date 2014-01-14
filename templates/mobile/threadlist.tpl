@@ -1,3 +1,5 @@
+	{if $pagelinks}<div class="smallFonts pages">Pages: {$pagelinks}</div>{/if}
+	
 	<table class="outline margin threadlist">
 		<tr class="header1">
 			<th>Threads</th>
@@ -22,3 +24,5 @@
 		</tr>
 		{/foreach}
 	</table>
+	
+	{if $pagelinks}<div class="smallFonts pages">Pages: {$pagelinks}</div>{/if}

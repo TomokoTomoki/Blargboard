@@ -3,31 +3,6 @@
 $ishttps = ($_SERVER['SERVER_PORT'] == 443);
 $serverport = ($_SERVER['SERVER_PORT'] == ($ishttps?443:80)) ? '' : ':'.$_SERVER['SERVER_PORT'];
 
-function getRefreshActionLink()
-{
-	$args = "ajax=1";
-
-	if(isset($_GET["from"]))
-		$args .= "&from=".$_GET["from"];
-
-	return actionLink((isset($_GET["page"]) ? $_GET['page'] : 0), (isset($_GET['id']) ? $_GET["id"] : 0), $args);
-}
-
-function printRefreshCode()
-{
-	global $mobileLayout;
-	
-	// no point in printing refresh code in AJAX pages since the browser is already running it
-	if(!$mobileLayout && !$_GET['ajax'] && Settings::get("ajax"))
-		write(
-	"
-		<script type=\"text/javascript\">
-			refreshUrl = ".json_encode(getRefreshActionLink()).";
-			window.addEventListener(\"load\",  startPageUpdate, false);
-		</script>
-	");
-}
-
 function urlNamify($urlname)
 {
 	$urlname = strtolower($urlname);
@@ -262,15 +237,15 @@ function pageLinks($url, $epp, $from, $total)
 	$numPages = (int)ceil($total / $epp);
 	$page = (int)ceil($from / $epp) + 1;
 
-	$first = ($from > 0) ? "<a class=\"pagelink\" href=\"".makeFromUrl($url, 0)."\">&#x00AB;</a> " : "";
+	$first = ($from > 0) ? "<a class=\"pagelink firstpage\" href=\"".makeFromUrl($url, 0)."\">&#x00AB;</a> " : "";
 	$prev = $from - $epp;
 	if($prev < 0) $prev = 0;
-	$prev = ($from > 0) ? "<a class=\"pagelink\"  href=\"".makeFromUrl($url, $prev)."\">&#x2039;</a> " : "";
+	$prev = ($from > 0) ? "<a class=\"pagelink prevpage\"  href=\"".makeFromUrl($url, $prev)."\">&#x2039;</a> " : "";
 	$next = $from + $epp;
 	$last = ($numPages * $epp) - $epp;
 	if($next > $last) $next = $last;
-	$next = ($from < $total - $epp) ? " <a class=\"pagelink\"  href=\"".makeFromUrl($url, $next)."\">&#x203A;</a>" : "";
-	$last = ($from < $total - $epp) ? " <a class=\"pagelink\"  href=\"".makeFromUrl($url, $last)."\">&#x00BB;</a>" : "";
+	$next = ($from < $total - $epp) ? " <a class=\"pagelink nextpage\"  href=\"".makeFromUrl($url, $next)."\">&#x203A;</a>" : "";
+	$last = ($from < $total - $epp) ? " <a class=\"pagelink lastpage\"  href=\"".makeFromUrl($url, $last)."\">&#x00BB;</a>" : "";
 
 	$pageLinks = array();
 	for($p = $page - 5; $p < $page + 5; $p++)
@@ -278,7 +253,7 @@ function pageLinks($url, $epp, $from, $total)
 		if($p < 1 || $p > $numPages)
 			continue;
 		if($p == $page || ($from == 0 && $p == 1))
-			$pageLinks[] = "<span class=\"pagelink\">$p</span>";
+			$pageLinks[] = "<span class=\"pagelink curpage\">$p</span>";
 		else
 			$pageLinks[] = "<a class=\"pagelink\"  href=\"".makeFromUrl($url, (($p-1) * $epp))."\">".$p."</a>";
 	}
