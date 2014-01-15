@@ -13,7 +13,7 @@ if(isset($_GET['byua']))
 	$ual .= "byua&amp;";
 }
 
-MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink("lastknownbrowsers") => __("Last Known Browsers")), "");
+MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink("lastknownbrowsers") => __("Last Known Browsers")));
 
 $numUsers = FetchResult("select count(*) from {users}");
 

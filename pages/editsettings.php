@@ -16,9 +16,9 @@ if(!ctype_alnum($plugin))
 	Kill(__("No."));
 
 if($plugin == "main")
-	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("editsettings") => __("Edit settings")), "");
+	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("editsettings") => __("Edit settings")));
 else
-	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin manager"), '' => $plugins[$plugin]["name"]), "");
+	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin manager"), '' => $plugins[$plugin]["name"]));
 
 $settings = Settings::getSettingsFile($plugin);
 $oursettings = Settings::$settingsArray[$plugin];

@@ -21,7 +21,7 @@ if (isset($_POST['saveaction']))
 		$err = 'Save failed.';
 }
 
-MakeCrumbs(array(actionLink('admin') => 'Admin', actionLink('edithomepage') => 'Edit home page'), '');
+MakeCrumbs(array(actionLink('admin') => 'Admin', actionLink('edithomepage') => 'Edit home page'));
 
 if ($err)
 	Alert($err, 'Error');

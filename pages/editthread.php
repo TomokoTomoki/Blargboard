@@ -51,7 +51,7 @@ $OnlineUsersFid = $thread['forum'];
 $isHidden = !HasPermission('forum.viewforum', $forum['id'], true);
 
 $tags = ParseThreadTags($thread['title']);
-MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit thread")), $links);
+MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit thread")));
 
 if($_GET['action']=="close" && HasPermission('mod.closethreads', $thread['forum']))
 {

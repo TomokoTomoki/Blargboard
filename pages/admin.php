@@ -7,7 +7,7 @@ CheckPermission('admin.viewadminpanel');
 
 $title = __("Administration");
 
-MakeCrumbs(array(actionLink("admin") => __('Admin')), "");
+MakeCrumbs(array(actionLink("admin") => __('Admin')));
 
 $cell2 = 1;
 function cell2($content)

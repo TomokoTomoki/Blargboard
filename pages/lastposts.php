@@ -1,7 +1,7 @@
 <?php
 
 $title = __("Last posts");
-MakeCrumbs(array(actionLink("lastposts") => __("Last posts")), '');
+MakeCrumbs(array(actionLink("lastposts") => __("Last posts")));
 
 $time = $_GET['time'];
 if ($time != 'new') $time = (int)$time;

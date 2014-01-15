@@ -63,9 +63,9 @@ if($loguserid)
 	$rBlock = Query("select * from {blockedlayouts} where user={0} and blockee={1}", $id, $loguserid);
 	$isBlocked = NumRows($rBlock);
 	if($isBlocked)
-		$blockLayoutLink = actionLinkTagItem(__("Unblock layout"), "profile", $id, "block=0&token={$loguser['token']}");
+		$blockLayoutLink = actionLinkTag(__("Unblock layout"), "profile", $id, "block=0&token={$loguser['token']}");
 	else
-		$blockLayoutLink = actionLinkTagItem(__("Block layout"), "profile", $id, "block=1&token={$loguser['token']}");
+		$blockLayoutLink = actionLinkTag(__("Block layout"), "profile", $id, "block=1&token={$loguser['token']}");
 }
 
 $daysKnown = (time()-$user['regdate'])/86400;
@@ -416,33 +416,35 @@ if (!$mobileLayout)
 	MakePost($previewPost, POST_SAMPLE);
 }
 
+$links = array();
+
 if (HasPermission('admin.banusers') && $loguserid != $id)
 {
 	if ($user['primarygroup'] != Settings::get('bannedGroup'))
-		$links .= actionLinkTagItem('Ban user', 'banhammer', $id);
+		$links[] = actionLinkTag('Ban user', 'banhammer', $id);
 	//else
-	//	$links .= actionLinkTagItem('Unban user', 'banhammer', $id, 'unban=1');
+	//	$links[] = actionLinkTag('Unban user', 'banhammer', $id, 'unban=1');
 	// TODO should mods be able to unban people?
 }
 
 if(HasPermission('user.editprofile') && $loguserid == $id)
-	$links .= actionLinkTagItem(__("Edit my profile"), "editprofile");
+	$links[] = actionLinkTag(__("Edit my profile"), "editprofile");
 else if(HasPermission('admin.editusers'))
-	$links .= actionLinkTagItem(__("Edit user"), "editprofile", $id);
+	$links[] = actionLinkTag(__("Edit user"), "editprofile", $id);
 
 if(HasPermission('admin.editusers'))
-	$links .= actionLinkTagItem(__('Edit permissions'), 'editperms', '', 'uid='.$id);
+	$links[] = actionLinkTag(__('Edit permissions'), 'editperms', '', 'uid='.$id);
 
 if(HasPermission('admin.viewpms'))
-	$links .= actionLinkTagItem(__("Show PMs"), "private", "", "user=".$id);
+	$links[] = actionLinkTag(__("Show PMs"), "private", "", "user=".$id);
 
 if(HasPermission('user.sendpms'))
-	$links .= actionLinkTagItem(__("Send PM"), "sendprivate", "", "uid=".$id);
+	$links[] = actionLinkTag(__("Send PM"), "sendprivate", "", "uid=".$id);
 
-$links .= actionLinkTagItem(__("Show posts"), "listposts", $id, "", $user["name"]);
-$links .= actionLinkTagItem(__("Show threads"), "listthreads", $id, "", $user["name"]);
+$links[] = actionLinkTag(__("Show posts"), "listposts", $id, "", $user["name"]);
+$links[] = actionLinkTag(__("Show threads"), "listthreads", $id, "", $user["name"]);
 
-$links .= $blockLayoutLink;
+$links[] = $blockLayoutLink;
 
 $uname = $user["name"];
 if($user["displayname"])

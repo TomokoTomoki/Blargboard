@@ -41,7 +41,7 @@ if ($_POST['report'])
 	die(header('Location: '.actionLink('post', $pid)));
 }
 
-MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Report post")), $links);
+MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Report post")));
 
 $user = Fetch(Query("SELECT * FROM {users} WHERE id={0}", $post['user']));
 foreach($user as $key => $value)

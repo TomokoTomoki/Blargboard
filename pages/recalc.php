@@ -5,7 +5,7 @@
 if(!$loguser['root'])
 		Kill(__("Staff only, please."));
 
-MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("recalc") => __("Recalculate statistics")), "");
+MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("recalc") => __("Recalculate statistics")));
 
 function startFix()
 {

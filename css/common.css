@@ -132,6 +132,8 @@ body
 	padding: 0.5em;
 }
 
+.mobileNotif span.nobr { white-space: normal!important; }
+
 /* force header and footer to be the smallest possible */
 #main-header, #main-footer
 {
@@ -408,6 +410,13 @@ div#page_contents > .margin:last-child
 	display: inline-block;
 	padding: 5px;
 	margin: 0 4px;
+	white-space: nowrap;
+}
+
+.navButton > a
+{
+	margin: -5px;
+	padding: 5px;
 }
 
 /* Quick ugly effect. Themes should override it for better effect. */

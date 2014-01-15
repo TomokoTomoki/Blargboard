@@ -1,7 +1,7 @@
 <?php
 
 $title = __("Ranks");
-MakeCrumbs(array(actionLink("ranks") => __("Ranks")), $links);
+MakeCrumbs(array(actionLink("ranks") => __("Ranks")));
 
 loadRanksets();
 if(count($ranksetData) == 0)

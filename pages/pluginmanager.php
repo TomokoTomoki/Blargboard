@@ -4,7 +4,7 @@ $title = "Plugin Manager";
 
 CheckPermission('admin.editsettings');
 
-MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin Manager")), "");
+MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin Manager")));
 
 
 if($_GET["action"] == "enable")

@@ -4,7 +4,7 @@
 
 $title = __("Private messages");
 
-MakeCrumbs(array(actionLink("private") => __("Private messages"), '' => __("New PM")), "");
+MakeCrumbs(array(actionLink("private") => __("Private messages"), '' => __("New PM")));
 
 if(!$loguserid) //Not logged in?
 	Kill(__("You must be logged in to send private messages."));

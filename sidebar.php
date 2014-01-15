@@ -3,7 +3,6 @@
 $headerlinks = array
 (
 	$boardroot => Settings::get('breadcrumbsMainName'), 
-	actionLink('news') => 'News',
 	actionLink('board') => 'Forums',
 );
 

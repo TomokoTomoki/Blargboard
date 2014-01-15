@@ -1,7 +1,7 @@
 <?php
 
 $title = 'Post quality stats';
-MakeCrumbs(array(actionLink('postquality') => 'Post quality stats'), '');
+MakeCrumbs(array(actionLink('postquality') => 'Post quality stats'));
 
 $stuff = Query("	SELECT
 						u.(_userfields),

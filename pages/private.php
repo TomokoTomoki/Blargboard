@@ -97,12 +97,12 @@ else
 	$from = 0;
 
 
-$links = '';
+$links = array();
 
-$links .= actionLinkTagItem(__("Show received"), "private", "", str_replace("&", "", $userGet));
-$links .= actionLinkTagItem(__("Show sent"), "private", "", "show=1".$userGet);
-$links .= actionLinkTagItem(__("Show drafts"), "private", "", "show=2".$userGet);
-$links .= actionLinkTagItem(__("Send new PM"), "sendprivate");
+$links[] = actionLinkTag(__("Show received"), "private", "", str_replace("&", "", $userGet));
+$links[] = actionLinkTag(__("Show sent"), "private", "", "show=1".$userGet);
+$links[] = actionLinkTag(__("Show drafts"), "private", "", "show=2".$userGet);
+$links[] = actionLinkTag(__("Send new PM"), "sendprivate");
 
 MakeCrumbs(array(actionLink("private") => __("Private messages")), $links);
 

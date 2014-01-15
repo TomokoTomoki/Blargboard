@@ -42,7 +42,7 @@ else if ($_GET['action'] == 'add' || $_GET['action'] == 'remove')
 
 $title = 'Favorites';
 
-$links = actionLinkTagItem(__("Mark threads read"), 'favorites', 0, 'action=markasread');
+$links = array(actionLinkTag(__("Mark threads read"), 'favorites', 0, 'action=markasread'));
 
 MakeCrumbs(array(actionLink('favorites') => 'Favorites'), $links);
 

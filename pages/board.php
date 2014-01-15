@@ -12,9 +12,9 @@ if($loguserid && isset($_GET['action']) && $_GET['action'] == "markallread")
 	die(header("Location: ".actionLink("board")));
 }
 
-$links = '';
+$links = array();
 if($loguserid)
-	$links = actionLinkTagItem(__("Mark all forums read"), "board", $board, "action=markallread");
+	$links[] = actionLinkTag(__("Mark all forums read"), "board", $board, "action=markallread");
 
 MakeCrumbs(forumCrumbs(array('board' => $board)), $links);
 

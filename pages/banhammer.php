@@ -33,7 +33,7 @@ if ($_POST['ban'])
 }
 
 MakeCrumbs(array(actionLink("profile", $id) => htmlspecialchars($user['u_displayname']?$user['u_displayname']:$user['u_name']), 
-	actionLink('banhammer', $id) => __('Banhammer')), '');
+	actionLink('banhammer', $id) => __('Banhammer')));
 
 $userlink = userLink(getDataPrefix($user, 'u_'));
 

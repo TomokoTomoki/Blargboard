@@ -43,19 +43,19 @@ else if(isset($_GET['unignore']))
 	die(header("Location: ".actionLink("forum", $fid)));
 }
 
-$links = '';
+$links = array();
 if($loguserid)
-	$links .= actionLinkTagItem(__("Mark forum read"), "forum", $fid, "action=markasread", $urlname);
+	$links[] = actionLinkTag(__("Mark forum read"), "forum", $fid, "action=markasread", $urlname);
 
 if($loguserid)
 {
 	if($isIgnored)
-		$links .= "<li>".actionLinkTag(__("Unignore forum"), "forum", $fid, "unignore", $urlname)."</li>";
+		$links[] = actionLinkTag(__("Unignore forum"), "forum", $fid, "unignore", $urlname);
 	else
-		$links .= "<li>".actionLinkTag(__("Ignore forum"), "forum", $fid, "ignore", $urlname)."</li>";
+		$links[] = actionLinkTag(__("Ignore forum"), "forum", $fid, "ignore", $urlname);
 
 	if (HasPermission('forum.postthreads', $fid))
-		$links .= "<li>".actionLinkTag(__("Post thread"), "newthread", $fid, '', $urlname)."</li>";
+		$links[] = actionLinkTag(__("Post thread"), "newthread", $fid, '', $urlname);
 }
 
 $metaStuff['description'] = htmlspecialchars(strip_tags($forum['description']));

@@ -3,7 +3,7 @@
 CheckPermission('admin.ipsearch');
 	
 $title = 'Rereg radar';
-MakeCrumbs(array(actionLink("admin") => "Admin", actionLink('reregs') => 'Rereg radar'), '');
+MakeCrumbs(array(actionLink("admin") => "Admin", actionLink('reregs') => 'Rereg radar'));
 
 $ipm = Query("SELECT u.(_userfields), u.(lastactivity,lastip) FROM {users} u WHERE (SELECT COUNT(*) FROM {users} u2 WHERE u2.lastip=u.lastip)>1 ORDER BY lastactivity DESC");
 $ipmatches = array();

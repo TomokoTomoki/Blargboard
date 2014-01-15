@@ -52,13 +52,13 @@ if (isset($_GET['id']))
 	if ($group['rank'] > $loguserGroup['rank'])
 		Kill(__('You may not edit this group.'));
 	
-	MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink('editgroups') => __('Edit groups'), '' => htmlspecialchars($group['title'])), '');
+	MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink('editgroups') => __('Edit groups'), '' => htmlspecialchars($group['title'])));
 	
 	$canPromoteHigher = ($gid == $loguserGroup['id']);
 }
 else
 {
-	MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink('editgroups') => __('Edit groups')), '');
+	MakeCrumbs(array(actionLink('admin') => __('Admin'), actionLink('editgroups') => __('Edit groups')));
 	Alert(__('Select a group above to edit it.'), __('Notice'));
 	return;
 }

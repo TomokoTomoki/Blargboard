@@ -23,9 +23,9 @@ else
 $tpp = 5;
 
 //echo '<br>';
-$links = '<li><a href="'.$boardroot.'rss.php">RSS feed</a></li>';
+$links = array('<a href="'.$boardroot.'rss.php">RSS feed</a>');
 if (HasPermission('forum.postthreads', $forum['id']))
-	$links .= actionLinkTagItem('Post new', 'newthread', $forum['id']);
+	$links[] = actionLinkTag('Post new', 'newthread', $forum['id']);
 
 MakeCrumbs(array(actionLink('news') => 'Latest news'), $links);
 

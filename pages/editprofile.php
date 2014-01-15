@@ -37,7 +37,7 @@ $uname = $user["name"];
 if($user["displayname"])
 	$uname = $user["displayname"];
 
-makeCrumbs(array(actionLink("profile", $userid, "", $user["name"]) => htmlspecialchars($uname), '' => __("Edit profile")), "");
+makeCrumbs(array(actionLink("profile", $userid, "", $user["name"]) => htmlspecialchars($uname), '' => __("Edit profile")));
 
 loadRanksets();
 $ranksets = $ranksetNames;

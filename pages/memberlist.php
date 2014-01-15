@@ -240,7 +240,7 @@ while ($group = Fetch($g))
 }
 
 
-MakeCrumbs(array(actionLink("memberlist") => __("Member list")), $links);
+MakeCrumbs(array(actionLink("memberlist") => __("Member list")));
 
 if (!$isBot)
 {

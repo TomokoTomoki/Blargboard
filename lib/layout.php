@@ -44,17 +44,6 @@ function gfxnumber($num)
 	return '<span style="white-space:nowrap;">'.$sign.$out.'</span>';
 }
 
-function makeNotifMenu($notif)
-{
-	$menu = '';
-	foreach ($notif as $n)
-	{
-		$menu .= '<li>'.$n['text'].'<br><small>'.relativedate($n['date']).'</small></li>';
-	}
-	
-	return $menu;
-}
-
 
 function mfl_forumBlock($fora, $catid, $selID, $indent)
 {
@@ -189,18 +178,9 @@ function doThreadPreview($tid)
 	}
 }
 
-
-// ----------------------------------------------------------------------------
-// --- Layout-specific functions
-// ----------------------------------------------------------------------------
-
-/*if ($mobileLayout) require('layout_mobile.php');
-else*/
-{
-
 function makeCrumbs($path, $links='')
 {
-	global $layout_crumbs;
+	global $layout_crumbs, $layout_actionlinks;
 
 	if(count($path) != 0)
 	{
@@ -210,33 +190,9 @@ function makeCrumbs($path, $links='')
 
 		$path = $pathPrefix + $path;
 	}
-
-	$first = true;
-
-	$crumbs = "";
-	foreach($path as $link=>$text)
-	{
-		$link = str_replace("&","&amp;",$link);
-		$crumbs .= "<li><a href=\"".$link."\">".$text."</a></li>";
-	}
-
-	if($links)
-		$links = "
-	<div class=\"actionlinks\" style=\"float: right;\">
-		<ul class=\"pipemenu smallFonts\">
-			{$links}
-		</ul>
-	</div>";
-
-	$layout_crumbs = "
-<table class=\"outline breadcrumbs\">
-<tr class=\"header1\">
-<th>
-	$links
-	<ul class=\"crumbLinks\">$crumbs</ul>
-</th>
-</tr>
-</table>";
+	
+	$layout_crumbs = $path;
+	$layout_actionlinks = $links;
 }
 
 
@@ -563,7 +519,5 @@ function makeAnncBar()
 		}
 	}
 }
-
-} // end non-mobile layout code
 
 ?>

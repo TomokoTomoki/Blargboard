@@ -93,7 +93,7 @@ if(($post['user'] != $loguserid || !HasPermission('user.editownposts')) && !HasP
 	Kill(__("You are not allowed to edit this post."));
 
 $tags = ParseThreadTags($thread['title']);
-MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit post")), $links);
+MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit post")));
 
 write("
 	<script type=\"text/javascript\">

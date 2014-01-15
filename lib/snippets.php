@@ -141,6 +141,10 @@ function getNotifications()
 	}
 	
 	usort($notifs, 'notifsort');
+	
+	foreach ($notifs as $i=>$n)
+		$notifs[$i]['formattedDate'] = relativedate($n['date']);
+	
 	return $notifs;
 }
 

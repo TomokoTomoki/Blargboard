@@ -6,8 +6,9 @@ $ip = $_GET["id"];
 if(!filter_var($ip, FILTER_VALIDATE_IP))
 	Kill("Invalid IP");
 
-$links .= "<li><a href=\"http://dnsquery.org/ipwhois/$ip\" target=\"_blank\">Whois Query</a></li>";
-$links .= "<li><a onclick=\"if(confirm('Are you sure you want to IP-ban $ip?')) {document.getElementById('banform').submit();} return false;\" href=\"#\">IP Ban</a></li>";
+$links = array();
+$links[] = "<a href=\"http://dnsquery.org/ipwhois/$ip\" target=\"_blank\">Whois Query</a>";
+$links[] = "<a onclick=\"if(confirm('Are you sure you want to IP-ban $ip?')) {document.getElementById('banform').submit();} return false;\" href=\"#\">IP Ban</a>";
 
 MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("ipbans") => __("IP ban manager"), '' => $ip), $links);
 

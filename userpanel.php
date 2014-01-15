@@ -1,19 +1,19 @@
 <?php
-$userMenu = new PipeMenu();
+$userMenu = array();
 
 if($loguserid)
 {
 	if (HasPermission('user.editprofile'))
 	{
-		$userMenu->add(new PipeMenuLinkEntry(__("Edit profile"), "editprofile"));
+		$userMenu[actionLink('editprofile')] = __('Edit profile');
 		if (HasPermission('user.editavatars'))
-			$userMenu->add(new PipeMenuLinkEntry(__("Mood avatars"), "editavatars"));
+			$userMenu[actionLink('editavatars')] = __('Mood avatars');
 	}
 	
-	$userMenu->add(new PipeMenuLinkEntry(__("Private messages"), "private"));
-	$userMenu->add(new PipeMenuLinkEntry(__('Favorites'), 'favorites'));
+	$userMenu[actionLink('private')] = __('Private messages');
+	$userMenu[actionLink('favorites')] = __('Favorites');
 
-	$bucket = "bottomMenu"; include("./lib/pluginloader.php");
+	$bucket = 'userMenu'; include("./lib/pluginloader.php");
 }
 
 $layout_userpanel = $userMenu;

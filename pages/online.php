@@ -3,7 +3,7 @@
 //  Access: all
 
 $title = __("Online users");
-MakeCrumbs(array(actionLink("online") => __("Online users")), $links);
+MakeCrumbs(array(actionLink("online") => __("Online users")));
 
 $showIPs = HasPermission('admin.viewips');
 

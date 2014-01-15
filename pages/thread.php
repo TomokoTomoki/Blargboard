@@ -104,7 +104,7 @@ if(!$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['las
 if($thread['closed'])
 	$replyWarning = " onclick=\"if(!confirm('".__("This thread is actually closed. Are you sure you want to abuse your staff position to post in a closed thread?")."')) return false;\"";
 
-$links = '';
+$links = array();
 if ($loguserid)
 {
 	$notclosed = (!$thread['closed'] || HasPermission('mod.closethreads', $fid));
@@ -113,43 +113,43 @@ if ($loguserid)
 	{
 		// allow the user to directly post in a closed thread if they have permission to open it
 		if ($notclosed)
-			$links .= actionLinkTagItem(__("Post reply"), "newreply", $tid, '', $urlname);
+			$links[] = actionLinkTag(__("Post reply"), "newreply", $tid, '', $urlname);
 		else if ($thread['closed'])
-			$links .= '<li>'.__("Thread closed").'</li>';
+			$links[] = __("Thread closed");
 	}
 
 	// we also check mod.movethreads because moving threads is done on editthread
 	if ((HasPermission('user.renameownthreads') && $thread['user']==$loguserid) || 
 		(HasPermission('mod.renamethreads', $fid) || HasPermission('mod.movethreads', $fid))
 		&& $notclosed)
-		$links .= actionLinkTagItem(__("Edit"), "editthread", $tid);
+		$links[] = actionLinkTag(__("Edit"), "editthread", $tid);
 	
 	if (HasPermission('mod.closethreads', $fid))
 	{
 		if($thread['closed'])
-			$links .= actionLinkTagItem(__("Open"), "editthread", $tid, "action=open&key=".$loguser['token']);
+			$links[] = actionLinkTag(__("Open"), "editthread", $tid, "action=open&key=".$loguser['token']);
 		else
-			$links .= actionLinkTagItem(__("Close"), "editthread", $tid, "action=close&key=".$loguser['token']);
+			$links[] = actionLinkTag(__("Close"), "editthread", $tid, "action=close&key=".$loguser['token']);
 	}
 		
 	if (HasPermission('mod.stickthreads', $fid))
 	{
 		if($thread['sticky'])
-			$links .= actionLinkTagItem(__("Unstick"), "editthread", $tid, "action=unstick&key=".$loguser['token']);
+			$links[] = actionLinkTag(__("Unstick"), "editthread", $tid, "action=unstick&key=".$loguser['token']);
 		else
-			$links .= actionLinkTagItem(__("Stick"), "editthread", $tid, "action=stick&key=".$loguser['token']);
+			$links[] = actionLinkTag(__("Stick"), "editthread", $tid, "action=stick&key=".$loguser['token']);
 	}
 		
 	if (HasPermission('mod.deletethreads', $fid))
 	{
 		if ($forum['id'] != Settings::get('secretTrashForum'))
-			$links .= actionLinkTagItemConfirm(__("Delete"), __("Are you sure you want to just up and delete this whole thread?"), "editthread", $tid, "action=delete&key=".$loguser['token']);
+			$links[] = actionLinkTagConfirm(__("Delete"), __("Are you sure you want to just up and delete this whole thread?"), "editthread", $tid, "action=delete&key=".$loguser['token']);
 	}
 
 	if (HasPermission('mod.trashthreads', $fid))
 	{
 		if($forum['id'] != Settings::get('trashForum'))
-			$links .= actionLinkTagItem(__("Trash"), "editthread", $tid, "action=trash&key=".$loguser['token']);
+			$links[] = actionLinkTag(__("Trash"), "editthread", $tid, "action=trash&key=".$loguser['token']);
 	}
 }
 

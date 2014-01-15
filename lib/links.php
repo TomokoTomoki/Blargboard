@@ -331,4 +331,18 @@ function getFullURL()
 	return getFullRequestedURL();
 }
 
+// ----------------------------------------------------------------------------
+// --- Smarty interface
+// ----------------------------------------------------------------------------
+
+function smarty_function_actionLink($params, $template)
+{
+	return actionLink($params['page'], ($params['id']?:''), $params['args'], $params['urlname']);
+}
+
+function smarty_function_resourceLink($params, $template)
+{
+	return resourceLink($params['url']);
+}
+
 ?>

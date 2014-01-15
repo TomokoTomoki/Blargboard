@@ -142,6 +142,7 @@ if ($loguser['flags'] & 0x1)
 if ($mobileLayout)
 {
 	$loguser['blocklayouts'] = 1;
+	$loguser['fontsize'] = 80;
 	//$loguser['dateformat'] = 'm/d/y';
 	//$loguser['timeformat'] = 'H:i';
 }

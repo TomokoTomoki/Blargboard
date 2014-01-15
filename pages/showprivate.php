@@ -43,12 +43,14 @@ if(NumRows($rUser))
 	$user = Fetch($rUser);
 else
 	Kill(__("Unknown user."));
+	
+$links = array();
 
 if(!isset($_GET['snooping']) && $pm['userto'] == $loguserid)
 {
 	$qPM = "update {pmsgs} set msgread=1 where id={0}";
 	$rPM = Query($qPM, $pm['id']);
-	$links = actionLinkTag(__("Send reply"), "sendprivate", "", "pid=".$pm['id']);
+	$links[] = actionLinkTag(__("Send reply"), "sendprivate", "", "pid=".$pm['id']);
 }
 else if(!isset($_GET['snooping']) && $pm['drafting'])
 {

@@ -6,7 +6,7 @@ $title = __("IP bans");
 
 CheckPermission('admin.manageipbans');
 
-MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("ipbans") => __("IP ban manager")), "");
+MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("ipbans") => __("IP ban manager")));
 
 if(isset($_POST['actionadd']))
 {

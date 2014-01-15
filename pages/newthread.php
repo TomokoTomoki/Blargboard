@@ -39,7 +39,7 @@ $urlname = $isHidden ? '' : $forum['title'];
 
 $OnlineUsersFid = $fid;
 
-MakeCrumbs(forumCrumbs($forum) + array('' => __("New thread")), $links);
+MakeCrumbs(forumCrumbs($forum) + array('' => __("New thread")));
 
 if(isset($_POST['actionpreview']))
 {
