@@ -11,6 +11,8 @@ $sexes = array(__("Male"), __("Female"), __("N/A"));
 
 if($_POST['register'])
 {
+	$hostname = gethostbyaddr($_SERVER['REMOTE_ADDR']);
+	
 	$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
 	$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 	$kuridata = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, md5($kurikey, true), base64_decode($_POST['kuridata']), MCRYPT_MODE_ECB, $iv);
@@ -32,17 +34,12 @@ if($_POST['register'])
 	$ngoombas = intval($kurichallenge[2]);
 	if ($ngoombas != (int)$_POST['kurichallenge'])
 		$err = __('You failed the challenge. Look harder.');
+	else if ($_SERVER['HTTP_X_FORWARDED_FOR'] || stristr($hostname, 'proxy')!==FALSE)
+		$err = __('Registrations from proxies are not allowed.');
 	else
 	{
 		$name = $_POST['name'];
 		$cname = trim(str_replace(" ","", strtolower($name)));
-		
-		$failure = 'eyelyke2cheet';
-		if (substr(strtolower($cname), 0, strlen($failure)) == $failure)
-		{
-			Query("INSERT INTO {ipbans} (ip,reason,date) VALUES ({0},{1},{2})", $_SERVER['REMOTE_ADDR'], '[eyeamamoron] please die already', 0);
-			die(header('Location: index.php'));
-		}
 
 		$rUsers = Query("select name, displayname from {users}");
 		while($user = Fetch($rUsers))
