@@ -407,11 +407,11 @@ if (!$mobileLayout)
 {
 	$previewPost['text'] = Settings::get("profilePreviewText");
 
-	$previewPost['num'] = "_";
-	$previewPost['id'] = "_";
+	$previewPost['num'] = 0;
+	$previewPost['id'] = 0;
 
 	foreach($user as $key => $value)
-		$previewPost["u_".$key] = $value;
+		$previewPost['u_'.$key] = $value;
 
 	MakePost($previewPost, POST_SAMPLE);
 }

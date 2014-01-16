@@ -111,16 +111,18 @@ if(isset($_POST['actionpreview']))
 	$previewPost['text'] = $_POST['text'];
 	$previewPost['num'] = $loguser['posts']+1;
 	$previewPost['posts'] = $loguser['posts']+1;
-	$previewPost['id'] = "_";
+	$previewPost['id'] = 0;
 	$previewPost['options'] = 0;
 	if($_POST['nopl']) $previewPost['options'] |= 1;
 	if($_POST['nosm']) $previewPost['options'] |= 2;
 	$previewPost['mood'] = (int)$_POST['mood'];
 
 	foreach($loguser as $key => $value)
-		$previewPost["u_".$key] = $value;
+		$previewPost['u_'.$key] = $value;
+		
+	$previewPost['u_posts']++;
 
-	MakePost($previewPost, POST_SAMPLE, array('forcepostnum'=>1, 'metatext'=>__("Preview")));
+	MakePost($previewPost, POST_SAMPLE);
 }
 else if(isset($_POST['actionpost']))
 {

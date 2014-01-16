@@ -43,7 +43,7 @@ else if ($action == 'rp') // retrieve post
 			SELECT
 				p.id, p.date, p.num, p.deleted, p.deletedby, p.reason, p.options, p.mood, p.ip,
 				pt.text, pt.revision, pt.user AS revuser, pt.date AS revdate,
-				u.(_userfields), u.(rankset,title,picture,posts,postheader,signature,signsep,lastposttime,lastactivity,regdate,globalblock),
+				u.(_userfields), u.(rankset,title,picture,posts,postheader,signature,signsep,lastposttime,lastactivity,regdate,globalblock,fulllayout),
 				ru.(_userfields),
 				du.(_userfields),
 				t.forum fid

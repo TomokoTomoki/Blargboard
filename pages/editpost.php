@@ -103,16 +103,16 @@ write("
 
 if(isset($_POST['actionpreview']))
 {
-	$previewPost['text'] = $_POST["text"];
+	$previewPost['text'] = $_POST['text'];
 	$previewPost['num'] = $post['num'];
-	$previewPost['id'] = "_";
+	$previewPost['id'] = 0;
 	$previewPost['options'] = 0;
 	if($_POST['nopl']) $previewPost['options'] |= 1;
 	if($_POST['nosm']) $previewPost['options'] |= 2;
 	$previewPost['mood'] = (int)$_POST['mood'];
 	foreach($user as $key => $value)
-		$previewPost["u_".$key] = $value;
-	MakePost($previewPost, POST_SAMPLE, array('forcepostnum'=>1, 'metatext'=>__("Preview")));
+		$previewPost['u_'.$key] = $value;
+	MakePost($previewPost, POST_SAMPLE);
 }
 else if(isset($_POST['actionpost']))
 {

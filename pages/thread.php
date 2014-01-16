@@ -262,7 +262,7 @@ $rPosts = Query("
 			SELECT
 				p.*,
 				pt.text, pt.revision, pt.user AS revuser, pt.date AS revdate,
-				u.(_userfields), u.(rankset,title,picture,posts,postheader,signature,signsep,lastposttime,lastactivity,regdate,globalblock),
+				u.(_userfields), u.(rankset,title,picture,posts,postheader,signature,signsep,lastposttime,lastactivity,regdate,globalblock,fulllayout),
 				ru.(_userfields),
 				du.(_userfields)
 			FROM

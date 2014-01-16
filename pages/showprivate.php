@@ -71,9 +71,9 @@ else if(isset($_GET['snooping']))
 $pmtitle = htmlspecialchars($pm['title']); //sender's custom title overwrites this below, so save it here
 MakeCrumbs(array(actionLink("private") => __("Private messages"), '' => $pmtitle), $links);
 
-$pm['num'] = "preview";
+$pm['num'] = 0;
 $pm['posts'] = $user['posts'];
-$pm['id'] = "_";
+$pm['id'] = 0;
 
 foreach($user as $key => $value)
 	$pm["u_".$key] = $value;

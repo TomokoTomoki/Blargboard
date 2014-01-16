@@ -41,7 +41,7 @@
 						</div>
 						<ul class="dropdownMenu">
 							{foreach $layout_userpanel as $url=>$text}
-								<li><a href="{$url|escape}">{$text}</a></li>
+								<li><a href="{$url|escape}">{$text}</a>
 							{/foreach}
 						</ul>
 					</div>
@@ -55,7 +55,7 @@
 						{if $numnotifs}
 						<ul class="dropdownMenu">
 							{foreach $notifications as $notif}
-								<li>{$notif.text}<br><small>{$notif.formattedDate}</small></li>
+								<li>{$notif.text}<br><small>{$notif.formattedDate}</small>
 							{/foreach}
 						</ul>
 						{/if}
@@ -113,11 +113,19 @@
 			<th>
 				{if $layout_actionlinks && count($layout_actionlinks)}
 				<div class="actionlinks" style="float:right;">
-					<ul class="pipemenu smallFonts">{foreach $layout_actionlinks as $alink}<li>{$alink}</li>{/foreach}</ul>
+					<ul class="pipemenu smallFonts">
+					{foreach $layout_actionlinks as $alink}
+						<li>{$alink}
+					{/foreach}
+					</ul>
 				</div>
 				{/if}
 				{if $layout_crumbs && count($layout_crumbs)}
-				<ul class="crumbLinks">{foreach $layout_crumbs as $url=>$text}<li><a href="{$url}">{$text}</a></li>{/foreach}</ul>
+				<ul class="crumbLinks">
+				{foreach $layout_crumbs as $url=>$text}
+					<li><a href="{$url|escape}">{$text}</a>
+				{/foreach}
+				</ul>
 				{/if}
 			</th>
 		</tr></table>

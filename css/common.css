@@ -607,24 +607,34 @@ tr.header0>th, tr.header1>th
 
 /* Post tables */
 
-table.post
+table.post, table.custompost
 {
 	width: 100%;
 	margin-bottom: 0.75em;
 }
 
-table.post td.side
+table.post td.side,
+table.custompost td.side
 {
 	width: 200px;
 	vertical-align: top;
+}
+
+table.post td.post,
+table.custompost td.post
+{
+	vertical-align: top;
+	height: 100px;
+}
+
+table.post td.side
+{
 	padding: 2px 4px;
 }
 
-table.post td.post
+table.post td.post:not(.haslayout)
 {
-	padding:10px;
-	vertical-align: top;
-	height: 100px;
+	padding: 10px;
 }
 
 
@@ -640,6 +650,11 @@ table.post td.links
 	font-size: .85em; /* 8pt; */
 	height: 14px;
 	margin: 0;
+}
+
+.signature
+{
+	font-size: 0.85em;
 }
 
 .footer
@@ -742,7 +757,6 @@ ul.pipemenu
 ul.pipemenu li
 {
 	display: inline-block;
-
 }
 ul.pipemenu li:not(:first-child):before
 {
@@ -992,39 +1006,6 @@ td.threadIcons label > input:checked ~ *
 {
 	background: rgba(255, 255, 255, .25);
 	border: 1px solid rgba(255, 255, 255, .5);
-}
-
-.avaLib img
-{
-	padding: 1px;
-	opacity: .5;
-	border: 1px solid rgba(255, 255, 255, 0);
-	border-radius: 4px;
-	     -o-transition: all .1s ease-in-out;
-		-ms-transition: all .1s ease-in-out;
-	        transition: all .1s ease-in-out;
-	   -moz-transition: all .1s ease-in-out;
-	-webkit-transition: all .1s ease-in-out;
-}
-.avaLib img:hover
-{
-	margin: 0;
-	opacity: 1;
-	background: rgba(255, 255, 255, .25);
-	border: 1px solid rgba(255, 255, 255, .5);
-	     -o-transform: scale(1.1);
-		-ms-transform: scale(1.1);
-	        transform: scale(1.1);
-	   -moz-transform: scale(1.1);
-	-webkit-transform: scale(1.1);
-}
-
-@media handheld
-{
-	.nom
-	{
-		display: none;
-	}
 }
 
 div.postToolbar

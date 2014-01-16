@@ -164,15 +164,15 @@ if($_POST['action']==__("Preview"))
 	{
 
 		$previewPost['text'] = $_POST["text"];
-		$previewPost['num'] = "---";
-		$previewPost['posts'] = "---";
-		$previewPost['id'] = "_";
+		$previewPost['num'] = 0;
+		$previewPost['posts'] = $loguser['posts'];
+		$previewPost['id'] = 0;
 		$previewPost['options'] = 0;
 
 		foreach($loguser as $key => $value)
 			$previewPost["u_".$key] = $value;
 
-		MakePost($previewPost, POST_SAMPLE, array('metatext'=>__("Preview")));
+		MakePost($previewPost, POST_SAMPLE);
 	}
 }
 

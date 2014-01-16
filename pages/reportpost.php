@@ -47,7 +47,7 @@ $user = Fetch(Query("SELECT * FROM {users} WHERE id={0}", $post['user']));
 foreach($user as $key => $value)
 	$post['u_'.$key] = $value;
 
-MakePost($post, POST_SAMPLE, array('forcepostnum'=>1, 'metatext'=>__("Target post")));
+MakePost($post, POST_SAMPLE);
 
 ?>
 	<form action="" method="POST">

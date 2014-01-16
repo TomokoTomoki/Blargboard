@@ -142,6 +142,10 @@ $general = array(
 				"caption" => __("Block all layouts"),
 				"type" => "checkbox",
 			),
+			'showsidebar' => array(
+				'caption' => __('Show full sidebar'),
+				'type' => 'checkbox',
+			),
 		),
 	),
 );
@@ -294,6 +298,10 @@ $layout = array(
 				"caption" => __("Show signature separator"),
 				"type" => "checkbox",
 				"negative" => true,
+			),
+			'fulllayout' => array(
+				'caption' => __('Apply layout to whole post box'),
+				'type' => 'checkbox',
 			),
 		),
 	),
