@@ -614,7 +614,8 @@ table.post, table.custompost
 }
 
 table.post td.side,
-table.custompost td.side
+table.custompost td.side,
+table.threadreview td.side
 {
 	width: 200px;
 	vertical-align: top;
@@ -625,6 +626,11 @@ table.custompost td.post
 {
 	vertical-align: top;
 	height: 100px;
+}
+
+table.threadreview td.post
+{
+	vertical-align: top;
 }
 
 table.post td.side

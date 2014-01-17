@@ -8,6 +8,8 @@ function RenderTemplate($template, $options=null)
 {
 	global $tpl, $mobileLayout;
 	
+	// TODO let plugins add/override templates
+	
 	if ($mobileLayout)
 	{
 		$tplname = 'templates/mobile/'.$template.'.tpl';
@@ -127,55 +129,40 @@ function forumCrumbs($forum)
 	return $ret;
 }
 
-function doThreadPreview($tid)
+function doThreadPreview($tid, $maxdate=0)
 {
+	global $loguser;
+	
+	$review = array();
+	$ppp = $loguser['postsperpage'] ?: 20;
+	
 	$rPosts = Query("
 		select
 			{posts}.id, {posts}.date, {posts}.num, {posts}.deleted, {posts}.options, {posts}.mood, {posts}.ip,
 			{posts_text}.text, {posts_text}.text, {posts_text}.revision,
-			u.(_userfields)
+			u.(_userfields), u.(posts)
 		from {posts}
 		left join {posts_text} on {posts_text}.pid = {posts}.id and {posts_text}.revision = {posts}.currentrevision
 		left join {users} u on u.id = {posts}.user
-		where thread={0} and deleted=0
-		order by date desc limit 0, 20", $tid);
-
-	if(NumRows($rPosts))
+		where thread={0} and deleted=0".($maxdate?' AND {posts}.date<={1}':'')."
+		order by date desc limit 0, {2u}", $tid, $maxdate, $ppp);
+		
+	while ($post = Fetch($rPosts))
 	{
-		$posts = "";
-		while($post = Fetch($rPosts))
-		{
-			$cellClass = ($cellClass+1) % 2;
-
-			$poster = getDataPrefix($post, "u_");
-
-			$nosm = $post['options'] & 2;
-			$nobr = $post['options'] & 4;
-
-			$posts .= Format(
-	"
-			<tr>
-				<td class=\"cell2\" style=\"width: 15%; vertical-align: top;\">
-					{1}
-				</td>
-				<td class=\"cell{0}\">
-					<button style=\"float: right;\" onclick=\"insertQuote({2});\">".__("Quote")."</button>
-					<button style=\"float: right;\" onclick=\"insertChanLink({2});\">".__("Link")."</button>
-					{3}
-				</td>
-			</tr>
-	",	$cellClass, UserLink($poster), $post['id'], CleanUpPost($post['text'], $poster['name'], $nosm));
-		}
-		Write(
-	"
-		<table class=\"outline margin\">
-			<tr class=\"header0\">
-				<th colspan=\"2\">".__("Thread review")."</th>
-			</tr>
-			{0}
-		</table>
-	",	$posts);
+		$pdata = array('id' => $post['id']);
+		
+		$poster = getDataPrefix($post, 'u_');
+		$pdata['userlink'] = UserLink($poster);
+		
+		$pdata['posts'] = $post['num'].'/'.$poster['posts'];
+		
+		$nosm = $post['options'] & 2;
+		$pdata['contents'] = CleanUpPost($post['text'], $poster['name'], $nosm);
+		
+		$review[] = $pdata;
 	}
+	
+	RenderTemplate('threadreview', array('review' => $review));
 }
 
 function makeCrumbs($path, $links='')

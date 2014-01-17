@@ -34,6 +34,7 @@ function format()
 	return $output;
 }
 
+// TODO NUKE
 function write()
 {
 	$argc = func_num_args();

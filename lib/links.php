@@ -203,9 +203,9 @@ function userLinkById($id)
 
 function makeThreadLink($thread)
 {
-	$tags = ParseThreadTags($thread["title"]);
+	$tags = ParseThreadTags($thread['title']);
 
-	$link = actionLinkTag($tags[0], "thread", $thread["id"], "", HasPermission('forum.viewforum',$thread['forum'],true)?$tags[0]:'');
+	$link = actionLinkTag($tags[0], 'thread', $thread['id'], '', HasPermission('forum.viewforum',$thread['forum'],true)?$tags[0]:'');
 	$tags = $tags[1];
 
 	if (Settings::get("tagsDirection") === 'Left')

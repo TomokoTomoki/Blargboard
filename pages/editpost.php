@@ -225,5 +225,6 @@ Write(
 	</script>
 ");
 
-doThreadPreview($tid);
+doThreadPreview($tid, $post['date']);
 
+?>

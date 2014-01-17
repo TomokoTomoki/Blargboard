@@ -45,14 +45,6 @@ if(isset($_GET['vote']))
 		Kill(__("This is not a poll."));
 	if ($loguser['token'] != $_GET['token'])
 		Kill(__("Invalid token."));
-		
-	// HAX -- REMOVE ME
-	if ($tid == 979)
-	{
-		$nposts = FetchResult("SELECT COUNT(*) FROM {posts} WHERE user={0} AND thread={1}", $loguserid, $tid);
-		if (!$nposts)
-			Kill('You must post in this thread before voting.');
-	}
 
 	$vote = (int)$_GET['vote'];
 
