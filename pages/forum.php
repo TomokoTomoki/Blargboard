@@ -10,20 +10,19 @@ $fid = (int)$_GET['id'];
 if (!HasPermission('forum.viewforum', $fid))
 	Kill(__('You may not access this forum.'));
 
-if($loguserid && $_GET['action'] == "markasread")
-{
-	Query("REPLACE INTO {threadsread} (id,thread,date) SELECT {0}, {threads}.id, {1} FROM {threads} WHERE {threads}.forum={2}",
-		$loguserid, time(), $fid);
-
-	die(header("Location: ".actionLink("board")));
-}
-
-
 $rFora = Query("select * from {forums} where id={0}", $fid);
 if(NumRows($rFora))
 	$forum = Fetch($rFora);
 else
 	Kill(__("Unknown forum ID."));
+	
+if($loguserid && $_GET['action'] == "markasread")
+{
+	Query("REPLACE INTO {threadsread} (id,thread,date) SELECT {0}, {threads}.id, {1} FROM {threads} WHERE {threads}.forum={2}",
+		$loguserid, time(), $fid);
+
+	die(header("Location: ".actionLink("board", $forum['board'])));
+}
 
 $title = $forum['title'];
 $urlname = HasPermission('forum.viewforum', $fid, true) ? $title : '';
@@ -108,10 +107,7 @@ else
 	else
 		Alert(format(__("{0} so you can post something."), actionLinkTag(__("Log in"), "login")), __("Empty forum"));
 
-if (!$mobileLayout)
-{
-	ForumJump();
-}
+ForumJump();
 
 
 function fj_forumBlock($fora, $catid, $selID, $indent)
@@ -182,17 +178,13 @@ function ForumJump()
 '			</optgroup>
 ';
 	}
+	
+	$theList = '<select onchange="document.location=this.options[this.selectedIndex].value;">'
+		.($forum['board']?'<option value="'.actionLink('board').'">Back to main forums</option>':'')
+		.$theList
+		.'</select>';
 
-	write(
-"
-	<label>
-		".__("Forum Jump:")."
-		<select onchange=\"document.location=this.options[this.selectedIndex].value;\">
-			{1}
-			{0}
-		</select>
-	</label>
-",	$theList, ($forumpage != 0) ? '<option value="'.actionLink('board').'">Back to main forums</option>':'');
+	RenderTemplate('forumjump', array('forumlist' => $theList));
 }
 
 ?>

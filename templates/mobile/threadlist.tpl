@@ -18,7 +18,7 @@
 				<br>
 				<small>By {$thread.startuser}
 				{if $showforum} in {$thread.forumlink}{/if}
-				&mdash; {$thread.replies} {if $thread.replies==1}reply{else}replies{/if}<br>
+				&mdash; {plural num=$thread.replies what='reply'}<br>
 				<a href="{$thread.lastpostlink}">Last post</a> by {$thread.lastpostuser} on {$thread.lastpostdate}</small>
 			</td>
 		</tr>

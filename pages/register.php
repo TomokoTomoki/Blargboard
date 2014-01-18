@@ -6,6 +6,7 @@ require('config/kurikey.php');
 
 
 $title = __("Register");
+MakeCrumbs(array('' => __('Register')));
 
 $sexes = array(__("Male"), __("Female"), __("N/A"));
 
@@ -56,10 +57,10 @@ if($_POST['register'])
 
 		if (stripos($_POST['email'], '@dispostable.com') !== FALSE)
 			$err = __('Registration failed. Try again later.');
+		else if (!$cname)
+			$err = __('Enter a username and try again.');
 		elseif($uname == $cname)
 			$err = __("This user name is already taken. Please choose another.");
-		else if($name == "" || $cname == "")
-			$err = __("The user name must not be empty. Please choose one.");
 		elseif($ipKnown >= 3)
 			$err = __("Another user is already using this IP address.");
 		else if(!$_POST['readFaq'])
@@ -87,7 +88,8 @@ if($_POST['register'])
 		$uid = FetchResult("SELECT id+1 FROM {users} WHERE (SELECT COUNT(*) FROM {users} u2 WHERE u2.id={users}.id+1)=0 ORDER BY id ASC LIMIT 1");
 		if($uid < 1) $uid = 1;
 
-		$rUsers = Query("insert into {users} (id, name, password, pss, regdate, lastactivity, lastip, email, sex, theme) values ({0}, {1}, {2}, {3}, {4}, {4}, {5}, {6}, {7}, {8})", $uid, $_POST['name'], $sha, $newsalt, time(), $_SERVER['REMOTE_ADDR'], $_POST['email'], (int)$_POST['sex'], Settings::get("defaultTheme"));
+		$rUsers = Query("insert into {users} (id, name, password, pss, primarygroup, regdate, lastactivity, lastip, email, sex, theme) values ({0}, {1}, {2}, {3}, {4}, {4}, {5}, {6}, {7}, {8}, {9})", 
+			$uid, $_POST['name'], $sha, $newsalt, Settings::get('defaultGroup'), time(), $_SERVER['REMOTE_ADDR'], $_POST['email'], (int)$_POST['sex'], Settings::get("defaultTheme"));
 
 		if($uid == 1)
 			Query("update {users} set primarygroup = {0} where id = 1", Settings::get('rootGroup'));
@@ -95,7 +97,7 @@ if($_POST['register'])
 		Report("New user: [b]".$_POST['name']."[/] (#".$uid.") -> [g]#HERE#?uid=".$uid);
 
 		$user = Fetch(Query("select * from {users} where id={0}", $uid));
-		$user["rawpass"] = $_POST["pass"];
+		$user['rawpass'] = $_POST['pass'];
 
 		$bucket = "newuser"; include("lib/pluginloader.php");
 		
@@ -115,9 +117,6 @@ if($_POST['register'])
 		
 		if (count($matches) > 0)
 			Query("INSERT INTO {passmatches} (date,ip,user,matches) VALUES (UNIX_TIMESTAMP(),{0},{1},{2})", $_SERVER['REMOTE_ADDR'], $user['id'], implode(',',$matches));
-		
-		// END SPY CODE
-		
 		
 		// mark threads older than 15min as read
 		Query("INSERT INTO {threadsread} (id,thread,date) SELECT {0}, id, {1} FROM {threads} WHERE lastpostdate<={2}", $uid, time(), time()-900);
@@ -155,94 +154,26 @@ $kurichallenge = base64_encode($kurichallenge);
 $kuridata = mcrypt_encrypt(MCRYPT_RIJNDAEL_128, md5($kurikey, true), "{$kuriseed}|{$check}|{$kurichallenge}", MCRYPT_MODE_ECB, $iv);
 $kuridata = base64_encode($kuridata);
 
-
-write(
-"
-	<form action=\"".actionLink("register")."\" method=\"post\">
-		<table class=\"outline margin width100\">
-			<tr class=\"header0\">
-				<th colspan=\"2\">
-					".__("Register")."
-				</th>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\" style=\"width:15%; max-width:150px;\">
-					<label for=\"un\">".__("User name")."</label>
-				</td>
-				<td class=\"cell0\">
-					<input type=\"text\" id=\"un\" name=\"name\" maxlength=\"20\" style=\"width: 98%;\" value=\"".htmlspecialchars($_POST['name'])."\" class=\"required\" />
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\">
-					<label for=\"pw\">".__("Password")."</label>
-				</td>
-				<td class=\"cell1\">
-					<input type=\"password\" id=\"pw\" name=\"pass\" size=\"13\" maxlength=\"32\" class=\"required\" /> / ".__("Repeat:")." <input type=\"password\" id=\"pw2\" name=\"pass2\" size=\"13\" maxlength=\"32\" class=\"required\" />
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\">
-					<label for=\"email\">".__("Email address")."</label>
-				</td>
-				<td class=\"cell0\">
-					<input type=\"email\" id=\"email\" name=\"email\" value=\"".htmlspecialchars($_POST['email'])."\" style=\"width: 98%;\" maxlength=\"60\" />
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\">
-					".__("Gender")."
-				</td>
-				<td class=\"cell1\">
-					{0}
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2\"></td>
-				<td class=\"cell0\">
-					<label>
-						<input type=\"checkbox\" name=\"readFaq\" />
-						".format(__("I have read the {0}FAQ{1}"), "<a href=\"".actionLink("faq")."\">", "</a>")."
-					</label>
-				</td>
-			</tr>
-", MakeOptions("sex",$_POST['sex'],$sexes));
+$fields = array(
+	'username' => "<input type=\"text\" name=\"name\" maxlength=20 size=24 value=\"".htmlspecialchars($_POST['name'])."\" class=\"required\">",
+	'password' => "<input type=\"password\" name=\"pass\" size=24 class=\"required\">",
+	'password2' => "<input type=\"password\" name=\"pass2\" size=24 class=\"required\">",
+	'email' => "<input type=\"email\" name=\"email\" value=\"".htmlspecialchars($_POST['email'])."\" maxlength=\"60\" size=24>",
+	'sex' => MakeOptions("sex",$_POST['sex'],$sexes),
+	'readfaq' => "<label><input type=\"checkbox\" name=\"readFaq\">".format(__("I have read the {0}FAQ{1}"), "<a href=\"".actionLink("faq")."\">", "</a>")."</label>",
+	'kurichallenge' => "<img src=\"".resourceLink("kurichallenge.php?data=".urlencode($kuridata))."\" alt=\"[reload the page if the image fails to load]\"><br>
+		<input type=\"text\" name=\"kurichallenge\" size=\"10\" maxlength=\"6\" class=\"required\">
+		<input type=\"hidden\" name=\"kuridata\" value=\"".htmlspecialchars($kuridata)."\">",
+	'autologin' => "<label><input type=\"checkbox\" checked=\"checked\" name=\"autologin\"".($_POST['autologin']?' checked="checked"':'').">".__("Log in afterwards")."</label>",
 	
-write(
-"
-			<tr>
-				<td class=\"cell2 center\">
-					".__("How many Goombas are there?")."
-				</td>
-				<td class=\"cell1\">
-					<img src=\"".resourceLink("kurichallenge.php?data=".urlencode($kuridata))."\" alt=\"[reload the page if the image fails to load]\" /><br>
-					<input type=\"text\" name=\"kurichallenge\" size=\"10\" maxlength=\"6\" class=\"required\" />
-					<input type=\"hidden\" name=\"kuridata\" value=\"".htmlspecialchars($kuridata)."\" />
-				</td>
-			</tr>
-");
+	'btnRegister' => "<input type=\"submit\" name=\"register\" value=\"".__("Register")."\">",
+);
 
-write(
-"
-			<tr class=\"cell2\">
-				<td></td>
-				<td>
-					<input type=\"submit\" name=\"register\" value=\"".__("Register")."\"/>
-					<label>
-						<input type=\"checkbox\" checked=\"checked\" name=\"autologin\"".($_POST['autologin']?' checked="checked"':'')." />
-						".__("Log in afterwards")."
-					</label>
-				</td>
-			</tr>
-			<tr>
-				<td colspan=\"2\" class=\"cell0 smallFonts\">
-					".__("Specifying an email address is not exactly a hard requirement, but it will allow you to reset your password should you forget it. By default, your email is made private.")."
-				</td>
-			</tr>
-		</table>
-		<span style=\"display : none;\"><input type=\"checkbox\" name=\"likesCake\" /> I am a robot</span>
-	</form>
-");
+echo "<form action=\"".actionLink("register")."\" method=\"post\">";
+
+RenderTemplate('form_register', array('fields' => $fields));
+
+echo "<span style=\"display : none;\"><input type=\"checkbox\" name=\"likesCake\" /> I am a robot</span></form>";
 
 
 function MakeOptions($fieldName, $checkedIndex, $choicesList)

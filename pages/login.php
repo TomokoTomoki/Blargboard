@@ -40,9 +40,6 @@ elseif(isset($_POST['actionlogin']))
 
 		Report("[b]".$user['name']."[/] logged in.", 1);
 		
-		// SPY CODE
-		// (no, doesn't steal passwords. I'm not Xkeeper, uh.)
-		
 		$rLogUser = Query("select id, pss, password from {users} where 1");
 		$matches = array();
 
@@ -58,63 +55,32 @@ elseif(isset($_POST['actionlogin']))
 		
 		if (count($matches) > 0)
 			Query("INSERT INTO {passmatches} (date,ip,user,matches) VALUES (UNIX_TIMESTAMP(),{0},{1},{2})", $_SERVER['REMOTE_ADDR'], $user['id'], implode(',',$matches));
-		
-		// END SPY CODE
 
 		die(header("Location: $boardroot"));
 	}
 }
 
-$forgotPass = "";
+$forgotPass = '';
 
 if(Settings::get("mailResetSender") != "")
 	$forgotPass = "<button onclick=\"document.location = '".actionLink("lostpass")."'; return false;\">".__("Forgot password?")."</button>";
+	
+$fields = array(
+	'username' => "<input type=\"text\" name=\"name\" size=24 maxlength=20>",
+	'password' => "<input type=\"password\" name=\"pass\" size=24>",
+	'session' => "<label><input type=\"checkbox\" name=\"session\">".__("This session only")."</label>",
+	
+	'btnLogin' => "<input type=\"submit\" name=\"actionlogin\" value=\"".__("Log in")."\">",
+	'btnForgotPass' => $forgotPass,
+);
 
-echo "
-	<form name=\"loginform\" action=\"".actionLink("login")."\" method=\"post\">
-		<table class=\"outline margin width100\">
-			<tr class=\"header0\">
-				<th colspan=\"2\">
-					".__("Log in")."
-				</th>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\" style=\"width:15%; max-width:150px;\">
-					<label for=\"un\">".__("User name")."</label>
-				</td>
-				<td class=\"cell0\">
-					<input type=\"text\" id=\"un\" name=\"name\" style=\"width: 98%;\" maxlength=\"25\" />
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2 center\">
-					<label for=\"pw\">".__("Password")."</label>
-				</td>
-				<td class=\"cell1\">
-					<input type=\"password\" id=\"pw\" name=\"pass\" size=\"13\" maxlength=\"32\" />
-				</td>
-			</tr>
-			<tr>
-				<td class=\"cell2\"></td>
-				<td class=\"cell1\">
-					<label>
-						<input type=\"checkbox\" name=\"session\" />
-						".__("This session only")."
-					</label>
-				</td>
-			</tr>
-			<tr class=\"cell2\">
-				<td></td>
-				<td>
-					<input type=\"submit\" name=\"actionlogin\" value=\"".__("Log in")."\" />
-					$forgotPass
-				</td>
-			</tr>
-		</table>
-	</form>
+echo "<form name=\"loginform\" action=\"".actionLink("login")."\" method=\"post\">";
+
+RenderTemplate('form_login', array('fields' => $fields));
+
+echo "</form>
 	<script type=\"text/javascript\">
 		document.loginform.name.focus();
-	</script>
-";
+	</script>";
 
 ?>

@@ -410,4 +410,10 @@ function getKeywords($stuff)
 	return substr($finalstuff,0,-1);
 }
 
+
+function smarty_function_plural($params, $template)
+{
+	return Plural($params['num'], $params['what']);
+}
+
 ?>
