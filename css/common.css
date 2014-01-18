@@ -938,16 +938,19 @@ td.threadIcon
 	/*box-shadow: inset 0px 4px 8px #000;*/
 	border-radius: 8px;
 	width: 75%;
+	padding: 1px;
 }
 
 .pollbar
 {
 	border-width:1px; border-style:solid;
+	margin: -1px;
 	background: silver;
 	color: #FFF;
 	text-shadow: 1px 1px 0px #000, 0px 1px 0px #000, -1px 1px 0px #000, -1px 0px 0px #000, -1px -1px 0px #000, 0px -1px 0px #000, 1px -1px 0px #000, 1px 0px 0px #000;
 	/*box-shadow: inset 0px -4px 12px #000;*/
 	border-radius: 8px;
+	white-space: nowrap;
 }
 
 .eptable {

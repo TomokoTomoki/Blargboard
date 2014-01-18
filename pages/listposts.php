@@ -69,8 +69,7 @@ MakeCrumbs(array(actionLink("profile", $id, "", $user["name"]) => htmlspecialcha
 
 $pagelinks = PageLinks(actionLink("listposts", $id, "from=", $user['name']), $ppp, $from, $total);
 
-if($pagelinks)
-	write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'top'));
 
 if(NumRows($rPosts))
 {
@@ -80,7 +79,6 @@ if(NumRows($rPosts))
 else
 	Alert('This user has no posts.', 'Notice');
 
-if($pagelinks)
-	write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'bottom'));
 
 ?>

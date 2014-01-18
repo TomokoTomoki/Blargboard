@@ -95,11 +95,7 @@ if(($post['user'] != $loguserid || !HasPermission('user.editownposts')) && !HasP
 $tags = ParseThreadTags($thread['title']);
 MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit post")));
 
-write("
-	<script type=\"text/javascript\">
-			window.addEventListener(\"load\",  hookUpControls, false);
-	</script>
-");
+LoadPostToolbar();
 
 if(isset($_POST['actionpreview']))
 {

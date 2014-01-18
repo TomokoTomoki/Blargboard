@@ -54,7 +54,6 @@ $permDescs = array
 		'admin.viewadminpanel' => __('View admin panel'),
 		'admin.viewadminnotices' => __('View admin notices'),
 		'admin.viewlog' => __('View board log'),
-		'admin.viewlkb' => __('View last known browsers'),
 		'admin.viewpms' => __('View all PMs'),
 		'admin.viewallranks' => __('View all ranks'),
 		'admin.banusers' => __('Ban users'),

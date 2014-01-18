@@ -91,10 +91,7 @@ $metaStuff['tags'] = getKeywords(strip_tags($thread['title']));
 
 Query("update {threads} set views=views+1 where id={0} limit 1", $tid);
 
-if(!$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['lastpostdate'] < time() - (2592000 * Settings::get("oldThreadThreshold")))
-	$replyWarning = " onclick=\"if(!confirm('".__("Are you sure you want to reply to this old thread? This will move it to the top of the list. Please only do this if you have something new and relevant to share about this thread's topic that is not better placed in a new thread.")."')) return false;\"";
-if($thread['closed'])
-	$replyWarning = " onclick=\"if(!confirm('".__("This thread is actually closed. Are you sure you want to abuse your staff position to post in a closed thread?")."')) return false;\"";
+$isold = (!$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['lastpostdate'] < time() - (2592000 * Settings::get("oldThreadThreshold")));
 
 $links = array();
 if ($loguserid)
@@ -109,6 +106,11 @@ if ($loguserid)
 		else if ($thread['closed'])
 			$links[] = __("Thread closed");
 	}
+	
+	if (FetchResult("SELECT COUNT(*) FROM {favorites} WHERE user={0} AND thread={1}", $loguserid, $tid) > 0)
+		$links[] = actionLinkTag(__('Remove from favorites'), 'favorites', $tid, 'action=remove&token='.$loguser['token']);
+	else
+		$links[] = actionLinkTag(__('Add to favorites'), 'favorites', $tid, 'action=add&token='.$loguser['token']);
 
 	// we also check mod.movethreads because moving threads is done on editthread
 	if ((HasPermission('user.renameownthreads') && $thread['user']==$loguserid) || 
@@ -146,12 +148,7 @@ if ($loguserid)
 }
 
 $OnlineUsersFid = $fid;
-write(
-"
-	<script type=\"text/javascript\">
-			window.addEventListener(\"load\",  hookUpControls, false);
-	</script>
-");
+LoadPostToolbar();
 
 MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $urlname) => $threadtags[0]), $links);
 
@@ -166,7 +163,7 @@ if($thread['poll'])
 	if(!$poll)
 		Kill(__("Poll not found"));
 
-	$totalVotes = $poll["users"];
+	$totalVotes = $poll['users'];
 
 	$rOptions = Query("SELECT pc.*,
 							(SELECT COUNT(*) FROM {pollvotes} pv WHERE pv.poll = {0} AND pv.choiceid = pc.id) as votes,
@@ -178,69 +175,48 @@ if($thread['poll'])
 	$defaultColors = array(
 				  "#0000B6","#00B600","#00B6B6","#B60000","#B600B6","#B66700","#B6B6B6",
 		"#676767","#6767FF","#67FF67","#67FFFF","#FF6767","#FF67FF","#FFFF67","#FFFFFF",);
+		
+	$pdata = array();
+	$pdata['question'] = htmlspecialchars($poll['question']);
+	$pdata['options'] = array();
 
 	while($option = Fetch($rOptions))
 	{
-		if($option['color'] == "")
-			$option['color'] = $defaultColors[($option["id"] + 9) % 15];
+		$odata = array();
+		
+		$odata['color'] = htmlspecialchars($option['color']);
+		if($odata['color'] == '')
+			$odata['color'] = $defaultColors[($option['id'] + 9) % 15];
 
-		$chosen = $option["myvote"]? "&#x2714;":"";
+		$chosen = $option['myvote']? '&#x2714;':'';
 
 		$cellClass = ($cellClass+1) % 2;
 		if($loguserid && (!$thread['closed'] || HasPermission('mod.closethreads', $fid)) && HasPermission('user.votepolls'))
-			$label = $chosen." ".actionLinkTag(htmlspecialchars($option['choice']), "thread", $thread['id'], "vote=".$option["id"]."&token=".$loguser["token"], $urlname);
+			$label = $chosen." ".actionLinkTag(htmlspecialchars($option['choice']), "thread", $thread['id'], "vote=".$option['id']."&token=".$loguser['token'], $urlname);
 		else
 			$label = $chosen." ".htmlspecialchars($option['choice']);
-		$votes = $option["votes"];
-		$bar = "&nbsp;0";
-		if($totalVotes > 0)
+		$odata['label'] = $label;
+			
+		$odata['votes'] = $option['votes'];
+		if($poll['votes'] > 0)
 		{
-			$width = 100 * ($votes / $totalVotes);
-			$alt = format("{0}&nbsp;of&nbsp;{1},&nbsp;{2}%", $votes, $totalVotes, $width);
-			$bar = format("<div class=\"pollbar\" style=\"background-color: {0}; width: {1}%;\" title=\"{2}\">&nbsp;{3}</div>", $option['color'], $width, $alt, $votes);
-			if($width == 0)
-				$bar = "&nbsp;".$votes;
+			$width = (100 * $odata['votes']) / $poll['votes'];
+			$odata['percent'] = sprintf('%.4g', $width);
 		}
+		else
+			$odata['percent'] = 0;
 
-		$pollLines .= "
-	<tr class=\"cell$cellClass\">
-		<td>
-			$label
-		</td>
-		<td class=\"width75\">
-			<div class=\"pollbarContainer\">
-				$bar
-			</div>
-		</td>
-	</tr>";
+		$pdata['options'][] = $odata;
 	}
 	
-	$voters = $poll["users"];
-	$bottom = format($voters == 1 ? __("{0} user has voted so far.") : __("{0} users have voted so far."), $voters);
-	$bottom .= " ".format(__("Total votes: {0}."), $poll["votes"])." ".__("Multi-voting is ").($poll['doublevote']?__('enabled.'):__('disabled.'));
+	$pdata['multivote'] = $poll['doublevote'];
+	$pdata['votes'] = $poll['votes'];
+	$pdata['voters'] = $totalVotes;
 
-	echo "
-	<table class=\"outline margin\">
-		<tr class=\"header0\">
-			<th colspan=\"2\">
-				".__("Poll")."
-			</th>
-		</tr>
-		<tr class=\"cell0\">
-			<td colspan=\"2\">
-				".htmlspecialchars($poll['question'])."
-			</td>
-		</tr>
-		$pollLines
-		<tr class=\"cell$cellClass\">
-			<td colspan=\"2\" class=\"smallFonts\">
-				$bottom
-			</td>
-		</tr>
-	</table>";
+	RenderTemplate('poll', array('poll' => $pdata));
 }
 
-$rRead = Query("insert into {threadsread} (id,thread,date) values ({0}, {1}, {2}) on duplicate key update date={2}", $loguserid, $tid, time());
+Query("insert into {threadsread} (id,thread,date) values ({0}, {1}, {2}) on duplicate key update date={2}", $loguserid, $tid, time());
 
 $total = $thread['replies'] + 1; //+1 for the OP
 $ppp = $loguser['postsperpage'];
@@ -269,24 +245,7 @@ $numonpage = NumRows($rPosts);
 
 $pagelinks = PageLinks(actionLink("thread", $tid, "from=", $urlname), $ppp, $from, $total);
 
-$extralinks = '';
-if ($loguserid) 
-{
-	if (FetchResult("SELECT COUNT(*) FROM {favorites} WHERE user={0} AND thread={1}", $loguserid, $tid) > 0)
-		$extralinks = actionLinkTagItem('Remove from favorites', 'favorites', $tid, 'action=remove&token='.$loguser['token']);
-	else
-		$extralinks = actionLinkTagItem('Add to favorites', 'favorites', $tid, 'action=add&token='.$loguser['token']);
-}
-
-$nextnewer = FetchResult("SELECT id FROM {threads} WHERE forum={0} AND lastpostdate>={1} AND id!={2} ORDER BY lastpostdate ASC LIMIT 1", $fid, $thread['lastpostdate'], $tid);
-if ($nextnewer > 0) $extralinks .= actionLinkTagItem('Next newer thread', 'thread', $nextnewer);
-$nextolder = FetchResult("SELECT id FROM {threads} WHERE forum={0} AND lastpostdate<={1} AND id!={2} ORDER BY lastpostdate DESC LIMIT 1", $fid, $thread['lastpostdate'], $tid);
-if ($nextolder > 0) $extralinks .= actionLinkTagItem('Next older thread', 'thread', $nextolder);
-
-if ($extralinks)
-	$extralinks = '<span style="float:right;"><ul class="pipemenu">'.$extralinks.'</ul></span>';
-
-echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '&nbsp;').$extralinks."</div>";
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'top'));
 
 if(NumRows($rPosts))
 {
@@ -298,71 +257,58 @@ if(NumRows($rPosts))
 	}
 }
 
-echo "<div class=\"smallFonts pages\">".($pagelinks ? __("Pages:").' '.$pagelinks : '&nbsp;').$extralinks."</div>";
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'bottom'));
 
-if($loguserid && HasPermission('forum.postreplies', $fid) && (!$thread['closed'] || HasPermission('mod.closethreads', $fid)) && !isset($replyWarning))
+if($loguserid && HasPermission('forum.postreplies', $fid) && !$thread['closed'] && !$isold)
 {
 	$ninja = FetchResult("select id from {posts} where thread={0} order by date desc limit 0, 1", $tid);
 
+	$mod_close = '';
 	if (HasPermission('mod.closethreads', $fid))
 	{
 		if(!$thread['closed'])
-			$mod .= "<label><input type=\"checkbox\" name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
+			$mod_close = "<label><input type=\"checkbox\" name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
 		else
-			$mod .= "<label><input type=\"checkbox\" name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
+			$mod_close = "<label><input type=\"checkbox\" name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
 	}
 	
+	$mod_stick = '';
 	if (HasPermission('mod.stickthreads', $fid))
 	{
 		if(!$thread['sticky'])
-			$mod .= "<label><input type=\"checkbox\" name=\"stick\">&nbsp;".__("Sticky", 1)."</label>\n";
+			$mod_stick = "<label><input type=\"checkbox\" name=\"stick\">&nbsp;".__("Sticky", 1)."</label>\n";
 		else
-			$mod .= "<label><input type=\"checkbox\" name=\"unstick\">&nbsp;".__("Unstick", 1)."</label>\n";
+			$mod_stick = "<label><input type=\"checkbox\" name=\"unstick\">&nbsp;".__("Unstick", 1)."</label>\n";
 	}
 	
-	$moodOptions = "<option ".$moodSelects[0]."value=\"0\">".__("[Default avatar]")."</option>\n";
+	$moodOptions = "<option selected=\"selected\" value=\"0\">".__("[Default avatar]")."</option>\n";
 	$rMoods = Query("select mid, name from {moodavatars} where uid={0} order by mid asc", $loguserid);
 	while($mood = Fetch($rMoods))
 		$moodOptions .= format(
 "
-	<option {0} value=\"{1}\">{2}</option>
-",	$moodSelects[$mood['mid']], $mood['mid'], htmlspecialchars($mood['name']));
+	<option value=\"{0}\">{1}</option>
+",	$mood['mid'], htmlspecialchars($mood['name']));
 
-	write(
-	"
+	$fields = array(
+		'text' => "<textarea id=\"text\" name=\"text\" rows=\"8\" style=\"width: 98%;\"></textarea>",
+		'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
+		'nopl' => "<label><input type=\"checkbox\" name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
+		'nosm' => "<label><input type=\"checkbox\" name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",
+		'lock' => $mod_lock,
+		'stick' => $mod_stick,
+		
+		'btnPost' => "<input type=\"submit\" name=\"actionpost\" value=\"".__("Post")."\">",
+		'btnPreview' => "<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\">",
+	);
+
+	echo "
 	<form action=\"".actionLink("newreply", $tid)."\" method=\"post\">
-		<input type=\"hidden\" name=\"ninja\" value=\"{0}\" />
-		<table class=\"outline margin\" style=\"margin: 4px auto; width:75%; clear:both;\" id=\"quickreply\">
-			<tr class=\"header1\">
-				<th onclick=\"expandTable('quickreply', this)\" style=\"cursor: pointer;\">
-					".__("Quick-E Post&trade;")."
-				</th>
-			</tr>
-			<tr class=\"cell0\">
-				<td>
-					<textarea id=\"text\" name=\"text\" rows=\"8\" style=\"width: 98%;\">{3}</textarea>
-				</td>
-			</tr>
-			<tr class=\"cell2\">
-				<td>
-					<input type=\"submit\" name=\"actionpost\" value=\"".__("Post")."\" />
-					<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\" />
-					<select size=\"1\" name=\"mood\">
-						{4}
-					</select>
-					<label>
-						<input type=\"checkbox\" name=\"nopl\" {5} />&nbsp;".__("Disable post layout", 1)."
-					</label>
-					<label>
-						<input type=\"checkbox\" name=\"nosm\" {6} />&nbsp;".__("Disable smilies", 1)."
-					</label>
-					<input type=\"hidden\" name=\"id\" value=\"{7}\" />
-					{8}
-				</td>
-			</tr>
-		</table>
-	</form>
-",	$ninja, 0, 0, $prefill, $moodOptions, $nopl, $nosm, $tid, $mod);
+		<input type=\"hidden\" name=\"ninja\" value=\"{$ninja}\">";
+	
+	RenderTemplate('form_quickreply', array('fields' => $fields));
+
+	echo "
+	</form>";
 }
 
 ?>
