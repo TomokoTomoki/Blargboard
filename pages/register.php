@@ -35,7 +35,7 @@ if($_POST['register'])
 	$ngoombas = intval($kurichallenge[2]);
 	if ($ngoombas != (int)$_POST['kurichallenge'])
 		$err = __('You failed the challenge. Look harder.');
-	else if ($_SERVER['HTTP_X_FORWARDED_FOR'] || stristr($hostname, 'proxy')!==FALSE)
+	else if ($_SERVER['HTTP_X_FORWARDED_FOR'] || stristr($hostname, 'proxy')!==FALSE || stristr($hostname, 'tor')!==FALSE)
 		$err = __('Registrations from proxies are not allowed.');
 	else
 	{

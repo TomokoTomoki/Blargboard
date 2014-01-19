@@ -6,7 +6,7 @@
 		</tr>
 		{foreach $threads as $thread}
 		{if $dostickies && !$thread@first && $laststicky != $thread.sticky}
-		<tr class="header1"><th style="height:5px;"></th></tr>
+		<tr class="header0"><th style="height:5px;"></th></tr>
 		{/if}
 		{$laststicky=$thread.sticky}
 		<tr class="cell{if $dostickies && $thread.sticky}2{elseif $thread@index is odd}1{else}0{/if}">

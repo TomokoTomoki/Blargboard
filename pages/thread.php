@@ -190,7 +190,6 @@ if($thread['poll'])
 
 		$chosen = $option['myvote']? '&#x2714;':'';
 
-		$cellClass = ($cellClass+1) % 2;
 		if($loguserid && (!$thread['closed'] || HasPermission('mod.closethreads', $fid)) && HasPermission('user.votepolls'))
 			$label = $chosen." ".actionLinkTag(htmlspecialchars($option['choice']), "thread", $thread['id'], "vote=".$option['id']."&token=".$loguser['token'], $urlname);
 		else

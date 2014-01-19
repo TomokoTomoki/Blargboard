@@ -13,7 +13,7 @@
 		</tr>
 		{foreach $threads as $thread}
 		{if $dostickies && !$thread@first && $laststicky != $thread.sticky}
-		<tr class="header1"><th colspan={if $showforum}8{else}7{/if} style="height:5px;"></th></tr>
+		<tr class="header0"><th colspan={if $showforum}8{else}7{/if} style="height:5px;"></th></tr>
 		{/if}
 		{$laststicky=$thread.sticky}
 		<tr class="cell{if $dostickies && $thread.sticky}2{elseif $thread@index is odd}1{else}0{/if}">
