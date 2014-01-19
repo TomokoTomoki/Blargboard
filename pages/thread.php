@@ -198,9 +198,9 @@ if($thread['poll'])
 		$odata['label'] = $label;
 			
 		$odata['votes'] = $option['votes'];
-		if($poll['votes'] > 0)
+		if($totalVotes > 0)
 		{
-			$width = (100 * $odata['votes']) / $poll['votes'];
+			$width = (100 * $odata['votes']) / $totalVotes;
 			$odata['percent'] = sprintf('%.4g', $width);
 		}
 		else

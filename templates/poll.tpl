@@ -11,10 +11,10 @@
 				<div class="pollbarContainer">
 					{if $option.votes}
 					<div class="pollbar" style="background-color: {$option.color}; width: {$option.percent}%;">
-						{$option.votes} ({$option.percent}%)
+						&nbsp;{$option.votes} ({$option.percent}%)
 					</div>
 					{else}
-					0 (0%)
+					&nbsp;0 (0%)
 					{/if}
 				</div>
 			</td>
