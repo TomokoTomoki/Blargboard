@@ -262,13 +262,13 @@ if($loguserid && HasPermission('forum.postreplies', $fid) && !$thread['closed'] 
 {
 	$ninja = FetchResult("select id from {posts} where thread={0} order by date desc limit 0, 1", $tid);
 
-	$mod_close = '';
+	$mod_lock = '';
 	if (HasPermission('mod.closethreads', $fid))
 	{
 		if(!$thread['closed'])
-			$mod_close = "<label><input type=\"checkbox\" name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
+			$mod_lock = "<label><input type=\"checkbox\" name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
 		else
-			$mod_close = "<label><input type=\"checkbox\" name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
+			$mod_lock = "<label><input type=\"checkbox\" name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
 	}
 	
 	$mod_stick = '';

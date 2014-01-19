@@ -44,12 +44,7 @@ if($thread['closed'] && !HasPermission('mod.closethreads', $fid))
 
 $OnlineUsersFid = $fid;
 
-write(
-"
-	<script type=\"text/javascript\">
-			window.addEventListener(\"load\",  hookUpControls, false);
-	</script>
-");
+LoadPostToolbar();
 
 $tags = ParseThreadTags($thread['title']);
 $urlname = $isHidden ? '' : $tags[0];
@@ -100,9 +95,9 @@ else if(isset($_POST['actionpost']))
 			$lastPost = Fetch(Query("SELECT * FROM {posts} WHERE user={0} ORDER BY date DESC LIMIT 1", $loguserid));
 
 			//If it looks similar to this one, assume the user has double-clicked the button.
-			if($lastPost["thread"] == $tid)
+			if($lastPost['thread'] == $tid)
 			{
-				$pid = $lastPost["id"];
+				$pid = $lastPost['id'];
 				die(header("Location: ".actionLink("thread", 0, "pid=".$pid."#".$pid)));
 			}
 
@@ -178,11 +173,7 @@ else if(isset($_POST['actionpost']))
 
 $prefill = htmlspecialchars($_POST['text']);
 
-if($_GET['link'])
-{
-	$prefill = ">>".(int)$_GET['link']."\r\n\r\n";
-}
-else if($_GET['quote'])
+if($_GET['quote'])
 {
 	$rQuote = Query("	select
 					p.id, p.deleted, pt.text,
@@ -199,26 +190,18 @@ else if($_GET['quote'])
 		$quote = Fetch($rQuote);
 
 		//SPY CHECK!
-		//Do we need to translate this line? It's not even displayed in its true form ._.
 		if (!HasPermission('forum.viewforum', $quote['fid']))
 		{
-			$quote['poster'] = 'Chuck Norris';
-			$quote['text'] = str_rot13("Pools closed due to not enough power. Prosecutors will be violated.");
+			$quote['poster'] = 'your mom';
+			$quote['text'] = __('Nice try kid, but no.');
 		}
 			
 		if ($quote['deleted'])
-			$quote['text'] = __("Post is deleted");
+			$quote['text'] = __('(deleted post)');
 
 		$prefill = "[quote=\"".htmlspecialchars($quote['poster'])."\" id=\"".$quote['id']."\"]".htmlspecialchars($quote['text'])."[/quote]";
 		$prefill = str_replace("/me", "[b]* ".htmlspecialchars(htmlspecialchars($quote['poster']))."[/b]", $prefill);
 	}
-}
-
-if ($fid == 2)
-{
-	if ($newToday > 750)
-		Alert("Posting sprees are nice but the average post quality tends to go down when reaching numbers that high. If your post is going to be spam, don't post it.",
-			'A message from Relaxland Police');
 }
 
 function getCheck($name)
@@ -228,6 +211,7 @@ function getCheck($name)
 	else return "";
 }
 
+$moodSelects = array();
 if($_POST['mood'])
 	$moodSelects[(int)$_POST['mood']] = "selected=\"selected\" ";
 $moodOptions = "<option ".$moodSelects[0]."value=\"0\">".__("[Default avatar]")."</option>\n";
@@ -242,67 +226,48 @@ while($mood = Fetch($rMoods))
 
 $ninja = FetchResult("select id from {posts} where thread={0} order by date desc limit 0, 1", $tid);
 
+$mod_lock = '';
 if (HasPermission('mod.closethreads', $fid))
 {
 	if(!$thread['closed'])
-		$mod .= "<label><input type=\"checkbox\" ".getCheck("lock")." name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
+		$mod_lock = "<label><input type=\"checkbox\" ".getCheck("lock")." name=\"lock\">&nbsp;".__("Close thread", 1)."</label>\n";
 	else
-		$mod .= "<label><input type=\"checkbox\" ".getCheck("unlock")."  name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
+		$mod_lock = "<label><input type=\"checkbox\" ".getCheck("unlock")."  name=\"unlock\">&nbsp;".__("Open thread", 1)."</label>\n";
 }
+
+$mod_stick = '';
 if (HasPermission('mod.stickthreads', $fid))
 {
 	if(!$thread['sticky'])
-		$mod .= "<label><input type=\"checkbox\" ".getCheck("stick")."  name=\"stick\">&nbsp;".__("Sticky", 1)."</label>\n";
+		$mod_stick = "<label><input type=\"checkbox\" ".getCheck("stick")."  name=\"stick\">&nbsp;".__("Sticky", 1)."</label>\n";
 	else
-		$mod .= "<label><input type=\"checkbox\" ".getCheck("unstick")."  name=\"unstick\">&nbsp;".__("Unstick", 1)."</label>\n";
+		$mod_stick = "<label><input type=\"checkbox\" ".getCheck("unstick")."  name=\"unstick\">&nbsp;".__("Unstick", 1)."</label>\n";
 }
 
-print "
-				<form name=\"postform\" action=\"".actionLink("newreply", $tid)."\" method=\"post\">
-					<input type=\"hidden\" name=\"ninja\" value=\"$ninja\" />
-					<table class=\"outline margin width100\">
-						<tr class=\"header1\">
-							<th colspan=\"2\">
-								".__("New reply")."
-							</th>
-						</tr>
-						<tr class=\"cell0\">
-							<td style=\"width:15%;max-width:150px;\" class=\"center\">
-								<label for=\"text\">
-									".__("Post")."
-								</label>
-							</td>
-							<td>
-								<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">$prefill</textarea>
-							</td>
-						</tr>
-						<tr class=\"cell2\">
-							<td></td>
-							<td>
-								<input type=\"submit\" name=\"actionpost\" value=\"".__("Post")."\" />
-								<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\" />
-								<select size=\"1\" name=\"mood\">
-									$moodOptions
-								</select>
-								<label>
-									<input type=\"checkbox\" name=\"nopl\" ".getCheck("nopl")." />&nbsp;".__("Disable post layout", 1)."
-								</label>
-								<label>
-									<input type=\"checkbox\" name=\"nosm\" ".getCheck("nosm")." />&nbsp;".__("Disable smilies", 1)."
-								</label>
-								<input type=\"hidden\" name=\"id\" value=\"$tid\" />
-								$mod
-							</td>
-						</tr>
-					</table>
-				</form>";
+$fields = array(
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">$prefill</textarea>",
+	'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
+	'nopl' => "<label><input type=\"checkbox\" ".getCheck('nopl')." name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
+	'nosm' => "<label><input type=\"checkbox\" ".getCheck('nosm')." name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",
+	'lock' => $mod_lock,
+	'stick' => $mod_stick,
+	
+	'btnPost' => "<input type=\"submit\" name=\"actionpost\" value=\"".__("Post")."\">",
+	'btnPreview' => "<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\">",
+);
 
+echo "
+	<form name=\"postform\" action=\"".actionLink("newreply", $tid)."\" method=\"post\">
+		<input type=\"hidden\" name=\"ninja\" value=\"$ninja\">";
+					
+RenderTemplate('form_newreply', array('fields' => $fields));
 
-write("
+echo "
+		</form>
 	<script type=\"text/javascript\">
 		document.postform.text.focus();
 	</script>
-");
+";
 
 doThreadPreview($tid);
 

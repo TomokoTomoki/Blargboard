@@ -167,59 +167,36 @@ else
 	$_POST['mood'] = $post['mood'];
 }
 
+$moodSelects = array();
 if($_POST['mood'])
 	$moodSelects[(int)$_POST['mood']] = "selected=\"selected\" ";
 $moodOptions = Format("<option {0}value=\"0\">".__("[Default avatar]")."</option>\n", $moodSelects[0]);
 $rMoods = Query("select mid, name from {moodavatars} where uid={0} order by mid asc", $post['user']);
 while($mood = Fetch($rMoods))
 	$moodOptions .= Format("<option {0}value=\"{1}\">{2}</option>\n", $moodSelects[$mood['mid']], $mood['mid'], htmlspecialchars($mood['name']));
+	
+$fields = array(
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">".htmlspecialchars($prefill)."</textarea>",
+	'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
+	'nopl' => "<label><input type=\"checkbox\" $nopl name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
+	'nosm' => "<label><input type=\"checkbox\" $nosm name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",
+	
+	'btnPost' => "<input type=\"submit\" name=\"actionpost\" value=\"".__("Post")."\">",
+	'btnPreview' => "<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\">",
+);
 
-Write(
-"
-				<form name=\"postform\" action=\"".actionLink("editpost")."\" method=\"post\">
-					<table class=\"outline margin width100\">
-						<tr class=\"header1\">
-							<th colspan=\"2\">
-								".__("Edit Post")."
-							</th>
-						</tr>
-						<tr class=\"cell0\">
-							<td class=\"center\" style=\"width:15%; max-width:150px;\">
-								".__("Post")."
-							</td>
-							<td>
-								<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">{0}</textarea>
-							</td>
-						</tr>
-						<tr class=\"cell2\">
-							<td></td>
-							<td>
-								<input type=\"submit\" name=\"actionpost\" value=\"".__("Edit")."\" />
-								<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\" />
-								<select size=\"1\" name=\"mood\">
-									{1}
-								</select>
-								<label>
-									<input type=\"checkbox\" name=\"nopl\" {3} />&nbsp;".__("Disable post layout", 1)."
-								</label>
-								<label>
-									<input type=\"checkbox\" name=\"nosm\" {4} />&nbsp;".__("Disable smilies", 1)."
-								</label>
-								<input type=\"hidden\" name=\"id\" value=\"{2}\" />
-								<input type=\"hidden\" name=\"key\" value=\"{6}\" />
-							</td>
-						</tr>
-					</table>
-				</form>
-",	htmlspecialchars($prefill), $moodOptions, $pid, $nopl, $nosm, $nobr, $loguser['token']);
+echo "
+	<form name=\"postform\" action=\"".actionLink("editpost", $pid)."\" method=\"post\">";
 
+RenderTemplate('form_editpost', array('fields' => $fields));
 
-Write(
-"
+echo "
+		<input type=\"hidden\" name=\"key\" value=\"{$loguser['token']}\">
+	</form>
 	<script type=\"text/javascript\">
 		document.postform.text.focus();
 	</script>
-");
+";
 
 doThreadPreview($tid, $post['date']);
 
