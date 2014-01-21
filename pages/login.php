@@ -4,7 +4,7 @@
 
 if($_POST['action'] == "logout")
 {
-		setcookie("logsession", "", 2147483647, $boardroot, "", false, true);
+	setcookie("logsession", "", 2147483647, $boardroot, "", false, true);
 	Query("UPDATE {users} SET loggedin = 0 WHERE id={0}", $loguserid);
 	Query("DELETE FROM {sessions} WHERE id={0}", doHash($_COOKIE['logsession'].$salt));
 
@@ -19,17 +19,19 @@ elseif(isset($_POST['actionlogin']))
 	if($user)
 	{
 		$sha = doHash($pass.$salt.$user['pss']);
-		if($user['password'] == $sha)
-		{
-			print "badpass";
+		if($user['password'] === $sha)
 			$okay = true;
-		}
-		else
-			Report("A visitor from [b]".$_SERVER['REMOTE_ADDR']."[/] tried to log in as [b]".$user['name']."[/].", 1);
 	}
+	
+	// auth plugins
+	if (!$okay)
+		{ $bucket = 'login'; include('lib/pluginloader.php'); }
 
 	if(!$okay)
+	{
+		Report("A visitor from [b]".$_SERVER['REMOTE_ADDR']."[/] tried to log in as [b]".$user['name']."[/].", 1);
 		Alert(__("Invalid user name or password."));
+	}
 	else
 	{
 		//TODO: Tie sessions to IPs if user has enabled it (or probably not)
@@ -45,7 +47,7 @@ elseif(isset($_POST['actionlogin']))
 
 		while($testuser = Fetch($rLogUser))
 		{
-			if($testuser["id"] == $user["id"])
+			if($testuser['id'] == $user['id'])
 				continue;
 
 			$sha = doHash($_POST['pass'].$salt.$testuser['pss']);

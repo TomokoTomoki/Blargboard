@@ -20,7 +20,8 @@ function actionLink($action, $id="", $args="", $urlname="")
 	if($boardroot == "")
 		$boardroot = "./";
 
-	$bucket = "linkMangler"; include('lib/pluginloader.php');
+	// calling plugins at EVERY link?! way to waste performances
+	//$bucket = "linkMangler"; include('lib/pluginloader.php');
 	
 	// rewritten links
 	/*if ($action == $mainPage) $action = '';
@@ -97,6 +98,7 @@ function getMinipicTag($user)
 function prettyRainbow($s)
 {
 	$r = mt_rand(0,359);
+	$s = str_replace('&nbsp;', ' ', $s);
 	$s = html_entity_decode($s);
 	$len = strlen($s);
 	$out = '';
@@ -104,7 +106,7 @@ function prettyRainbow($s)
 	{
 		if ($s[$i] == ' ')
 		{
-			$out .= ' ';
+			$out .= '&nbsp;';
 			continue;
 		}
 		

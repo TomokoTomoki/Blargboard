@@ -89,7 +89,6 @@ $theme = $loguser['theme'];
 include('lib/layout.php');
 
 //Classes
-include("PipeMenuBuilder.php");
 
 include('smarty/Smarty.class.php');
 $tpl = new Smarty;
