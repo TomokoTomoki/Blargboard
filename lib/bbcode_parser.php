@@ -10,7 +10,7 @@
 	2 - nothing.
 */
 
-function parseText($text)
+function parseText($text, $parentTag)
 {
 	global $parseStatus, $postNoSmilies, $postNoBr, $postPoster;
 
@@ -25,7 +25,7 @@ function parseText($text)
 		if(!$postNoBr)
 			$text = nl2br($text);
 
-		$text = postDoReplaceText($text);
+		$text = postDoReplaceText($text, $parentTag);
 	}
 
 	return $text;
@@ -306,7 +306,7 @@ function parse($parentToken)
 		else
 		{
 			if($textcontents)
-				$contents .= parseText($textcontents);
+				$contents .= parseText($textcontents, $parentTag);
 			$textcontents = '';
 			$contents .= $result;
 		}
@@ -318,7 +318,7 @@ function parse($parentToken)
 		$bbcodeIsTableHeader = false;
 
 	if($textcontents)
-		$contents .= parseText($textcontents);
+		$contents .= parseText($textcontents, $parentTag);
 
 	//Restore saved parse status.
 	$parseStatus = $oldParseStatus;
@@ -442,6 +442,7 @@ function parseBBCode($text)
 	$parseStatus = 0;
 	$tokenCt = count($tokens);
 	$tokenPtr = 0;
+	$parentTag = '';
 
 	$res = parse(0);
 	return $res;

@@ -47,7 +47,7 @@ function rainbowify($s)
 }
 
 //Main post text replacing.
-function postDoReplaceText($s)
+function postDoReplaceText($s, $parentTag)
 {
 	global $postNoSmilies, $postPoster, $smiliesReplaceOrig, $smiliesReplaceNew;
 
@@ -66,8 +66,13 @@ function postDoReplaceText($s)
 		$s = preg_replace($smiliesReplaceOrig, $smiliesReplaceNew, $s);
 	}
 	
-	//Automatic links. Messy regex FTW
-	$s = preg_replace_callback('((?:(?:view-source:)?(?:[Hh]t|[Ff])tps?://(?:(?:[^:&@/]*:[^:@/]*)@)?|\bwww\.)[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*(?::[0-9]+)?(?:/(?:->(?=\S)|&amp;|[\w\-/%?=+#~:\'@*^$!]|[.,;\'|](?=\S)|(?:(\()|(\[)|\{)(?:->(?=\S)|[\w\-/%&?=+;#~:\'@*^$!.,;]|(?:(\()|(\[)|\{)(?:->(?=\S)|l[\w\-/%&?=+;#~:\'@*^$!.,;])*(?(3)\)|(?(4)\]|\})))*(?(1)\)|(?(2)\]|\})))*)?)', 'bbcodeURLAuto', $s);
+	//Automatic links
+	// does it really have to be that complex?! we're not phpBB
+	//$s = preg_replace_callback('((?:(?:view-source:)?(?:[Hh]t|[Ff])tps?://(?:(?:[^:&@/]*:[^:@/]*)@)?|\bwww\.)[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*(?::[0-9]+)?(?:/(?:->(?=\S)|&amp;|[\w\-/%?=+#~:\'@*^$!]|[.,;\'|](?=\S)|(?:(\()|(\[)|\{)(?:->(?=\S)|[\w\-/%&?=+;#~:\'@*^$!.,;]|(?:(\()|(\[)|\{)(?:->(?=\S)|l[\w\-/%&?=+;#~:\'@*^$!.,;])*(?(3)\)|(?(4)\]|\})))*(?(1)\)|(?(2)\]|\})))*)?)', 'bbcodeURLAuto', $s);
+	if ($parentTag != 'a' && $parentTag != 'url')
+	{
+		$s = preg_replace_callback('@(?:(?:http|ftp)s?://|\bwww\.)[\w\-/%&?=+#~\'\@*^$\.,;!:]+[\w\-/%&?=+#~\'\@*^$]@i', 'bbcodeURLAuto', $s);
+	}
 
 	//Plugin bucket for allowing plugins to add replacements.
 	$bucket = "postMangler"; include("./lib/pluginloader.php");
