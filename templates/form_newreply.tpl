@@ -1,4 +1,4 @@
-	<table class="outline margin form_newreply">
+	<table class="outline margin form form_newreply">
 		<tr class="header1">
 			<th colspan=2>New reply</th>
 		</tr>

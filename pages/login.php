@@ -62,6 +62,9 @@ elseif(isset($_POST['actionlogin']))
 	}
 }
 
+$title = __('Log in');
+MakeCrumbs(array('' => __('Log in')));
+
 $forgotPass = '';
 
 if(Settings::get("mailResetSender") != "")

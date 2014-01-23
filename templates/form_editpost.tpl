@@ -1,4 +1,4 @@
-	<table class="outline margin form_editpost">
+	<table class="outline margin form form_editpost">
 		<tr class="header1">
 			<th colspan=2>Edit post</th>
 		</tr>

@@ -586,6 +586,21 @@ table.breadcrumbs > tbody > tr > th
 	padding: 4px;
 }
 
+table.form
+{
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 1200px;
+	clear: both;
+}
+
+table.form_quickreply
+{
+	margin: 4px auto;
+	max-width: 1200px; 
+	clear: both;
+}
+
 /* All cells have border by default */
 table.post>tbody>tr>td, table.outline>tbody>tr>td, table.message>tbody>tr>td
 {

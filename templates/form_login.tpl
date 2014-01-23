@@ -1,4 +1,4 @@
-	<table class="outline margin form_login">
+	<table class="outline margin form form_login">
 		<tr class="header1">
 			<th colspan=2>
 				Log in

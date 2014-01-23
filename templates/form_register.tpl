@@ -1,4 +1,4 @@
-	<table class="outline margin form_register">
+	<table class="outline margin form form_register">
 		<tr class="header1">
 			<th colspan=2>Register</th>
 		</tr>

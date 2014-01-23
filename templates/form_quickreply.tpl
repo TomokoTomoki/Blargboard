@@ -1,4 +1,4 @@
-	<table class="outline margin form_quickreply" style="margin: 4px auto; max-width: 1200px; clear:both;" id="quickreply">
+	<table class="outline margin form form_quickreply" id="quickreply">
 		<tr class="header1">
 			<th>Quick reply</th>
 		</tr>

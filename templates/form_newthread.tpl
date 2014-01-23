@@ -1,4 +1,4 @@
-	<table class="outline margin form_newthread">
+	<table class="outline margin form form_newthread">
 		<tr class="header1">
 			<th colspan=2>New thread</th>
 		</tr>

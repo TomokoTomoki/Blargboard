@@ -206,6 +206,8 @@ function makeForumListing($parent, $board='')
 						$loguserid, $viewableforums, $board, -$parent);
 	if (!NumRows($rFora))
 		return;
+		
+	$f = Fetch(Query("SELECT MIN(l) minl, MAX(r) maxr FROM {forums} WHERE ".($parent==0 ? 'board={0}' : 'catid={1}'), $board, -$parent));
 						
 	$rSubfora = Query("	SELECT f.*,
 							".($loguserid ? "(NOT ISNULL(i.fid))" : "0")." ignored,
@@ -213,9 +215,9 @@ function makeForumListing($parent, $board='')
 								WHERE t.forum=f.id AND t.lastpostdate>".($loguserid ? "IFNULL(tr.date,0)" : time()-900).") numnew
 						FROM {forums} f
 							".($loguserid ? "LEFT JOIN {ignoredforums} i ON i.fid=f.id AND i.uid={0}" : "")."
-						WHERE f.id IN ({2c}) AND ".($parent==0 ? 'f.catid<0' : 'f.catid!={1}').(!$viewhidden ? " AND f.hidden=0" : '')."
+						WHERE f.id IN ({1c}) AND f.l>{2} AND f.r<{3} AND f.catid!={4}".(!$viewhidden ? " AND f.hidden=0" : '')."
 						ORDER BY f.forder, f.id", 
-						$loguserid, -$parent, $viewableforums);
+						$loguserid, $viewableforums, $f['minl'], $f['maxr'], -$parent);
 	$subfora = array();
 	while ($sf = Fetch($rSubfora))
 		$subfora[-$sf['catid']][] = $sf;
