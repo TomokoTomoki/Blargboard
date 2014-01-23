@@ -42,7 +42,6 @@ $tagParseStatus = array(
 
 	'img' => 2,
 	'imgs' => 2,
-	'url' => 2,
 	'code' => 2,
 	'source' => 2,
 	'pre' => 2,
@@ -217,7 +216,7 @@ function parse($parentToken)
 {
 	global $tokens, $tokenPtr, $heavyTags, $singleTags, $singleHtmlTags, $tagParseStatus, $parseStatus, $bbcodeCallbacks, $allowTables, $autocloseTags, $bbcodeIsTableHeader, $tokenCt;
 	global $blockHtmlTags;
-	
+
 	$lasttoken = $parentToken;
 
 	$parentTag = $parentToken['tag'];

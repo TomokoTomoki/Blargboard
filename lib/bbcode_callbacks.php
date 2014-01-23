@@ -46,7 +46,7 @@ function bbcodeStrikethrough($contents){
 function bbcodeURL($contents, $arg)
 {
 	$dest = htmlentities($contents);
-	$title = htmlentities($contents);
+	$title = $contents;
 
 	if($arg)
 		$dest = htmlentities($arg);
