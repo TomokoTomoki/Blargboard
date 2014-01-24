@@ -48,12 +48,12 @@ reportFix(__("Counting user's karma&hellip;"));
 
 startFix();
 $aff = 0;
-$users = query("select id from users");
+/*$users = query("select id from users");
 while($user = fetch($users))
 {
 	RecalculateKarma($user["id"]);
 	$aff += affectedRows();
-}
+}*/
 reportFix(__("Counting user's karma&hellip;"), $aff);
 
 startFix();
