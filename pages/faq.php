@@ -2,10 +2,10 @@
 //  AcmlmBoard XD - Frequently Asked Questions page
 //  Access: all
 
-$title = "FAQ";
-$links = "";
+$title = __("FAQ");
+$links = array();
 if(HasPermission('admin.editsettings'))
-	$links = actionLinkTagItem(__("Edit the FAQ"), "editsettings", "faq");
+	$links[] = actionLinkTag(__("Edit the FAQ"), "editsettings", "faq");
 
 MakeCrumbs(array(actionLink("faq") => __("FAQ")), $links);
 
@@ -52,7 +52,7 @@ foreach($gcolors as $g)
 ", $cellClass, $items);
 }
 $colortable = format("
-<table class=\"width50 outline\" style=\"margin-left: 25%; margin-right: auto\">
+<table class=\"width50 outline\" style=\"margin-left: auto; margin-right: auto;\">
 	<tr class=\"header1\">
 		{0}
 	</tr>
@@ -67,7 +67,7 @@ foreach ($themefiles as $i=>$t)
 ksort($themelist);
 
 $finaltlist = '
-<table class="width75 outline" style="margin-left:12.5%;">
+<table class="width75 outline" style="margin-left: auto; margin-right: auto;">
 	<tbody>
 		<tr class="header1"><th colspan="6" style="cursor:pointer;" onclick="$(\'#themelist\').toggle();">Themes (click to expand)</th></tr>
 	</tbody>
@@ -105,7 +105,7 @@ $finaltlist .= '
 	</tbody>
 </table>';
 
-$faq = Settings::pluginGet("faq");
+$faq = Settings::get("faqText");
 
 $faq = str_replace("<colortable />", $colortable, $faq);
 if("" == Settings::get("registrationWord"))
@@ -113,15 +113,14 @@ if("" == Settings::get("registrationWord"))
 else
 	$faq = str_replace("<theword />", Settings::get("registrationWord"), $faq);
 
-$code1 = '<link rel="stylesheet" type="text/css" href="http://.../MyLayout_$theme.css" />';
-$code2 = '<link rel="stylesheet" type="text/css" href="http://.../MyLayout_'.$theme.'.css" />';
+$code1 = '<link rel="stylesheet" type="text/css" href="http://.../MyLayout_$theme.css">';
+$code2 = '<link rel="stylesheet" type="text/css" href="http://.../MyLayout_'.$theme.'.css">';
 $faq = str_replace("<themeexample1 />", DoGeshi($code1), $faq);
 $faq = str_replace("<themeexample2 />", DoGeshi($code2), $faq);
 $faq = str_replace("<themelist />", $finaltlist, $faq);
 $faq = str_replace("<admin />", $admin, $faq);
 
-write("
-{0}", $faq);
+echo $faq;
 
 function DoGeshi($code)
 {

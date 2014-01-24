@@ -109,10 +109,15 @@
 			"default" => "1",
 			"name" => "Show extra info in post sidebar",
 		),
+		'PoRATitle' => array(
+			'type' => 'text',
+			'default' => 'What\'s up today?',
+			'name' => 'Info box title'
+		),
 		"PoRAText" => array (
 			"type" => "texthtml",
-			"default" => "Welcome to your new ABXD Board!",
-			"name" => "'What's up today?' text",
+			"default" => "Welcome to Blargboard. Edit this.",
+			"name" => "Info box text",
 		),
 
 		"profilePreviewText" => array (
@@ -127,6 +132,19 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 \");
 }[/source]",
 			"name" => "Post preview text"
+		),
+		
+		'homepageText' => array(
+			'type' => 'texthtml',
+			'default' => 'Welcome to Blargboard.<br><br>Fill this with relevant info.',
+			'name' => 'Homepage contents',
+			'hidden' => true,
+		),
+		'faqText' => array(
+			'type' => 'texthtml',
+			'default' => 'Blargboard FAQ. Put your rules and stuff here.',
+			'name' => 'FAQ contents',
+			'hidden' => true,
 		),
 		
 		'newsForum' => array(

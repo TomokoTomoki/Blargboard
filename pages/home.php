@@ -1,8 +1,18 @@
 <?php
 	
-// bit 1: home blurb
-	
-// bit 2: last posts/activity
+$homepage = Settings::get('homepageText');
+
+$lastactivity = array();
+// test data
+$lastactivity[] = array('description' => 'StapleButter made this', 'formattedDate' => 'right now');
+$lastactivity[] = array('description' => 'Blargman replied to <a href="#">dumb thread</a>', 'formattedDate' => '6 minutes ago');
+$lastactivity[] = array('description' => 'The train crashed through the building', 'formattedDate' => 'never');
+
+$bucket = 'lastactivity'; include('lib/pluginloader.php');
+
+$lastactivity = array_slice($lastactivity, 0, 10);
+
+RenderTemplate('homepage', array('homepage' => $homepage, 'lastactivity' => $lastactivity));
 	
 
 $rFora = Query("select * from {forums} where id = {0}", Settings::get('newsForum'));
@@ -32,74 +42,6 @@ if (HasPermission('forum.postthreads', $forum['id']))
 
 MakeCrumbs(array(), $links);
 
-/*$lastposts = '';
-$lp = Query("
-	SELECT 
-		t.title,
-		f.title,
-		COUNT(p.thread) nposts, 
-		p2.id, p2.date,
-		u.(_userfields)
-	FROM 
-		{threads} t 
-		LEFT JOIN {forums} f ON f.id=t.forum
-		LEFT JOIN {posts} p ON p.thread=t.id 
-		LEFT JOIN {posts} p2 ON p2.date=MIN(p.date)
-		LEFT JOIN {users} u ON u.id=p2.user
-	WHERE f.id IN ({1c})
-	ORDER BY MAX(p.date)
-	GROUP BY p.thread",
-	ForumsWithPermission('forum.viewforum'));*/
-
-?>
-	<table class="layout-table"><tr>
-		<td style="width:50%; vertical-align:top; padding-right:0.5em;">
-			<table class="outline margin">
-				<tr class="cell1">
-					<td>
-						<big>Welcome to the board</big><br>
-						<br>
-						This is some text about the board and all that shit<br>
-						<br>
-						have fun<br>
-						<br>
-						<br>
-						<br>
-						blah blah blah<br>
-						<br>
-						<br>
-						blarg<br>
-					</td>
-				</tr>
-			</table>
-		</td>
-		<td style="vertical-align:top; padding-left:0.5em;">
-			<table class="outline margin">
-				<tr class="header1"><th>Last posts</th></tr>
-				<?php echo $lastposts; ?>
-				<tr class="cell1">
-					<td>
-						<a href="#" title="link to last post goes here">Some dumb thread</a> (<a href="#">Sample forum</a>)<br>
-						<small>4 new posts, last by <a href="#"><strong style="color:#97acef;">blargman</strong></a> 7 minutes ago
-					</td>
-				</tr>
-				<tr class="cell1">
-					<td>
-						<a href="#">Another derp thread</a> (<a href="#">Sample forum</a>)<br>
-						<small>1 new post by <a href="#"><strong style="color:#affabe;">trololo</strong></a> 13 minutes ago
-					</td>
-				</tr>
-				<tr class="cell1">
-					<td>
-						<a href="#">Intelligent thread!</a> (<a href="#">Sample forum</a>)<br>
-						<small>3 new posts, last by <a href="#"><strong style="color:#00aa55;">crazyposter</strong></a> 1 hour ago
-					</td>
-				</tr>
-			</table>
-		</td>
-	</tr></table>
-<?php
-
 $rThreads = Query("	SELECT 
 						t.id, t.title, t.closed, t.replies, t.lastpostid,
 						p.id pid, p.date,
@@ -118,22 +60,22 @@ $rThreads = Query("	SELECT
 $numonpage = NumRows($rThreads);
 
 $pagelinks = PageLinks(actionLink('news', '', 'from='), $tpp, $from, $total);
-if ($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
+
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'top'));
 
 while($thread = Fetch($rThreads))
 {
+	$pdata = array();
+	
 	$starter = getDataPrefix($thread, 'su_');
 	$last = getDataPrefix($thread, 'lu_');
 
 	$tags = ParseThreadTags($thread['title']);
-
-	if($thread['sticky'] && $haveStickies == 0) $haveStickies = 1;
-		
-	if($thread['replies'] == 0) $lastLink = "";
 	
-	$postdate = formatdate($thread['date']);
-	$posttext = CleanUpPost($thread['text'],$starter['name'], false, false);
+	$pdata['title'] = $tags[0];
+	$pdata['formattedDate'] = formatdate($thread['date']);
+	$pdata['userlink'] = UserLink($starter);
+	$pdata['text'] = CleanUpPost($thread['text'],$starter['name'], false, false);
 
 	if (!$thread['replies'])
 		$comments = 'No comments yet';
@@ -141,41 +83,25 @@ while($thread = Fetch($rThreads))
 		$comments = actionLinkTag('1 comment', 'thread', 0, 'pid='.$thread['lastpostid'].'#'.$thread['lastpostid']).' (by '.UserLink($last).')';
 	else
 		$comments = actionLinkTag($thread['replies'].' comments', 'thread', 0, 'pid='.$thread['lastpostid'].'#'.$thread['lastpostid']).' (last by '.UserLink($last).')';
+	$pdata['comments'] = $comments;
 
 	if ($thread['closed'])
-		$newreply = 'Comment posting closed.';
+		$newreply = __('Comment posting closed.');
 	else if (!$loguserid)
-		$newreply = actionLinkTag('Log in', 'login').' to post a comment.';
+		$newreply = actionLinkTag(__('Log in'), 'login').__(' to post a comment.');
 	else
-		$newreply = actionLinkTag("Post a comment", "newreply", $thread['id']);
+		$newreply = actionLinkTag(__("Post a comment"), "newreply", $thread['id']);
+	$pdata['replylink'] = $newreply;
 	
-	$modlinks = '<ul class="pipemenu">';
-	if (($loguserid == $starter['id'] & HasPermission('user.editownposts')) || HasPermission('mod.editposts', $forum['id']))
-		$modlinks .= actionLinkTagItem(__('Edit'), 'editpost', $thread['pid']);
-	if (($loguserid == $starter['id'] & HasPermission('user.deleteownposts')) || HasPermission('mod.deleteposts', $forum['id']))
-		$modlinks .= actionLinkTagItem(__('Delete'), 'editpost', $thread['pid'], 'delete=1&key='.$loguser['token']);
-	$modlinks .= '</ul>';
+	$modlinks = array();
+	if (($loguserid == $starter['id'] && HasPermission('user.editownposts')) || HasPermission('mod.editposts', $forum['id']))
+		$modlinks['edit'] = actionLinkTag(__('Edit'), 'editpost', $thread['pid']);
+	if (($loguserid == $starter['id'] && HasPermission('user.deleteownposts')) || HasPermission('mod.deleteposts', $forum['id']))
+		$modlinks['delete'] = actionLinkTag(__('Delete'), 'editpost', $thread['pid'], 'delete=1&key='.$loguser['token']);
 
-	$forumList .= "<table class='outline margin width100'>";
-	$forumList .= "
-	<tr class=\"header1\" >
-		<th style='text-align:left!important;'>
-			<span style='float:right;text-align:right;font-weight:normal;'>{$modlinks}</span>
-			<span style='font-size:125%;'>{$tags[0]}</span><br>
-			<span style='font-weight:normal;font-size:95%;'>Posted on {$postdate} by ".UserLink($starter)."</span>
-		</th>
-	</tr>";
-	$forumList .= "<tr class='cell1'><td style='padding:10px'>{$posttext}</td></tr>";
-	$forumList .= "<tr class='cell0'><td>{$comments}. {$newreply}</td></tr>";
-	$forumList .="</table><br>";
+	RenderTemplate('newspost', array('post' => $pdata));
 }
 
-Write($forumList);
+RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'bottom'));
 
-if ($pagelinks)
-	Write("<div class=\"smallFonts pages\">".__("Pages:")." {0}</div>", $pagelinks);
-
-?>
-
-	
 ?>

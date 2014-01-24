@@ -3,7 +3,7 @@
 $starttime = microtime(true);
 
 $ajaxPage = false;
-if(isset($_GET["ajax"]))
+if(isset($_GET['ajax']))
 	$ajaxPage = true;
 
 require('lib/common.php');
@@ -31,7 +31,7 @@ $metaStuff = array(
 $mainPage = 'home';
 
 if (isset($_GET['page']))
-	$page = $_GET["page"];
+	$page = $_GET['page'];
 else
 	$page = $mainPage;
 if(!ctype_alnum($page))

@@ -586,6 +586,11 @@ table.breadcrumbs > tbody > tr > th
 	padding: 4px;
 }
 
+table.newspost
+{
+	margin-top: 1.25em;
+}
+
 table.form
 {
 	margin-left: auto;
