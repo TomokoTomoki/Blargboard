@@ -8,6 +8,8 @@ $queries = 0;
 $dblink = new mysqli($dbserv, $dbuser, $dbpass, $dbname);
 unset($dbpass);
 
+$dblink->set_charset('utf8');
+
 
 function SqlEscape($text)
 {

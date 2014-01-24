@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `badges` (
   `name` varchar(256) NOT NULL DEFAULT '',
   `color` int(8) NOT NULL DEFAULT '0',
   UNIQUE KEY `steenkinbadger` (`owner`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `blockedlayouts` (
   `user` int(11) NOT NULL DEFAULT '0',
   `blockee` int(11) NOT NULL DEFAULT '0',
   KEY `mainkey` (`blockee`,`user`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `corder` int(8) NOT NULL DEFAULT '0',
   `board` varchar(16) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 --
 -- Contenu de la table `categories`
@@ -75,7 +75,7 @@ INSERT INTO `categories` (`id`, `name`, `corder`, `board`) VALUES
 CREATE TABLE IF NOT EXISTS `enabledplugins` (
   `plugin` varchar(256) NOT NULL DEFAULT '',
   UNIQUE KEY `plugin` (`plugin`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `favorites` (
   `user` int(11) NOT NULL,
   `thread` int(11) NOT NULL,
   PRIMARY KEY (`user`,`thread`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `forums` (
   `offtopic` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `catid` (`catid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Contenu de la table `forums`
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS `guests` (
   PRIMARY KEY (`id`),
   KEY `ip` (`ip`),
   KEY `bot` (`bot`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -152,7 +152,7 @@ CREATE TABLE IF NOT EXISTS `ignoredforums` (
   `uid` int(11) NOT NULL DEFAULT '0',
   `fid` int(11) NOT NULL DEFAULT '0',
   KEY `mainkey` (`uid`,`fid`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS `ip2c` (
   `ip_to` bigint(12) NOT NULL DEFAULT '0',
   `cc` varchar(2) DEFAULT '',
   KEY `ip_from` (`ip_from`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `ipbans` (
   `date` int(11) NOT NULL DEFAULT '0',
   UNIQUE KEY `ip` (`ip`),
   KEY `date` (`date`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -201,7 +201,7 @@ CREATE TABLE IF NOT EXISTS `misc` (
   `maxpostshour` int(11) NOT NULL DEFAULT '0',
   `maxpostshourdate` int(11) NOT NULL DEFAULT '0',
   `milestone` text
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Contenu de la table `misc`
@@ -223,7 +223,7 @@ CREATE TABLE IF NOT EXISTS `moodavatars` (
   `name` varchar(256) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `mainkey` (`uid`,`mid`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -236,7 +236,7 @@ CREATE TABLE IF NOT EXISTS `passmatches` (
   `ip` varchar(50) NOT NULL,
   `user` int(11) NOT NULL,
   `matches` varchar(200) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -254,7 +254,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   KEY `perm` (`perm`,`arg`),
   KEY `applyto` (`applyto`,`id`),
   KEY `applyto_2` (`applyto`,`id`,`perm`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Contenu de la table `permissions`
@@ -612,7 +612,7 @@ CREATE TABLE IF NOT EXISTS `pmsgs` (
   KEY `userfrom` (`userfrom`),
   KEY `msgread` (`msgread`),
   KEY `date` (`date`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -625,7 +625,7 @@ CREATE TABLE IF NOT EXISTS `pmsgs_text` (
   `title` varchar(256) NOT NULL DEFAULT '',
   `text` mediumtext,
   PRIMARY KEY (`pid`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -640,7 +640,7 @@ CREATE TABLE IF NOT EXISTS `poll` (
   `closed` tinyint(1) NOT NULL DEFAULT '0',
   `doublevote` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -654,7 +654,7 @@ CREATE TABLE IF NOT EXISTS `pollvotes` (
   `choiceid` int(11) NOT NULL DEFAULT '0',
   KEY `lol` (`user`,`choiceid`),
   KEY `poll` (`poll`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -669,7 +669,7 @@ CREATE TABLE IF NOT EXISTS `poll_choices` (
   `color` varchar(25) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `poll` (`poll`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -683,7 +683,7 @@ CREATE TABLE IF NOT EXISTS `postplusones` (
   PRIMARY KEY (`user`,`post`),
   KEY `user` (`user`),
   KEY `post` (`post`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -712,7 +712,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   KEY `ip` (`ip`),
   KEY `id` (`id`,`currentrevision`),
   KEY `deletedby` (`deletedby`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -729,7 +729,7 @@ CREATE TABLE IF NOT EXISTS `posts_text` (
   KEY `user` (`user`),
   KEY `pidrevision` (`pid`,`revision`),
   FULLTEXT KEY `text` (`text`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -748,20 +748,7 @@ CREATE TABLE IF NOT EXISTS `queryerrors` (
   `cookie` text,
   `error` text,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1  ;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `referrals`
---
-
-CREATE TABLE IF NOT EXISTS `referrals` (
-  `ref_hash` varchar(32) NOT NULL,
-  `referral` text NOT NULL,
-  `count` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`ref_hash`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -777,7 +764,7 @@ CREATE TABLE IF NOT EXISTS `reports` (
   `hidden` tinyint(1) NOT NULL DEFAULT '0',
   `severity` tinyint(2) NOT NULL DEFAULT '0',
   `request` text
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -789,7 +776,7 @@ CREATE TABLE IF NOT EXISTS `secondarygroups` (
   `userid` int(11) NOT NULL,
   `groupid` int(11) NOT NULL,
   PRIMARY KEY (`userid`,`groupid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -810,7 +797,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   PRIMARY KEY (`id`),
   KEY `user` (`user`),
   KEY `expiration` (`expiration`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -823,7 +810,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
   `name` varchar(128) NOT NULL DEFAULT '',
   `value` text,
   UNIQUE KEY `mainkey` (`plugin`,`name`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Contenu de la table `settings`
@@ -875,7 +862,7 @@ CREATE TABLE IF NOT EXISTS `smilies` (
   `code` varchar(32) NOT NULL DEFAULT '',
   `image` varchar(32) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 --
 -- Contenu de la table `smilies`
@@ -944,7 +931,7 @@ CREATE TABLE IF NOT EXISTS `spieslog` (
   `pmid` int(11) NOT NULL,
   KEY `userid` (`userid`),
   KEY `date` (`date`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -974,7 +961,7 @@ CREATE TABLE IF NOT EXISTS `threads` (
   KEY `sticky` (`sticky`),
   KEY `lastpostdate` (`lastpostdate`),
   FULLTEXT KEY `title` (`title`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -987,44 +974,7 @@ CREATE TABLE IF NOT EXISTS `threadsread` (
   `thread` int(11) NOT NULL DEFAULT '0',
   `date` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`thread`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `uploader`
---
-
-CREATE TABLE IF NOT EXISTS `uploader` (
-  `id` varchar(16) NOT NULL DEFAULT '',
-  `filename` varchar(512) DEFAULT NULL,
-  `description` varchar(1024) NOT NULL DEFAULT '',
-  `big_description` text NOT NULL,
-  `user` int(11) NOT NULL DEFAULT '0',
-  `date` int(11) NOT NULL DEFAULT '0',
-  `private` tinyint(1) NOT NULL DEFAULT '0',
-  `category` int(11) NOT NULL DEFAULT '0',
-  `downloads` int(11) NOT NULL DEFAULT '0',
-  `deldate` int(11) NOT NULL DEFAULT '0',
-  `physicalname` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `uploader_categories`
---
-
-CREATE TABLE IF NOT EXISTS `uploader_categories` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(256) NOT NULL DEFAULT '',
-  `description` text,
-  `ord` int(11) NOT NULL DEFAULT '0',
-  `showindownloads` tinyint(4) NOT NULL,
-  `minpower` int(8) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -1041,7 +991,7 @@ CREATE TABLE IF NOT EXISTS `usercomments` (
   PRIMARY KEY (`id`),
   KEY `uid` (`uid`),
   KEY `date` (`date`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -1059,7 +1009,7 @@ CREATE TABLE IF NOT EXISTS `usergroups` (
   `color_male` varchar(8) NOT NULL,
   `color_female` varchar(8) NOT NULL,
   `color_unspec` varchar(8) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Contenu de la table `usergroups`
@@ -1126,12 +1076,10 @@ CREATE TABLE IF NOT EXISTS `users` (
   `newcomments` tinyint(1) NOT NULL DEFAULT '0',
   `tempbantime` int(11) NOT NULL DEFAULT '0',
   `tempbanpl` int(8) NOT NULL DEFAULT '0',
-  `forbiddens` varchar(1024) NOT NULL DEFAULT '',
   `pluginsettings` text,
   `lostkey` varchar(128) NOT NULL DEFAULT '',
   `lostkeytimer` int(11) NOT NULL DEFAULT '0',
   `loggedin` tinyint(1) NOT NULL DEFAULT '0',
-  `color` varchar(128) NOT NULL,
   `postplusones` int(11) NOT NULL,
   `postplusonesgiven` int(11) NOT NULL,
   PRIMARY KEY (`id`),
@@ -1140,7 +1088,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   KEY `lastforum` (`lastforum`),
   KEY `lastposttime` (`lastposttime`),
   KEY `lastactivity` (`lastactivity`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1  ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
 
@@ -1153,35 +1101,7 @@ CREATE TABLE IF NOT EXISTS `uservotes` (
   `voter` int(11) NOT NULL DEFAULT '0',
   `up` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`,`voter`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `wiki_pages`
---
-
-CREATE TABLE IF NOT EXISTS `wiki_pages` (
-  `id` varchar(128) NOT NULL DEFAULT '',
-  `revision` int(11) NOT NULL DEFAULT '0',
-  `flags` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `wiki_pages_text`
---
-
-CREATE TABLE IF NOT EXISTS `wiki_pages_text` (
-  `id` varchar(128) NOT NULL DEFAULT '',
-  `revision` int(11) NOT NULL DEFAULT '0',
-  `date` int(11) NOT NULL DEFAULT '0',
-  `user` int(11) NOT NULL DEFAULT '0',
-  `text` text,
-  KEY `wpt` (`id`,`revision`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
