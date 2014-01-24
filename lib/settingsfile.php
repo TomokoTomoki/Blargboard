@@ -143,13 +143,13 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 		),
 		"trashForum" => array (
 			"type" => "forum",
-			"default" => "1",
+			"default" => "0",
 			"name" => "Trash forum",
 			'category' => 'Forum settings',
 		),
 		"secretTrashForum" => array (
 			"type" => "forum",
-			"default" => "1",
+			"default" => "0",
 			"name" => "Deleted threads forum",
 			'category' => 'Forum settings',
 		),

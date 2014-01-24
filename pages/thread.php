@@ -133,17 +133,17 @@ if ($loguserid)
 		else
 			$links[] = actionLinkTag(__("Stick"), "editthread", $tid, "action=stick&key=".$loguser['token']);
 	}
-		
-	if (HasPermission('mod.deletethreads', $fid))
-	{
-		if ($forum['id'] != Settings::get('secretTrashForum'))
-			$links[] = actionLinkTagConfirm(__("Delete"), __("Are you sure you want to just up and delete this whole thread?"), "editthread", $tid, "action=delete&key=".$loguser['token']);
-	}
 
-	if (HasPermission('mod.trashthreads', $fid))
+	if (HasPermission('mod.trashthreads', $fid) && Settings::get('trashForum'))
 	{
 		if($forum['id'] != Settings::get('trashForum'))
 			$links[] = actionLinkTag(__("Trash"), "editthread", $tid, "action=trash&key=".$loguser['token']);
+	}
+	
+	if (HasPermission('mod.deletethreads', $fid) && Settings::get('secretTrashForum'))
+	{
+		if ($forum['id'] != Settings::get('secretTrashForum'))
+			$links[] = actionLinkTagConfirm(__("Delete"), __("Are you sure you want to just up and delete this whole thread?"), "editthread", $tid, "action=delete&key=".$loguser['token']);
 	}
 }
 

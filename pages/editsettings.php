@@ -92,12 +92,12 @@ foreach($settings as $name => $data)
 		continue;
 		
 	$friendlyname = $name;
-	if(isset($data["name"]))
-		$friendlyname = $data["name"];
+	if(isset($data['name']))
+		$friendlyname = $data['name'];
 
-	$type = $data["type"];
-	$help = $data["help"];
-	$options = $data["options"];
+	$type = $data['type'];
+	$help = $data['help'];
+	$options = $data['options'];
 	$value = $oursettings[$name];
 
 	$input = "[Bad setting type]";
@@ -117,7 +117,7 @@ foreach($settings as $name => $data)
 	else if($type == "textbox" || $type == "textbbcode" || $type == "texthtml")
 		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"8\" style=\"width: 98%;\">$value</textarea>";
 	else if($type == "forum")
-		$input = makeForumList($name, $value);
+		$input = makeForumList($name, $value, true);
 	else if ($type == 'group')
 		$input = makeSelect($name, $value, $grouplist);
 	else if($type == "theme")

@@ -65,12 +65,15 @@ function mfl_forumBlock($fora, $catid, $selID, $indent)
 	return $ret;
 }
 
-function makeForumList($fieldname, $selectedID)
+function makeForumList($fieldname, $selectedID, $allowNone=false)
 {
 	global $loguserid, $loguser, $forumBoards;
 
 	$viewableforums = ForumsWithPermission('forum.viewforum');
 	$viewhidden = HasPermission('user.viewhiddenforums');
+	
+	$noneOption = '';
+	if ($allowNone) $noneOption = '<option value=0>'.__('(none)').'</option>';
 	
 	$rCats = Query("SELECT id, name, board FROM {categories} ORDER BY board, corder, id");
 	$cats = array();
@@ -104,7 +107,7 @@ function makeForumList($fieldname, $selectedID)
 ';
 	}
 
-	return "<select id=\"$fieldname\" name=\"$fieldname\">$theList</select>";
+	return "<select id=\"$fieldname\" name=\"$fieldname\">$noneOption$theList</select>";
 }
 
 function forumCrumbs($forum)
