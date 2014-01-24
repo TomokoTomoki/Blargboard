@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS `forums` (
   `l` int(11) NOT NULL,
   `r` int(11) NOT NULL,
   `redirect` varchar(256) NOT NULL,
+  `offtopic` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `catid` (`catid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
@@ -119,8 +120,8 @@ CREATE TABLE IF NOT EXISTS `forums` (
 -- Contenu de la table `forums`
 --
 
-INSERT INTO `forums` (`id`, `title`, `description`, `catid`, `numthreads`, `numposts`, `lastpostdate`, `lastpostuser`, `lastpostid`, `hidden`, `forder`, `board`, `l`, `r`, `redirect`) VALUES
-(1, 'Sample forum', 'This is a sample forum. You might want to add some more, though. This is currently configured to serve as everything, from announcements to trash.', 1, 0, 0, 0, 0, 0, 0, 0, '', 1, 2, '');
+INSERT INTO `forums` (`id`, `title`, `description`, `catid`, `numthreads`, `numposts`, `lastpostdate`, `lastpostuser`, `lastpostid`, `hidden`, `forder`, `board`, `l`, `r`, `redirect`, `offtopic`) VALUES
+(1, 'Sample forum', 'This is a sample forum. You might want to add some more, though.', 1, 0, 0, 0, 0, 0, 0, 0, '', 1, 2, '', 0);
 
 -- --------------------------------------------------------
 
@@ -273,7 +274,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, -1, 'admin.viewadminpanel', 0, -1),
 (0, -1, 'admin.viewallranks', 0, -1),
 (0, -1, 'admin.viewips', 0, -1),
-(0, -1, 'admin.viewlkb', 0, -1),
 (0, -1, 'admin.viewlog', 0, -1),
 (0, -1, 'admin.viewpms', 0, -1),
 (0, -1, 'admin.viewstaffpms', 0, -1),
@@ -330,7 +330,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 0, 'admin.viewadminpanel', 0, -1),
 (0, 0, 'admin.viewallranks', 0, -1),
 (0, 0, 'admin.viewips', 0, -1),
-(0, 0, 'admin.viewlkb', 0, -1),
 (0, 0, 'admin.viewlog', 0, -1),
 (0, 0, 'admin.viewpms', 0, -1),
 (0, 0, 'admin.viewstaffpms', 0, -1),
@@ -387,7 +386,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 1, 'admin.viewadminpanel', 0, -1),
 (0, 1, 'admin.viewallranks', 0, -1),
 (0, 1, 'admin.viewips', 0, -1),
-(0, 1, 'admin.viewlkb', 0, -1),
 (0, 1, 'admin.viewlog', 0, -1),
 (0, 1, 'admin.viewpms', 0, -1),
 (0, 1, 'admin.viewstaffpms', 0, -1),
@@ -436,7 +434,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 2, 'admin.viewadminpanel', 0, -1),
 (0, 2, 'admin.viewallranks', 0, -1),
 (0, 2, 'admin.viewips', 0, 1),
-(0, 2, 'admin.viewlkb', 0, -1),
 (0, 2, 'admin.viewlog', 0, -1),
 (0, 2, 'admin.viewpms', 0, -1),
 (0, 2, 'admin.viewstaffpms', 0, 1),
@@ -493,7 +490,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 3, 'admin.viewadminpanel', 0, 1),
 (0, 3, 'admin.viewallranks', 0, 1),
 (0, 3, 'admin.viewips', 0, 1),
-(0, 3, 'admin.viewlkb', 0, 1),
 (0, 3, 'admin.viewlog', 0, 1),
 (0, 3, 'admin.viewpms', 0, 1),
 (0, 3, 'admin.viewstaffpms', 0, 1),
@@ -551,7 +547,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 4, 'admin.viewadminpanel', 0, 1),
 (0, 4, 'admin.viewallranks', 0, 1),
 (0, 4, 'admin.viewips', 0, 1),
-(0, 4, 'admin.viewlkb', 0, 1),
 (0, 4, 'admin.viewlog', 0, 1),
 (0, 4, 'admin.viewpms', 0, 1),
 (0, 4, 'admin.viewstaffpms', 0, 1),
@@ -655,7 +650,6 @@ CREATE TABLE IF NOT EXISTS `poll` (
 
 CREATE TABLE IF NOT EXISTS `pollvotes` (
   `poll` int(11) NOT NULL DEFAULT '0',
-  `choice` int(11) NOT NULL DEFAULT '0',
   `user` int(11) NOT NULL DEFAULT '0',
   `choiceid` int(11) NOT NULL DEFAULT '0',
   KEY `lol` (`user`,`choiceid`),
@@ -736,19 +730,6 @@ CREATE TABLE IF NOT EXISTS `posts_text` (
   KEY `pidrevision` (`pid`,`revision`),
   FULLTEXT KEY `text` (`text`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `proxybans`
---
-
-CREATE TABLE IF NOT EXISTS `proxybans` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `ip` varchar(45) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ip` (`ip`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1  ;
 
 -- --------------------------------------------------------
 

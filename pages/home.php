@@ -1,18 +1,42 @@
 <?php
+
+$viewableforums = ForumsWithPermission('forum.viewforum');
 	
 $homepage = Settings::get('homepageText');
 
-$lastactivity = array();
-// test data
-$lastactivity[] = array('description' => 'StapleButter made this', 'formattedDate' => 'right now');
-$lastactivity[] = array('description' => 'Blargman replied to <a href="#">dumb thread</a>', 'formattedDate' => '6 minutes ago');
-$lastactivity[] = array('description' => 'The train crashed through the building', 'formattedDate' => 'never');
+// timestamp => data
+$lastActivity = array();
+$maxitems = 10;
+
+$lastposts = Query("	SELECT
+							p.(id,date),
+							t.(title,forum),
+							u.(_userfields)
+						FROM
+							{posts} p
+							LEFT JOIN {threads} t ON t.id=p.thread
+							LEFT JOIN {forums} f ON f.id=t.forum
+							LEFT JOIN {users} u ON u.id=p.user
+						WHERE f.id IN ({0c}) AND f.offtopic=0
+						ORDER BY p.date DESC
+						LIMIT {1u}", $viewableforums, $maxitems);
+						
+while ($lp = Fetch($lastposts))
+{
+	$user = getDataPrefix($lp, 'u_');
+	
+	$fmtdate = relativedate($lp['p_date']);
+	$desc = UserLink($user).__(' posted in ').actionLinkTag(htmlspecialchars($lp['t_title']), 'post', $lp['p_id']);
+	
+	$lastActivity[$lp['p_date']] = array('description' => $desc, 'formattedDate' => $fmtdate);
+}
 
 $bucket = 'lastactivity'; include('lib/pluginloader.php');
 
-$lastactivity = array_slice($lastactivity, 0, 10);
+krsort($lastActivity);
+$lastActivity = array_slice($lastActivity, 0, $maxitems);
 
-RenderTemplate('homepage', array('homepage' => $homepage, 'lastactivity' => $lastactivity));
+RenderTemplate('homepage', array('homepage' => $homepage, 'lastactivity' => $lastActivity));
 	
 
 $rFora = Query("select * from {forums} where id = {0}", Settings::get('newsForum'));
