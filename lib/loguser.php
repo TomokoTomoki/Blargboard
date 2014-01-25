@@ -4,7 +4,6 @@
 $bots = array(
 	"Microsoft URL Control",
 	"Yahoo! Slurp",
-	"Google",
 	"Twiceler",
 	"facebook",
 	"bot","spider","crawler", //catch-all
