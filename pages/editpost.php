@@ -176,7 +176,7 @@ while($mood = Fetch($rMoods))
 	$moodOptions .= Format("<option {0}value=\"{1}\">{2}</option>\n", $moodSelects[$mood['mid']], $mood['mid'], htmlspecialchars($mood['name']));
 	
 $fields = array(
-	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">".htmlspecialchars($prefill)."</textarea>",
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">".htmlspecialchars($prefill)."</textarea>",
 	'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
 	'nopl' => "<label><input type=\"checkbox\" $nopl name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
 	'nosm' => "<label><input type=\"checkbox\" $nosm name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",

@@ -851,6 +851,9 @@ input.color
 textarea
 {
 	font-family: "Consolas", "Lucida Console", "Courier New", monospace;
+	width: 100%;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
 }
 
 #body

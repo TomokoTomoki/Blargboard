@@ -245,7 +245,7 @@ if (HasPermission('mod.stickthreads', $fid))
 }
 
 $fields = array(
-	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">$prefill</textarea>",
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">$prefill</textarea>",
 	'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
 	'nopl' => "<label><input type=\"checkbox\" ".getCheck('nopl')." name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
 	'nosm' => "<label><input type=\"checkbox\" ".getCheck('nosm')." name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",

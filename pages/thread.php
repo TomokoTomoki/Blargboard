@@ -289,7 +289,7 @@ if($loguserid && HasPermission('forum.postreplies', $fid) && !$thread['closed'] 
 ",	$mood['mid'], htmlspecialchars($mood['name']));
 
 	$fields = array(
-		'text' => "<textarea id=\"text\" name=\"text\" rows=\"8\" style=\"width: 98%;\"></textarea>",
+		'text' => "<textarea id=\"text\" name=\"text\" rows=\"8\"></textarea>",
 		'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
 		'nopl' => "<label><input type=\"checkbox\" name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
 		'nosm' => "<label><input type=\"checkbox\" name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",
