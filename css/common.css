@@ -1004,22 +1004,20 @@ div#tabs button.selected
 .statusIcon
 {
 	display: inline-block;
-}
-.statusIcon:before
-{
+
 	text-shadow: 1px 1px 0px #000, 0px 1px 0px #000, -1px 1px 0px #000, -1px 0px 0px #000, -1px -1px 0px #000, 0px -1px 0px #000, 1px -1px 0px #000, 1px 0px 0px #000;
 	font-weight: bold;
 	font-variant: small-caps;
 }
 
-.statusIcon.new:before { content: 'New'; color: #ff4; }
-.statusIcon.hot:before { content: '!'; color: #f84; }
-.statusIcon.hotnew:before { content: 'New'; color: #fa4; }
-.statusIcon.off:before { content: '\00D7'; color: #888; }
-.statusIcon.offhot:before { content: '\00D7'; color: #888; }
-.statusIcon.offhotnew:before { content: '\00D7'; color: #880; }
-.statusIcon.offnew:before { content: '\00D7'; color: #880; }
-.statusIcon.old:before { content: 'Old'; color: #888; }
+.statusIcon.new:before { content: 'New\000A'; } 			.statusIcon.new { color: #ff4; }
+.statusIcon.hot:before { content: '!\000A'; } 			.statusIcon.hot { color: #f84; }
+.statusIcon.hotnew:before { content: 'New\000A'; } 		.statusIcon.hotnew { color: #fa4; }
+.statusIcon.off:before { content: '\00D7\000A'; } 		.statusIcon.off { color: #888; }
+.statusIcon.offhot:before { content: '\00D7\000A'; } 	.statusIcon.offhot { color: #888; }
+.statusIcon.offhotnew:before { content: '\00D7\000A'; } 	.statusIcon.offhotnew { color: #880; }
+.statusIcon.offnew:before { content: '\00D7\000A'; } 	.statusIcon.offnew { color: #880; }
+.statusIcon.old:before { content: 'Old\000A'; } 			.statusIcon.old { color: #888; }
 
 td.threadIcons label > input
 {

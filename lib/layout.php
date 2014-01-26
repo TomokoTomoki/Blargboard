@@ -24,28 +24,6 @@ function RenderTemplate($template, $options=null)
 	$tpl->display($tplname);
 }
 
-function gfxnumber($num)
-{
-	return $num;
-	// 0123456789/NA-
-	
-	$sign = '';
-	if ($num < 0)
-	{
-		$sign = '<span class="gfxnumber" style="background-position:-104px 0px;"></span>';
-		$num = -$num;
-	}
-	
-	$out = '';
-	while ($num > 0)
-	{
-		$out = '<span class="gfxnumber" style="background-position:-'.(8*($num%10)).'px 0px;"></span>'.$out;
-		$num = floor($num / 10);
-	}
-	
-	return '<span style="white-space:nowrap;">'.$sign.$out.'</span>';
-}
-
 
 function mfl_forumBlock($fora, $catid, $selID, $indent)
 {
@@ -320,7 +298,7 @@ function makeForumListing($parent, $board='')
 
 		$newstuff = $forum['ignored'] ? 0 : $forum['numnew'];
 		if ($newstuff > 0)
-			$fdata['new'] = "<div class=\"statusIcon new\"></div><br>".gfxnumber($newstuff);
+			$fdata['new'] = "<div class=\"statusIcon new\">$newstuff</div>";
 			
 		$fdata['description'] = $forum['description'];
 
