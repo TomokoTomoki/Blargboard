@@ -647,6 +647,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `options` tinyint(4) NOT NULL DEFAULT '0',
   `mood` int(11) NOT NULL DEFAULT '0',
   `currentrevision` int(11) NOT NULL DEFAULT '0',
+  `has_attachments` tinyint(1) NOT NULL DEFAULT '0',
   `postplusones` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `thread` (`thread`),

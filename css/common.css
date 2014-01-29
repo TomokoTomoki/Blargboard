@@ -683,6 +683,15 @@ table.post td.links
 	font-size: 0.85em;
 }
 
+.post_attachment
+{
+	display: inline-block;
+	border: 1px solid #ccc;
+	border-radius: 2px;
+	padding: 1em;
+	margin: 0.5em;
+}
+
 .footer
 {
 	text-align: center;

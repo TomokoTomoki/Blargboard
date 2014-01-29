@@ -53,7 +53,7 @@ function getSyndrome($activity)
 	$soFar = "";
 	foreach($syndromes as $minAct => $syndrome)
 		if($activity >= $minAct)
-			$soFar = "<em style=\"color: ".$syndrome[1].";\">".$syndrome[0]."</em><br />";
+			$soFar = "<em style=\"color: ".$syndrome[1].";\">".$syndrome[0]."</em><br>";
 	return $soFar;
 }
 
@@ -87,10 +87,10 @@ $layouCache = array();
 
 function makePostText($post)
 {
-	global $loguser, $loguserid, $theme, $hacks, $isBot, $postText, $sideBarStuff, $sideBarData, $salt, $layoutCache, $blocklayouts;
+	global $loguser, $layoutCache, $blocklayouts, $boardroot;
 
 	LoadBlockLayouts();
-	$poster = getDataPrefix($post, "u_");
+	$poster = getDataPrefix($post, 'u_');
 	$isBlocked = $poster['globalblock'] || $loguser['blocklayouts'] || $post['options'] & 1 || isset($blocklayouts[$poster['id']]);
 
 	$noSmilies = $post['options'] & 2;
@@ -103,7 +103,7 @@ function makePostText($post)
 		"postcount" => $poster['posts'],
 		"numdays" => floor((time()-$poster['regdate'])/86400),
 		"date" => formatdate($post['date']),
-		"rank" => GetRank($poster["rankset"], $poster["posts"]),
+		"rank" => GetRank($poster['rankset'], $poster['posts']),
 	);
 	$bucket = "amperTags"; include("./lib/pluginloader.php");
 
@@ -112,6 +112,7 @@ function makePostText($post)
 	$postText = CleanUpPost($postText, $poster['name'], $noSmilies, false);
 
 	//Post header and footer.
+	// TODO GET RID OF THIS FUCKING HACK
 	$magicString = "###POSTTEXTGOESHEREOMG###";
 	$separator = "";
 
@@ -119,7 +120,7 @@ function makePostText($post)
 		$postLayout = $magicString;
 	else
 	{
-		if(!isset($layoutCache[$poster["id"]]))
+		if(!isset($layoutCache[$poster['id']]))
 		{
 			if (!$poster['postheader'] && $poster['signature'])
 				$poster['signature'] = '<div class="signature">'.$poster['signature'].'</div>';
@@ -127,19 +128,38 @@ function makePostText($post)
 			$postLayout = $poster['postheader'].$magicString.$poster['signature'];
 			$postLayout = ApplyTags($postLayout, $tags);
 			$postLayout = CleanUpPost($postLayout, $poster['name'], $noSmilies, false);
-			$layoutCache[$poster["id"]] = $postLayout;
+			$layoutCache[$poster['id']] = $postLayout;
 		}
 		else
-			$postLayout = $layoutCache[$poster["id"]];
+			$postLayout = $layoutCache[$poster['id']];
 
 		if($poster['signature'])
 			if(!$poster['signsep'])
-				$separator = "<br />_________________________<br />";
+				$separator = "<br>_________________________<br>";
 			else
-				$separator = "<br />";
+				$separator = "<br>";
+	}
+	
+	$attachblock = '';
+	if ($post['has_attachments'])
+	{
+		$attachs = Query("SELECT id,filename,description,downloads 
+			FROM {uploadedfiles}
+			WHERE parenttype={0} AND parentid={1} AND deldate=0",
+			'post_attachment', $post['id']);
+		while ($attach = Fetch($attachs))
+		{
+			$link = '<a href="'.$boardroot.'get.php?id='.htmlspecialchars($attach['id']).'">'.htmlspecialchars($attach['filename']).'</a>';
+			
+			$attachblock .= '<br><div class="post_attachment">';
+			$attachblock .= '<strong>'.__('Attachment: ').$link.'</strong><br>';
+			$attachblock .= '<div class="smallFonts">'.htmlspecialchars($attach['description']).'<br>';
+			$attachblock .= __('Downloaded ').Plural($attach['downloads'], 'time').'</div>';
+			$attachblock .= '</div>';
+		}
 	}
 
-	$postText = str_replace($magicString, "<!-- LOL -->".$postText.$separator, $postLayout);
+	$postText = str_replace($magicString, "<!-- LOL -->".$postText.$attachblock.$separator, $postLayout);
 	return $postText;
 }
 
@@ -157,7 +177,7 @@ define('POST_SAMPLE', 3);			// sample post box (profile sample post, newreply po
 //		* noreplylinks: if set, no links to newreply.php (Quote/ID) are placed in the metabar (POST_NORMAL only)
 function makePost($post, $type, $params=array())
 {
-	global $loguser, $loguserid, $usergroups, $theme, $hacks, $isBot, $blocklayouts, $postText, $salt, $dataDir, $dataUrl;
+	global $loguser, $loguserid, $usergroups, $isBot, $blocklayouts, $dataDir, $dataUrl;
 	
 	$poster = getDataPrefix($post, 'u_');
 	$post['userlink'] = UserLink($poster);
