@@ -288,13 +288,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, -1, 'mod.renamethreads', 0, -1),
 (0, -1, 'mod.stickthreads', 0, -1),
 (0, -1, 'mod.trashthreads', 0, -1),
-(0, -1, 'uploader.deletefiles', 0, -1),
-(0, -1, 'uploader.deleteownfiles', 0, -1),
-(0, -1, 'uploader.movefiles', 0, -1),
-(0, -1, 'uploader.moveownfiles', 0, -1),
-(0, -1, 'uploader.uploadfiles', 0, -1),
-(0, -1, 'uploader.uploadrestricted', 0, -1),
-(0, -1, 'uploader.viewprivate', 0, -1),
 (0, -1, 'user.deleteownposts', 0, -1),
 (0, -1, 'user.deleteownusercomments', 0, -1),
 (0, -1, 'user.doublepost', 0, -1),
@@ -314,9 +307,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, -1, 'user.viewhiddenforums', 0, -1),
 (0, -1, 'user.votepolls', 0, -1),
 (0, -1, 'user.voteposts', 0, -1),
-(0, -1, 'wiki.deletepages', 0, -1),
-(0, -1, 'wiki.editpages', 0, -1),
-(0, -1, 'wiki.makepagesspecial', 0, -1),
 (0, 0, 'admin.adminusercomments', 0, -1),
 (0, 0, 'admin.banusers', 0, -1),
 (0, 0, 'admin.editforums', 0, -1),
@@ -344,13 +334,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 0, 'mod.renamethreads', 0, -1),
 (0, 0, 'mod.stickthreads', 0, -1),
 (0, 0, 'mod.trashthreads', 0, -1),
-(0, 0, 'uploader.deletefiles', 0, -1),
-(0, 0, 'uploader.deleteownfiles', 0, 1),
-(0, 0, 'uploader.movefiles', 0, -1),
-(0, 0, 'uploader.moveownfiles', 0, 1),
-(0, 0, 'uploader.uploadfiles', 0, 1),
-(0, 0, 'uploader.uploadrestricted', 0, -1),
-(0, 0, 'uploader.viewprivate', 0, -1),
 (0, 0, 'user.deleteownposts', 0, 1),
 (0, 0, 'user.deleteownusercomments', 0, 1),
 (0, 0, 'user.doublepost', 0, -1),
@@ -370,9 +353,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 0, 'user.viewhiddenforums', 0, -1),
 (0, 0, 'user.votepolls', 0, 1),
 (0, 0, 'user.voteposts', 0, 1),
-(0, 0, 'wiki.deletepages', 0, -1),
-(0, 0, 'wiki.editpages', 0, 1),
-(0, 0, 'wiki.makepagesspecial', 0, -1),
 (0, 1, 'admin.adminusercomments', 0, -1),
 (0, 1, 'admin.banusers', 0, -1),
 (0, 1, 'admin.editforums', 0, -1),
@@ -392,13 +372,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 1, 'forum.postreplies', 0, 1),
 (0, 1, 'forum.postthreads', 0, 1),
 (0, 1, 'forum.viewforum', 0, 1),
-(0, 1, 'uploader.deletefiles', 0, -1),
-(0, 1, 'uploader.deleteownfiles', 0, 1),
-(0, 1, 'uploader.movefiles', 0, -1),
-(0, 1, 'uploader.moveownfiles', 0, 1),
-(0, 1, 'uploader.uploadfiles', 0, 1),
-(0, 1, 'uploader.uploadrestricted', 0, -1),
-(0, 1, 'uploader.viewprivate', 0, -1),
 (0, 1, 'user.deleteownposts', 0, 1),
 (0, 1, 'user.deleteownusercomments', 0, 1),
 (0, 1, 'user.doublepost', 0, -1),
@@ -418,9 +391,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 1, 'user.viewhiddenforums', 0, -1),
 (0, 1, 'user.votepolls', 0, 1),
 (0, 1, 'user.voteposts', 0, 1),
-(0, 1, 'wiki.deletepages', 0, -1),
-(0, 1, 'wiki.editpages', 0, 1),
-(0, 1, 'wiki.makepagesspecial', 0, -1),
 (0, 2, 'admin.adminusercomments', 0, -1),
 (0, 2, 'admin.banusers', 0, 1),
 (0, 2, 'admin.editforums', 0, -1),
@@ -448,13 +418,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 2, 'mod.renamethreads', 0, 1),
 (0, 2, 'mod.stickthreads', 0, 1),
 (0, 2, 'mod.trashthreads', 0, 1),
-(0, 2, 'uploader.deletefiles', 0, -1),
-(0, 2, 'uploader.deleteownfiles', 0, 1),
-(0, 2, 'uploader.movefiles', 0, -1),
-(0, 2, 'uploader.moveownfiles', 0, 1),
-(0, 2, 'uploader.uploadfiles', 0, 1),
-(0, 2, 'uploader.uploadrestricted', 0, -1),
-(0, 2, 'uploader.viewprivate', 0, -1),
 (0, 2, 'user.deleteownposts', 0, 1),
 (0, 2, 'user.deleteownusercomments', 0, 1),
 (0, 2, 'user.doublepost', 0, -1),
@@ -474,9 +437,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 2, 'user.viewhiddenforums', 0, 1),
 (0, 2, 'user.votepolls', 0, 1),
 (0, 2, 'user.voteposts', 0, 1),
-(0, 2, 'wiki.deletepages', 0, 1),
-(0, 2, 'wiki.editpages', 0, 1),
-(0, 2, 'wiki.makepagesspecial', 0, 1),
 (0, 3, 'admin.adminusercomments', 0, 1),
 (0, 3, 'admin.banusers', 0, 1),
 (0, 3, 'admin.editforums', 0, 1),
@@ -504,13 +464,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 3, 'mod.renamethreads', 0, 1),
 (0, 3, 'mod.stickthreads', 0, 1),
 (0, 3, 'mod.trashthreads', 0, 1),
-(0, 3, 'uploader.deletefiles', 0, 1),
-(0, 3, 'uploader.deleteownfiles', 0, 1),
-(0, 3, 'uploader.movefiles', 0, 1),
-(0, 3, 'uploader.moveownfiles', 0, 1),
-(0, 3, 'uploader.uploadfiles', 0, 1),
-(0, 3, 'uploader.uploadrestricted', 0, 1),
-(0, 3, 'uploader.viewprivate', 0, 1),
 (0, 3, 'user.deleteownposts', 0, 1),
 (0, 3, 'user.deleteownusercomments', 0, 1),
 (0, 3, 'user.doublepost', 0, 1),
@@ -531,9 +484,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 3, 'user.viewhiddenforums', 0, 1),
 (0, 3, 'user.votepolls', 0, 1),
 (0, 3, 'user.voteposts', 0, 1),
-(0, 3, 'wiki.deletepages', 0, 1),
-(0, 3, 'wiki.editpages', 0, 1),
-(0, 3, 'wiki.makepagesspecial', 0, 1),
 (0, 4, 'admin.adminusercomments', 0, 1),
 (0, 4, 'admin.banusers', 0, 1),
 (0, 4, 'admin.editforums', 0, 1),
@@ -561,13 +511,6 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 4, 'mod.renamethreads', 0, 1),
 (0, 4, 'mod.stickthreads', 0, 1),
 (0, 4, 'mod.trashthreads', 0, 1),
-(0, 4, 'uploader.deletefiles', 0, 1),
-(0, 4, 'uploader.deleteownfiles', 0, 1),
-(0, 4, 'uploader.movefiles', 0, 1),
-(0, 4, 'uploader.moveownfiles', 0, 1),
-(0, 4, 'uploader.uploadfiles', 0, 1),
-(0, 4, 'uploader.uploadrestricted', 0, 1),
-(0, 4, 'uploader.viewprivate', 0, 1),
 (0, 4, 'user.deleteownposts', 0, 1),
 (0, 4, 'user.deleteownusercomments', 0, 1),
 (0, 4, 'user.doublepost', 0, 1),
@@ -587,10 +530,7 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 (0, 4, 'user.sendpms', 0, 1),
 (0, 4, 'user.viewhiddenforums', 0, 1),
 (0, 4, 'user.votepolls', 0, 1),
-(0, 4, 'user.voteposts', 0, 1),
-(0, 4, 'wiki.deletepages', 0, 1),
-(0, 4, 'wiki.editpages', 0, 1),
-(0, 4, 'wiki.makepagesspecial', 0, 1);
+(0, 4, 'user.voteposts', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -599,19 +539,22 @@ INSERT INTO `permissions` (`applyto`, `id`, `perm`, `arg`, `value`) VALUES
 --
 
 CREATE TABLE IF NOT EXISTS `pmsgs` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL DEFAULT '0',
   `userto` int(11) NOT NULL DEFAULT '0',
   `userfrom` int(11) NOT NULL DEFAULT '0',
+  `conv_start` int(11) NOT NULL DEFAULT '0',
   `date` int(11) NOT NULL DEFAULT '0',
   `ip` varchar(45) NOT NULL DEFAULT '',
   `msgread` tinyint(1) NOT NULL DEFAULT '0',
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `drafting` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
+  `draft_to` varchar(128) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`, `userto`),
   KEY `userto` (`userto`),
   KEY `userfrom` (`userfrom`),
   KEY `msgread` (`msgread`),
-  KEY `date` (`date`)
+  KEY `date` (`date`),
+  KEY `drafting` (`drafting`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin  ;
 
 -- --------------------------------------------------------
@@ -621,7 +564,7 @@ CREATE TABLE IF NOT EXISTS `pmsgs` (
 --
 
 CREATE TABLE IF NOT EXISTS `pmsgs_text` (
-  `pid` int(11) NOT NULL DEFAULT '0',
+  `pid` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(256) NOT NULL DEFAULT '',
   `text` mediumtext,
   PRIMARY KEY (`pid`)
@@ -975,6 +918,29 @@ CREATE TABLE IF NOT EXISTS `threadsread` (
   `date` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`,`thread`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+
+-- --------------------------------------------------------
+
+--
+-- uploadedfiles
+--
+
+CREATE TABLE IF NOT EXISTS `uploadedfiles` (
+  `id` varchar(16) NOT NULL DEFAULT '',
+  `physicalname` varchar(64) NOT NULL DEFAULT '',
+  `filename` varchar(512) NOT NULL DEFAULT '',
+  `description` varchar(1024) NOT NULL DEFAULT '',
+  `user` int(11) NOT NULL DEFAULT '0',
+  `date` int(11) NOT NULL DEFAULT '0',
+  `parenttype` varchar(16) NOT NULL DEFAULT '',
+  `parentid` int(11) NOT NULL DEFAULT '0',
+  `downloads` int(11) NOT NULL DEFAULT '0',
+  `deldate` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `user` (`user`),
+  KEY `parent` (`parenttype`,`parentid`),
+  KEY `deldate` (`deldate`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 

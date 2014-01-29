@@ -4,45 +4,73 @@
 
 $title = __("Private messages");
 
-MakeCrumbs(array(actionLink("private") => __("Private messages"), '' => __("New PM")));
+MakeCrumbs(array(actionLink("private") => __("Private messages"), '' => __("Send PM")));
 
 if(!$loguserid) //Not logged in?
 	Kill(__("You must be logged in to send private messages."));
 	
 CheckPermission('user.sendpms');
 
+$draftID = 0;
+$replyTo = 0;
+$convStart = 0;
+$urlargs = array();
+
 $pid = (int)$_GET['pid'];
 if($pid)
 {
-	$rPM = Query("select * from {pmsgs} left join {pmsgs_text} on pid = pmsgs.id where userto = {0} and pmsgs.id = {1}", $loguserid, $pid);
+	$urlargs[] = 'pid='.$pid;
+	
+	// this shouldn't select drafts someone else is preparing for us
+	// those drafts will have recipients stored in draft_to, with userto set to 0
+	$rPM = Query("select * from {pmsgs} left join {pmsgs_text} on pid = {pmsgs}.id where (userfrom={0} OR userto={0}) and {pmsgs}.id = {1}", $loguserid, $pid);
 	if(NumRows($rPM))
 	{
-		$sauce = Fetch($rPM);
-		$rUser = Query("select * from {users} where id = {0}", (int)$sauce['userfrom']);
+		$pm = Fetch($rPM);
+		$rUser = Query("select name from {users} where id = {0}", $pm['userfrom']);
 		if(NumRows($rUser))
 			$user = Fetch($rUser);
 		else
 			Kill(__("Unknown user."));
-		$prefill = "[reply=\"".$user['name']."\"]".htmlspecialchars($sauce['text'])."[/reply]";
+			
+		$prefill = $pm['text'];
+		$trefill = $pm['title'];
+		
+		if (!$pm['drafting'])
+		{
+			$convStart = $pm['conv_start'] ?: $pm['id'];
+			$replyTo = $pm['userfrom'];
+			
+			$prefill = "[reply=\"".$user['name']."\"]".$prefill."[/reply]";
 
-		if(strpos($sauce['title'], "Re: Re: Re: ") !== false)
-			$trefill = str_replace("Re: Re: Re: ", "Re*4: ", $sauce['title']);
-		else if(preg_match("'Re\*([0-9]+): 'se", $sauce['title'], $reeboks))
-			$trefill = "Re*" . ((int)$reeboks[1] + 1) . ": " . substr($sauce['title'], strpos($sauce['title'], ": ") + 2);
-		else
-			$trefill = "Re: ".$sauce['title'];
-
-
-		if(!isset($_POST['to']))
+			if(strpos($pm['title'], "Re: Re: Re: ") !== false)
+				$trefill = str_replace("Re: Re: Re: ", "Re*4: ", $pm['title']);
+			else if(preg_match("'Re\*([0-9]+): 'se", $pm['title'], $reeboks))
+				$trefill = "Re*" . ((int)$reeboks[1] + 1) . ": " . substr($pm['title'], strpos($pm['title'], ": ") + 2);
+			else
+				$trefill = "Re: ".$pm['title'];
+				
+			if(!isset($_POST['to']))
 			$_POST['to'] = $user['name'];
-	} else
+		}
+		else
+		{
+			$draftID = $pid;
+			$convStart = $pm['conv_start'];
+			
+			$_POST['to'] = $pm['draft_to'];
+		}
+	} 
+	else
 		Kill(__("Unknown PM."));
 }
 
 $uid = (int)$_GET['uid'];
 if($uid)
 {
-	$rUser = Query("select * from {users} where id = {0}", $uid);
+	$urlargs[] = 'uid='.$uid;
+	
+	$rUser = Query("select name from {users} where id = {0}", $uid);
 	if(NumRows($rUser))
 	{
 		$user = Fetch($rUser);
@@ -51,18 +79,22 @@ if($uid)
 		Kill(__("Unknown user."));
 }
 
-write(
-"
-	<script type=\"text/javascript\">
-			window.addEventListener(\"load\",  hookUpControls, false);
-	</script>
-");
+
+if ($_POST['actiondelete'] && $draftID)
+{
+	Query("DELETE FROM {pmsgs} WHERE id={0} AND drafting=1", $draftID);
+	Query("DELETE FROM {pmsgs_text} WHERE pid={0}", $draftID);
+	
+	die(header("Location: ".actionLink("private")));
+}
+
+
+LoadPostToolbar();
 
 
 $recipIDs = array();
 if($_POST['to'])
 {
-	$firstTo = -1;
 	$recipients = explode(";", $_POST['to']);
 	foreach($recipients as $to)
 	{
@@ -75,36 +107,35 @@ if($_POST['to'])
 		{
 			$user = Fetch($rUser);
 			$id = $user['id'];
-			if($firstTo == -1)
-				$firstTo = $id;
-			/*if($id == $loguserid)
-				$errors .= __("You can't send private messages to yourself.")."<br />";
-			else */if(!in_array($id, $recipIDs))
+			
+			if(!in_array($id, $recipIDs))
 				$recipIDs[] = $id;
 		}
 		else
 			$errors .= format(__("Unknown user \"{0}\""), $to)."<br />";
 	}
-	//$maxRecips = array(-1 => 1, 3, 3, 3, 10, 100, 1);
-	//$maxRecips = $maxRecips[$loguser['powerlevel']];
-	//$maxRecips = ($loguser['powerlevel'] > 1) ? 5 : 1;
+
 	$maxRecips = 5;
 	if(count($recipIDs) > $maxRecips)
 		$errors .= __("Too many recipients.");
 	if($errors != "")
 	{
 		Alert($errors);
-		$_POST['action'] = "";
+		unset($_POST['actionsend']);
+		unset($_POST['actionsave']);
 	}
 }
 else
 {
-	if($_POST['action'] == __("Send"))
+	if($_POST['actionsend'] || $_POST['actionsave'])
+	{
 		Alert("Enter a recipient and try again.", "Your PM has no recipient.");
-	$_POST['action'] = "";
+		unset($_POST['actionsend']);
+		unset($_POST['actionsave']);
+	}
 }
 
-if($_POST['action'] == __("Send") || $_POST['action'] == __("Save as Draft"))
+if($_POST['actionsend'] || $_POST['actionsave'])
 {
 	if($_POST['title'])
 	{
@@ -112,125 +143,113 @@ if($_POST['action'] == __("Send") || $_POST['action'] == __("Save as Draft"))
 
 		if($_POST['text'])
 		{
-			$wantDraft = (int)($_POST['action'] == __("Save as Draft"));
+			$wantDraft = ($_POST['actionsave'] ? 1:0);
 
 			$bucket = "checkPost"; include("./lib/pluginloader.php");
 
 			$post = $_POST['text'];
 			$post = preg_replace("'/me '","[b]* ".htmlspecialchars($loguser['name'])."[/b] ", $post); //to prevent identity confusion
+
 			if($wantDraft)
-				$post = "<!-- ###MULTIREP:".$_POST['to']." ### -->".$post;
-
-			if($_POST['action'] == __("Save as Draft"))
 			{
-				$rPM = Query("insert into {pmsgs} (userto, userfrom, date, ip, msgread, drafting) values ({0}, {1}, {2}, {3}, 0, {4})", $firstTo, $loguserid, time(), $_SERVER['REMOTE_ADDR'], $wantDraft);
-				$pid = InsertId();
-
-				$rPMT = Query("insert into {pmsgs_text} (pid,title,text) values ({0}, {1}, {2})", $pid, $_POST['title'], $post);
+				if ($draftID)
+				{
+					Query("UPDATE {pmsgs_text} SET title={0}, text={1} WHERE pid={2}",
+						$_POST['title'], $post, $draftID);
+					Query("UPDATE {pmsgs} SET conv_start={0}, draft_to={1} WHERE id={2} AND drafting=1",
+						$convStart, $_POST['to'], $draftID);
+				}
+				else
+				{
+					Query("insert into {pmsgs_text} (title,text) values ({0}, {1})", 
+						$_POST['title'], $post);
+					$pid = InsertId();
+					
+					Query("insert into {pmsgs} (id, userto, userfrom, conv_start, date, ip, drafting, draft_to) values ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7})", 
+						$pid, 0, $loguserid, $convStart, time(), $_SERVER['REMOTE_ADDR'], 1, $_POST['to']);
+				}
 
 				die(header("Location: ".actionLink("private", "", "show=2")));
-				//Redirect(__("Draft saved!"), "private.php?show=2", __("your drafts box"));
 			}
 			else
 			{
+				if ($draftID) 
+				{
+					$pid = $draftID;
+					Query("DELETE FROM {pmsgs} WHERE id={0} AND drafting=1", $pid);
+				}
+				else
+				{
+					Query("insert into {pmsgs_text} (title,text) values ({0}, {1})", 
+						$_POST['title'], $post);
+					$pid = InsertId();
+				}
+				
 				foreach($recipIDs as $recipient)
 				{
-					$rPM = Query("insert into {pmsgs} (userto, userfrom, date, ip, msgread, drafting) values ({0}, {1}, {2}, {3}, 0, {4})", $recipient, $loguserid, time(), $_SERVER['REMOTE_ADDR'], $wantDraft);
-					$pid = InsertId();
-
-					$rPMT = Query("insert into {pmsgs_text} (pid,title,text) values ({0}, {1}, {2})", $pid, $_POST['title'], $post);
+					$cs = ($recipient == $replyTo) ? $convStart : 0;
+					
+					$rPM = Query("insert into {pmsgs} (id, userto, userfrom, conv_start, date, ip, msgread, drafting) values ({0}, {1}, {2}, {3}, {4}, {5}, 0, {6})", 
+						$pid, $recipient, $loguserid, $cs, time(), $_SERVER['REMOTE_ADDR'], 0);
 				}
 
 				die(header("Location: ".actionLink("private", "", "show=1")));
-				//Redirect(__("PM sent!"),"private.php?show=1", __("your PM outbox"));
 			}
-			exit();
-		} else
+		} 
+		else
 		{
 			Alert(__("Enter a message and try again."), __("Your PM is empty."));
 		}
-	} else
+	} 
+	else
 	{
 		Alert(__("Enter a title and try again."), __("Your PM is untitled."));
 	}
 }
 
-$_POST['title'] = $_POST['title'];
-$_POST['text'] = $_POST['text'];
+if($_POST['text']) $prefill = $_POST['text'];
+if($_POST['title']) $trefill = $_POST['title'];
 
-if($_POST['action']==__("Preview"))
+if($_POST['actionpreview'] || $draftID)
 {
-	if($_POST['text'])
+	if($prefill)
 	{
-
-		$previewPost['text'] = $_POST["text"];
+		$previewPost['text'] = $prefill;
 		$previewPost['num'] = 0;
 		$previewPost['posts'] = $loguser['posts'];
 		$previewPost['id'] = 0;
 		$previewPost['options'] = 0;
 
 		foreach($loguser as $key => $value)
-			$previewPost["u_".$key] = $value;
+			$previewPost['u_'.$key] = $value;
 
 		MakePost($previewPost, POST_SAMPLE);
 	}
 }
 
-if($_POST['text']) $prefill = htmlspecialchars($_POST['text']);
-if($_POST['title']) $trefill = htmlspecialchars($_POST['title']);
+$fields = array(
+	'to' => "<input type=\"text\" name=\"to\" size=40 maxlength=\"128\" value=\"".htmlspecialchars($_POST['to'])."\">",
+	'title' => "<input type=\"text\" name=\"title\" size=80 maxlength=\"60\" value=\"".htmlspecialchars($trefill)."\">",
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">".htmlspecialchars($prefill)."</textarea>",
+	
+	'btnSend' => "<input type=\"submit\" name=\"actionsend\" value=\"".__("Send")."\">",
+	'btnPreview' => "<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\">",
+	'btnSaveDraft' => "<input type=\"submit\" name=\"actionsave\" value=\"".__("Save draft")."\">",
+	'btnDeleteDraft' => "<input type=\"submit\" name=\"actiondelete\" value=\"".__("Delete draft")."\" onclick=\"if(!confirm('Really delete this draft?'))return false;\">",
+);
 
-if(!isset($_POST['iconid']))
-	$_POST['iconid'] = 0;
+if (!$draftID) unset($fields['btnDeleteDraft']);
 
-Write(
-"
-				<form name=\"postform\" action=\"".actionLink("sendprivate")."\" method=\"post\">
-					<table class=\"outline margin width100\">
-						<tr class=\"header1\">
-							<th colspan=\"2\">
-								".__("Send PM")."
-							</th>
-						</tr>
-						<tr class=\"cell0\">
-							<td class=\"center\"  style=\"width:15%; max-width:150px;\">
-								".__("To")."
-							</td>
-							<td>
-								<input type=\"text\" name=\"to\" style=\"width: 98%;\" maxlength=\"1024\" value=\"{2}\" />
-							</td>
-						</tr>
-						<tr class=\"cell1\">
-							<td class=\"center\">
-								".__("Title")."
-							</td>
-							<td>
-								<input type=\"text\" name=\"title\" style=\"width: 98%;\" maxlength=\"60\" value=\"{1}\" />
-							</td>
-						<tr class=\"cell0\">
-							<td class=\"center\">
-								".__("Message")."
-							</td>
-							<td>
-								<textarea id=\"text\" name=\"text\" rows=\"16\" style=\"width: 98%;\">{0}</textarea>
-							</td>
-						</tr>
-						<tr class=\"cell2\">
-							<td></td>
-							<td>
-								<input type=\"submit\" name=\"action\" value=\"".__("Send")."\" />
-								<input type=\"submit\" name=\"action\" value=\"".__("Preview")."\" />
-								<input type=\"submit\" name=\"action\" value=\"".__("Save as Draft")."\" />
-							</td>
-						</tr>
-					</table>
-				</form>
-",	$prefill, $trefill, htmlspecialchars($_POST['to']));
+echo "
+	<form name=\"postform\" action=\"\" method=\"post\">";
 
-Write(
-"
+RenderTemplate('form_sendprivate', array('fields' => $fields, 'draftMode' => $draftID?true:false, 'maxRecipients' => 5));
+
+echo "
+	</form>
 	<script type=\"text/javascript\">
 		document.postform.text.focus();
 	</script>
-");
+";
 
 ?>
