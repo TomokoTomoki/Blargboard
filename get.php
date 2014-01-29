@@ -9,14 +9,14 @@ if (!$entry)
 if ($entry['deldate'] != 0)
 	die(__("No such file."));
 
-//Count downloads!
-if (!$isBot)
-	Query("update {uploadedfiles} set downloads = downloads+1 where id = {0}", $entry['id']);
-
 $path = $dataDir.'uploads/'.$entry['physicalname'];
 
 if(!file_exists($path))
 	die(__("No such file."));
+	
+//Count downloads!
+if (!$isBot)
+	Query("update {uploadedfiles} set downloads = downloads+1 where id = {0}", $entry['id']);
 
 // TODO detect/store MIME type instead of all that junk?
 $fsize = filesize($path);
