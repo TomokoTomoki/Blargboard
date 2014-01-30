@@ -1,7 +1,7 @@
-	<table class="outline margin form form_login">
+	<table class="outline margin form form_lostpass">
 		<tr class="header1">
 			<th colspan=2>
-				Log in
+				Request password reset
 			</th>
 		</tr>
 		<tr>
@@ -14,23 +14,21 @@
 		</tr>
 		<tr>
 			<td class="cell2 center">
-				Password
+				Email address
 			</td>
 			<td class="cell1">
-				{$fields.password}
-			</td>
-		</tr>
-		<tr>
-			<td class="cell2"></td>
-			<td class="cell1">
-				{$fields.session}
+				{$fields.email} | Confirm: {$fields.email2}
 			</td>
 		</tr>
 		<tr class="cell2">
 			<td></td>
 			<td>
-				{$fields.btnLogin}
-				{$fields.btnForgotPass}
+				{$fields.btnSendReset}
+			</td>
+		</tr>
+		<tr>
+			<td class="cell1 smallFonts" colspan=2>
+				If automated password reset fails, you can try contacting one of the board's administrators.
 			</td>
 		</tr>
 	</table>
