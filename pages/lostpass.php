@@ -64,6 +64,9 @@ else if(isset($_POST['action']))
 }
 else
 {
+	$title = __('Request password reset');
+	MakeCrumbs(array(actionLink('login') => __('Log in'), '' => __('Request password reset')));
+	
 	echo "
 	<form action=\"".actionLink("lostpass")."\" method=\"post\">";
 	
