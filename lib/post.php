@@ -87,7 +87,7 @@ $layouCache = array();
 
 function makePostText($post)
 {
-	global $loguser, $layoutCache, $blocklayouts, $boardroot;
+	global $loguser, $layoutCache, $blocklayouts, $boardroot, $dataDir;
 
 	LoadBlockLayouts();
 	$poster = getDataPrefix($post, 'u_');
@@ -143,18 +143,19 @@ function makePostText($post)
 	$attachblock = '';
 	if ($post['has_attachments'])
 	{
-		$attachs = Query("SELECT id,filename,description,downloads 
+		$attachs = Query("SELECT id,filename,physicalname,description,downloads 
 			FROM {uploadedfiles}
 			WHERE parenttype={0} AND parentid={1} AND deldate=0",
 			'post_attachment', $post['id']);
 		while ($attach = Fetch($attachs))
 		{
 			$link = '<a href="'.$boardroot.'get.php?id='.htmlspecialchars($attach['id']).'">'.htmlspecialchars($attach['filename']).'</a>';
+			$filesize = filesize($dataDir.'uploads/'.$attach['physicalname']);
 			
 			$attachblock .= '<br><div class="post_attachment">';
 			$attachblock .= '<strong>'.__('Attachment: ').$link.'</strong><br>';
 			$attachblock .= '<div class="smallFonts">'.htmlspecialchars($attach['description']).'<br>';
-			$attachblock .= __('Downloaded ').Plural($attach['downloads'], 'time').'</div>';
+			$attachblock .= BytesToSize($filesize).__(' &mdash; Downloaded ').Plural($attach['downloads'], 'time').'</div>';
 			$attachblock .= '</div>';
 		}
 	}
