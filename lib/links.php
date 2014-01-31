@@ -54,22 +54,32 @@ function actionLink($action, $id="", $args="", $urlname="")
 }
 
 
-function actionLinkTag($text, $action, $id=0, $args="", $urlname="")
+function actionLinkTag($text, $action, $id='', $args="", $urlname="")
 {
 	return '<a href="'.htmlentities(actionLink($action, $id, $args, $urlname)).'">'.$text.'</a>';
 }
-function actionLinkTagItem($text, $action, $id=0, $args="", $urlname="")
+function actionLinkTagItem($text, $action, $id='', $args="", $urlname="")
 {
 	return '<li><a href="'.htmlentities(actionLink($action, $id, $args, $urlname)).'">'.$text.'</a></li>';
 }
 
-function actionLinkTagConfirm($text, $prompt, $action, $id=0, $args="")
+function actionLinkTagConfirm($text, $prompt, $action, $id='', $args="")
 {
 	return '<a onclick="return confirm(\''.$prompt.'\'); " href="'.htmlentities(actionLink($action, $id, $args)).'">'.$text.'</a>';
 }
-function actionLinkTagItemConfirm($text, $prompt, $action, $id=0, $args="")
+function actionLinkTagItemConfirm($text, $prompt, $action, $id='', $args="")
 {
 	return '<li><a onclick="return confirm(\''.$prompt.'\'); " href="'.htmlentities(actionLink($action, $id, $args)).'">'.$text.'</a></li>';
+}
+
+function getForm($action, $id='')
+{
+	$ret = '<form method="GET"><input type="hidden" name="page" value="'.$action.'">';
+	
+	if ($id != '')
+		$ret .= '<input type="hidden" name="id" value="'.htmlspecialchars($id).'">';
+	
+	return $ret;
 }
 
 function resourceLink($what)
