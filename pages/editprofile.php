@@ -719,6 +719,9 @@ foreach ($epFields as $catid => $cfields)
 			case "password":
 				$output = "<input type=\"password\" name=\"".$field."\" size=24> | ".__("Confirm:")." <input type=\"password\" name=\"repeat".$field."\" size=24>";
 				break;
+			case "passwordonce":
+				$output = "<input type=\"password\" name=\"".$field."\" size=24>";
+				break;
 				
 			case "birthday":
 				if (!$item['value']) $bd = array('', '', '');
@@ -728,8 +731,6 @@ foreach ($epFields as $catid => $cfields)
 				$output .= __('Year: ')."<input type=\"text\" name=\"{$field}Y\" value=\"{$bd[2]}\" size=4 maxlength=4> ";
 				break;
 				
-			case "passwordonce":
-				$item['type'] = "password";
 			case "text":
 				$output .= "<input id=\"".$field."\" name=\"".$field."\" type=\"".$item['type']."\" value=\"".htmlspecialchars($item['value'])."\"";
 				if(isset($item['width']))
