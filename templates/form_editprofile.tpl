@@ -43,8 +43,8 @@
 			<tr class="header0">
 				<th colspan=2>&nbsp;</th>
 			</tr>
-			<tr class="cell{cycle values='0,1'}">
-				<td class="cell2" style="width:20%;"></td>
+			<tr class="cell2">
+				<td style="width:20%;"></td>
 				<td>
 					{$btnEditProfile}
 				</td>

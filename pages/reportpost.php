@@ -1,6 +1,6 @@
 <?php
 
-$title = 'Report post';
+$title = __('Report post');
 
 if (!$loguserid) Kill(__('You must be logged in to report posts.'));
 CheckPermission('user.reportposts');
@@ -26,17 +26,21 @@ if ($_POST['report'])
 {
 	if ($_POST['key'] !== $loguser['token'])
 		Kill(__('No.'));
-	
-	Query("INSERT INTO {pmsgs} (userto,userfrom,date,ip,msgread,deleted,drafting)
-		VALUES ({0},{1},{2},{3},0,0,0)",
-		-1, $loguserid, time(), $_SERVER['REMOTE_ADDR']);
+		
+	// TODO make this use actual notifications or anything better
+		
+	Query("INSERT INTO {pmsgs_text} (title,text) VALUES ({0},{1})",
+		"Post report (post #{$pid})", '');
 	$pmid = InsertId();
+	
+	Query("INSERT INTO {pmsgs} (id,userto,userfrom,date,ip,msgread,deleted,drafting)
+		VALUES ({0},{1},{2},{3},{4},0,0,0)",
+		$pmid, -1, $loguserid, time(), $_SERVER['REMOTE_ADDR']);
 	
 	$report = "<strong>Post report</strong>\n\n<strong>Post:</strong> ".actionLinkTag($tags[0], 'post', $pid).
 		" (post #{$pid})\n\n<strong>Message:</strong>\n{$_POST['message']}\n\n".actionLinkTag('Mark issue as resolved', 'showprivate', $pmid, 'markread=1');
-	
-	Query("INSERT INTO {pmsgs_text} (pid,title,text) VALUES ({0},{1},{2})",
-		$pmid, "Post report (post #{$pid})", $report);
+		
+	Query("UPDATE {pmsgs_text} SET text={0} WHERE pid={1}", $report, $pmid);
 	
 	die(header('Location: '.actionLink('post', $pid)));
 }
@@ -49,17 +53,20 @@ foreach($user as $key => $value)
 
 MakePost($post, POST_SAMPLE);
 
+
+$fields = array(
+	'message' => '<textarea id="text" name="message" rows=10></textarea>',
+	
+	'btnSubmit' => '<input type="submit" name="report" value="'.__('Submit report').'">',
+);
+
+echo '
+	<form action="" method="POST">';
+	
+RenderTemplate('form_reportpost', array('fields' => $fields));
+
+echo '
+		<input type="hidden" name="key" value="'.$loguser['token'].'">
+	</form>';
+	
 ?>
-	<form action="" method="POST">
-		<table class="outline margin">
-			<tr class="header1"><th colspan="2"><?php echo __('Report post'); ?></th></tr>
-			<tr class="cell0">
-				<td class="cell2 center" style="width:15%; max-width:150px;"><?php echo __('Message'); ?></td>
-				<td><textarea id="text" name="message" rows="10" style="width: 98%;"></textarea></td>
-			</tr>
-			<tr class="cell2">
-				<td>&nbsp;</td>
-				<td><input type="submit" name="report" value="<?php echo __('Submit report'); ?>">
-		</table>
-		<input type="hidden" name="key" value="<?php echo $loguser['token']; ?>">
-	</form>
