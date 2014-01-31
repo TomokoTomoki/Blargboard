@@ -985,7 +985,15 @@ td.threadIcon
 	white-space: nowrap;
 }
 
-.eptable {
+.editprofile
+{
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.eptable 
+{
 	margin: 0px 0px !important;
 }
 
