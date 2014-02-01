@@ -11,23 +11,25 @@ CheckPermission('user.editavatars');
 MakeCrumbs(array(actionLink('profile', $loguserid, '', $loguser['name']) => htmlspecialchars($loguser['displayname']?$loguser['displayname']:$loguser['name']),
 	actionLink("editavatars") => __("Mood avatars")));
 
-if(isset($_POST['action']))
+if(isset($_POST['actionrename']) || isset($_POST['actiondelete']) || isset($_POST['actionadd']))
 {
 	$mid = (int)$_POST['mid'];
-	if($_POST['action'] == __("Rename"))
+	if($_POST['actionrename'])
 	{
 		Query("update {moodavatars} set name={0} where mid={1} and uid={2}", $_POST['name'], $mid, $loguserid);
-		Alert(__("Avatar renamed."), __("Okay"));
+		
+		die(header('Location: '.actionLink('editavatars')));
 	}
-	else if($_POST['action'] == __("Delete"))
+	else if($_POST['actiondelete'])
 	{
 		Query("delete from {moodavatars} where uid={0} and mid={1}", $loguserid, $mid);
 		Query("update {posts} set mood=0 where user={0} and mood={1}", $loguserid, $mid);
 		if(file_exists("{$dataDir}avatars/".$loguserid."_".$mid))
 			unlink("{$dataDir}avatars/".$loguserid."_".$mid);
-		Alert(__("Avatar deleted."), __("Okay"));
+			
+		die(header('Location: '.actionLink('editavatars')));
 	}
-	else if($_POST['action'] == __("Add"))
+	else if($_POST['actionadd'])
 	{
 		$highest = FetchResult("select mid from {moodavatars} where uid={0} order by mid desc limit 1", $loguserid);
 		if($highest < 1)
@@ -68,90 +70,66 @@ if(isset($_POST['action']))
 
 				Query("insert into {moodavatars} (uid, mid, name) values ({0}, {1}, {2})", $loguserid, $mid, $_POST['name']);
 
+				list($width, $height, $type) = getimagesize($tmpfile);
+
+				if($type == 1) $img1 = imagecreatefromgif ($tmpfile);
+				if($type == 2) $img1 = imagecreatefromjpeg($tmpfile);
+				if($type == 3) $img1 = imagecreatefrompng ($tmpfile);
+
+				if($width <= $dimx && $height <= $dimy && $type<=3)
+					copy($tmpfile,$file);
+				elseif($type <= 3)
 				{
-					list($width, $height, $type) = getimagesize($tmpfile);
-
-					if($type == 1) $img1 = imagecreatefromgif ($tmpfile);
-					if($type == 2) $img1 = imagecreatefromjpeg($tmpfile);
-					if($type == 3) $img1 = imagecreatefrompng ($tmpfile);
-
-					if($width <= $dimx && $height <= $dimy && $type<=3)
-						copy($tmpfile,$file);
-					elseif($type <= 3)
+					$r = imagesx($img1) / imagesy($img1);
+					if($r > 1)
 					{
-						$r = imagesx($img1) / imagesy($img1);
-						if($r > 1)
-						{
-							$img2=imagecreatetruecolor($dimx,floor($dimy / $r));
-							imagecopyresampled($img2,$img1,0,0,0,0,$dimx,$dimy/$r,imagesx($img1),imagesy($img1));
-						} else
-						{
-							$img2=imagecreatetruecolor(floor($dimx * $r), $dimy);
-							imagecopyresampled($img2,$img1,0,0,0,0,$dimx*$r,$dimy,imagesx($img1),imagesy($img1));
-						}
-						imagepng($img2,$file);
+						$img2=imagecreatetruecolor($dimx,floor($dimy / $r));
+						imagecopyresampled($img2,$img1,0,0,0,0,$dimx,$dimy/$r,imagesx($img1),imagesy($img1));
 					} else
-						$error.="<li>Invalid format.</li>";
-				}
-				$usepic = $file;
-			} else
+					{
+						$img2=imagecreatetruecolor(floor($dimx * $r), $dimy);
+						imagecopyresampled($img2,$img1,0,0,0,0,$dimx*$r,$dimy,imagesx($img1),imagesy($img1));
+					}
+					imagepng($img2,$file);
+				} else
+					$error.="<li>Invalid format.</li>";
+			}
+				
+			if (!$error)
+				die(header('Location: '.actionLink('editavatars')));
+			else
 				Kill(__("Could not update your avatar for the following reason(s):")."<ul>".$error."</ul>");
 		}
 	}
 }
 
-$moodRows = "";
+$moodRows = array();
 $rMoods = Query("select mid, name from {moodavatars} where uid={0} order by mid asc", $loguserid);
 while($mood = Fetch($rMoods))
 {
-	$cellClass = ($cellClass+1) % 2;
-	$moodRows .= format(
-"
-		<tr class=\"cell{0}\">
-			<td style=\"width: 200px;\">
-				<img src=\"img/avatars/{1}_{2}\" alt=\"\">
-			</td>
-			<td>
+	$row = array();
+	
+	$row['avatar'] = "<img src=\"{$dataDir}avatars/{$loguserid}_{$mood['mid']}\" alt=\"\">";
+	
+	$row['field'] = "
 				<form method=\"post\" action=\"".actionLink("editavatars")."\">
-					<input type=\"hidden\" name=\"mid\" value=\"{2}\" />
-					<input type=\"text\" id=\"name{2}\" name=\"name\" style=\"width: 60%;\" value=\"{3}\" />
-					<input type=\"submit\" name=\"action\" value=\"".__("Rename")."\" />
-					<input type=\"submit\" name=\"action\" value=\"".__("Delete")."\" />
-				</form>
-			</td>
-		</tr>
-",	$cellClass, $loguserid, $mood['mid'], htmlspecialchars($mood['name']));
+					<input type=\"hidden\" name=\"mid\" value=\"{$mood['mid']}\">
+					<input type=\"text\" id=\"name{$mood['mid']}\" name=\"name\" size=80 maxlength=60 value=\"".htmlspecialchars($mood['name'])."\"><br>
+					<input type=\"submit\" name=\"actionrename\" value=\"".__("Rename")."\">
+					<input type=\"submit\" name=\"actiondelete\" value=\"".__("Delete")."\" 
+						onclick=\"if(!confirm('".__('Really delete this avatar? All posts using it will be changed to use your default avatar.')."'))return false;\">
+				</form>";
+			
+	$moodRows[] = $row;
 }
 
-write(
-"
-	<table class=\"margin outline width100\">
-		<tr class=\"header1\">
-			<th colspan=\"2\">
-				".__("Mood avatars")."
-			</th>
-		</tr>
-		{0}
-		<tr class=\"header1\">
-			<th colspan=\"2\">
-				".__("Add new")."
-			</th>
-		</tr>
-		<tr class=\"cell2\">
-			<td style=\"width: 200px;\">
-			</td>
-			<td>
+$newField = "
 				<form method=\"post\" action=\"".actionLink("editavatars")."\" enctype=\"multipart/form-data\">
-					<label for=\"newName\">".__("Name:")."</label>
-					<input type=\"text\" id=\"newName\" name=\"name\" style=\"width: 60%;\" /><br />
-
-					<label for=\"pic\">".__("Image:")."</label>
-					<input type=\"file\" id=\"pic\" name=\"picture\"  style=\"width: 75%;\" />
-
-					<input type=\"submit\" name=\"action\" value=\"".__("Add")."\" />
-				</form>
-			</td>
-	</table>
-", $moodRows);
+					".__("Name:")." <input type=\"text\" id=\"newName\" name=\"name\" size=80 maxlength=60><br>
+					".__("Image:")." <input type=\"file\" id=\"pic\" name=\"picture\"><br>
+					<input type=\"submit\" name=\"actionadd\" value=\"".__("Add")."\">
+				</form>";
+				
+RenderTemplate('moodavatars', array('avatars' => $moodRows, 'newField' => $newField));
 
 ?>
