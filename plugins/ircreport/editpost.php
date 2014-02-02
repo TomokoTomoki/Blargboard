@@ -10,7 +10,7 @@ if($loguser["displayname"])
 	$thename = $loguser["displayname"];
 	
 $fpage = ircForumPrefix($forum);
-$link = getServerURLNoSlash().actionLink("post", $pid);
+$link = getServerDomainNoSlash().actionLink("post", $pid);
 
 ircReport("\003".$c2."Post edited by\003$c1 "
 	.ircUserColor($thename, $loguser['sex'], 0)

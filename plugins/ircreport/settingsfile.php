@@ -1,14 +1,25 @@
 <?php
 	$settings = array(
+		"mode" => array(
+			"type" => "options",
+			"options" => array('tcp' => 'tcp', 'http' => 'http'),
+			"default" => 'tcp',
+			"name" => "Connection type",
+		),
 		"host" => array(
 			"type" => "text",
 			"default" => "localhost",
-			"name" => "Destination host",
+			"name" => "(TCP) Destination host",
 		),
 		"port" => array(
 			"type" => "integer",
 			"default" => "1234",
-			"name" => "Destination port",
+			"name" => "(TCP) Destination port",
+		),
+		"url" => array(
+			"type" => "text",
+			"default" => "",
+			"name" => "(HTTP) Destination URL prefix",
 		),
 		"color1" => array(
 			"type" => "integer",
