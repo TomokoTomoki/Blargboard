@@ -2,10 +2,17 @@
 
 function ircReport($stuff)
 {
-	$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	socket_connect($sock, Settings::pluginGet("host"), Settings::pluginGet("port"));
-	socket_write($sock, $stuff."\n");
-	socket_close($sock);
+	if (Settings::pluginGet("mode") == "http")
+	{
+		file_get_contents(Settings::pluginGet('url') . rawurlencode($stuff));
+	}
+	else
+	{
+		$sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		socket_connect($sock, Settings::pluginGet("host"), Settings::pluginGet("port"));
+		socket_write($sock, $stuff."\n");
+		socket_close($sock);
+	}
 }
 
 function ircUserColor($name, $gender, $power) {
