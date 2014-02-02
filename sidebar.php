@@ -11,7 +11,6 @@ $sidelinks = array
 	Settings::get('breadcrumbsMainName') => array
 	(
 		$boardroot => 'Home page',
-		actionLink('news') => 'Latest news',
 		actionLink('board') => 'Forums',
 		actionLink('faq') => 'FAQ',
 		actionLink('memberlist') => 'Member list',
