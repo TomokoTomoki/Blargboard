@@ -832,7 +832,7 @@ RenderTemplate('form_editprofile', array(
 	'categories' => $epCategories, 
 	'fields' => $epFields,
 	'selectedTab' => $selectedTab,
-	'btnEditProfile' => "<input type=\"submit\" id=\"submit\" name=\"actionsave\" value=\"".__("Edit profile")."\">"));
+	'btnEditProfile' => "<input type=\"submit\" id=\"submit\" name=\"actionsave\" value=\"".__("Save")."\">"));
 
 echo "
 		<input type=\"hidden\" name=\"editusermode\" value=\"1\">
