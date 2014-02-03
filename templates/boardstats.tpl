@@ -13,7 +13,7 @@
 				</div>
 				<div class="center">
 					{plural num=$stats.numThreads what='thread'} and {plural num=$stats.numPosts what='post'} total<br>
-					{plural num=$stats.newToday what='last post'} today, {$stats.newLastHour} last hour
+					{plural num=$stats.newToday what='post'} today, {$stats.newLastHour} last hour
 				</div>
 			</td>
 		</tr>
