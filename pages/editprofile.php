@@ -369,9 +369,12 @@ if($_POST['actionsave'])
 					break;
 				case "bitmask":
 					$val = 0;
-					foreach ($_POST[$field] as $bit)
-						if ($bit && array_key_exists($bit, $item['options']))
-							$val |= $bit;
+					if ($_POST[$field])
+					{
+						foreach ($_POST[$field] as $bit)
+							if ($bit && array_key_exists($bit, $item['options']))
+								$val |= $bit;
+					}
 					$sets[] = $field." = ".(int)$val;
 					break;
 			}
