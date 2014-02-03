@@ -322,6 +322,13 @@ function getRequestedURL()
     return $_SERVER['REQUEST_URI'];
 }
 
+
+function getServerDomainNoSlash($https = false)
+{
+	global $serverport;
+	return ($https?"https":"http") . "://" . $_SERVER['SERVER_NAME'].$serverport;
+}
+
 function getServerURL($https = false)
 {
     return getServerURLNoSlash($https)."/";
