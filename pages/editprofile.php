@@ -720,7 +720,7 @@ foreach ($epFields as $catid => $cfields)
 				$output = "<input type=\"password\" name=\"".$field."\" size=24> | ".__("Confirm:")." <input type=\"password\" name=\"repeat".$field."\" size=24>";
 				break;
 			case "passwordonce":
-				$output = "<input type=\"password\" name=\"".$field."\" size=24>";
+				$output = "<input type=\"password\" name=\"".$field."\" id=\"".$field."\" size=24>";
 				break;
 				
 			case "birthday":
