@@ -109,6 +109,16 @@
 			"default" => "1",
 			"name" => "Show extra info in post sidebar",
 		),
+		"rssTitle" => array (
+			"type" => "text",
+			"default" => "Blargboard RSS",
+			"name" => "RSS feed title"
+		),
+		"rssDesc" => array (
+			"type" => "text",
+			"default" => "A news feed for Blargboard",
+			"name" => "RSS feed description"
+		),
 		'PoRATitle' => array(
 			'type' => 'text',
 			'default' => 'What\'s up today?',

@@ -24,8 +24,8 @@ else
 
 header('Content-type: application/rss+xml');
 
-$title = FetchResult("SELECT value FROM {settings} WHERE plugin='kuriblog' AND name='rssTitle'");
-$desc = FetchResult("SELECT value FROM {settings} WHERE plugin='kuriblog' AND name='rssDesc'");
+$title = Settings::get('rssTitle');
+$desc = Settings::get('rssDesc');
 
 $url = "http".($ishttps?'s':'')."://{$_SERVER['SERVER_NAME']}{$serverport}";
 $fullurl = getServerURLNoSlash($ishttps);
