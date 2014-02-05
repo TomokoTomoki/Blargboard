@@ -83,7 +83,7 @@ $rThreads = Query("	SELECT
 
 $numonpage = NumRows($rThreads);
 
-$pagelinks = PageLinks(actionLink('news', '', 'from='), $tpp, $from, $total);
+$pagelinks = PageLinks(actionLink('home', '', 'from='), $tpp, $from, $total);
 
 RenderTemplate('pagelinks', array('pagelinks' => $pagelinks, 'position' => 'top'));
 
