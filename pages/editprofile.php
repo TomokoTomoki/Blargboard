@@ -137,7 +137,7 @@ AddField('account', 'confirm', 'currpassword', __('Password'), 'passwordonce');
 AddCategory('account', 'login', __('Login information'));
 
 if ($editUserMode)
-	AddField('account', 'login', 'name', __('User name'), 'text', array('width'=>24, 'length'=>20));
+	AddField('account', 'login', 'name', __('User name'), 'text', array('width'=>24, 'length'=>20, 'callback' => 'HandleUsername'));
 else
 	AddField('account', 'login', 'name', __('User name'), 'label', array('value'=>htmlspecialchars($user['name'])));
 
