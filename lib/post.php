@@ -195,7 +195,7 @@ function makePost($post, $type, $params=array())
 	if($post['deleted'] && $type == POST_NORMAL)
 	{
 		$post['deluserlink'] = UserLink(getDataPrefix($post, 'du_'));
-		$post['reason'] = htmlspecialchars($post['reason']);
+		$post['delreason'] = htmlspecialchars($post['reason']);
 
 		$links = array();
 		if (HasPermission('mod.deleteposts', $params['fid']))
