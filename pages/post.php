@@ -2,12 +2,11 @@
 
 if (isset($_GET['id']))
 {
-	$pid = (int)$_GET['id'];
-	$rPost = Query("select date,thread from {posts} where id={0}", $pid);
+	$rPost = Query("select id,date,thread from {posts} where id={0}", $_GET['id']);
 }
 else if (isset($_GET['tid']) && isset($_GET['time']))
 {
-	$rPost = Query("select date,thread from {posts} where thread={0} AND date>{1} ORDER BY DATE LIMIT 1",
+	$rPost = Query("select id,date,thread from {posts} where thread={0} AND date>{1} ORDER BY date LIMIT 1",
 		$_GET['tid'], $_GET['time']);
 }
 else
@@ -18,6 +17,7 @@ if(NumRows($rPost))
 else
 	Kill(__("Unknown post ID."));
 
+$pid = $post['id'];
 $tid = $post['thread'];
 
 $rThread = Query("select id,title,forum from {threads} where id={0}", $tid);

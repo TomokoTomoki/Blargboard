@@ -375,13 +375,22 @@ function makeThreadListing($threads, $pagelinks, $dostickies = true, $showforum 
 
 
 		$NewIcon = '';
+		$tdata['gotonew'] = '';
+		
 		if($thread['closed'])
 			$NewIcon = 'off';
 		if($thread['replies'] >= $misc['hotcount'])
 			$NewIcon .= 'hot';
 		if((!$loguserid && $thread['lastpostdate'] > time() - 900) ||
 			($loguserid && $thread['lastpostdate'] > $thread['readdate']))
+		{
 			$NewIcon .= 'new';
+			if ($loguserid)
+			{
+				$tdata['gotonew'] = actionLinkTag('<img src="'.resourceLink('img/gotounread.png').'" alt="[go to first unread post]">',
+					'post', '', 'tid='.$thread['id'].'&time='.(int)$thread['readdate']);
+			}
+		}
 		else if(!$thread['closed'] && !$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['lastpostdate'] < time() - (2592000 * Settings::get("oldThreadThreshold")))
 			$NewIcon = 'old';
 
@@ -397,12 +406,12 @@ function makeThreadListing($threads, $pagelinks, $dostickies = true, $showforum 
 			//This is a hack, but given how icons are stored in the DB, I can do nothing about it without breaking DB compatibility.
 			if(startsWith($thread['icon'], "img/"))
 				$thread['icon'] = resourceLink($thread['icon']);
-			$tdata['icon'] = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\"/>";
+			$tdata['icon'] = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\">";
 		}
 		else
 			$tdata['icon'] = '';
 
-		$tdata['poll'] = ($thread['poll'] ? "<img src=\"".resourceLink("img/poll.png")."\" alt=\"Poll\"/>" : "");
+		$tdata['poll'] = ($thread['poll'] ? "<img src=\"".resourceLink("img/poll.png")."\" alt=\"[poll]\">" : "");
 
 
 		$n = 4;

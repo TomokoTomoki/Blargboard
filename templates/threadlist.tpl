@@ -20,6 +20,7 @@
 			<td class="cell2 newMarker">{$thread.new}</td>
 			<td class="threadIcon" style="border-right:0px none;">{$thread.icon}</td>
 			<td style="border-left:0px none;">
+				{$thread.gotonew}
 				{$thread.poll}
 				{$thread.link}
 				{if $thread.pagelinks} <small>[{$thread.pagelinks}]</small>{/if}
