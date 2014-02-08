@@ -145,7 +145,7 @@ else if(isset($_POST['actionpost']))
 		// mark the thread as new if we edited the last post
 		// just decrementing the thread's last read time will do
 		if($isLastPost)
-			Query("UPDATE {threadsread} SET date=date-1 WHERE thread={0} AND id!={1}", $thread['id'], $loguserid);
+			Query("UPDATE {threadsread} SET date={2} WHERE thread={0} AND id!={1}", $thread['id'], $loguserid, $post['date']-1);
 
 		Report("Post edited by [b]".$loguser['name']."[/] in [b]".$thread['title']."[/] (".$forum['title'].") -> [g]#HERE#?pid=".$pid, $isHidden);
 		$bucket = 'editpost'; include("lib/pluginloader.php");
