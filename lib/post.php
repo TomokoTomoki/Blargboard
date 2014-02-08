@@ -49,7 +49,7 @@ function loadBlockLayouts()
 
 function getSyndrome($activity)
 {
-	include("syndromes.php");
+	include_once("syndromes.php");
 	$soFar = "";
 	foreach($syndromes as $minAct => $syndrome)
 		if($activity >= $minAct)
