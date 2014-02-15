@@ -31,6 +31,10 @@ function parseText($text, $parentTag)
 	return $text;
 }
 
+
+// TODO: consider optimization
+// put all the tags in one array, with bitmasks defining how they're handled
+
 $tagParseStatus = array(
 	'ul' => 1,
 	'ol' => 1,
@@ -67,7 +71,7 @@ $singleTags = array(
 	'thread' => 1,
 );
 $singleHtmlTags = array(
-	'p' => 1,
+	//'p' => 1,
 	'br' => 1,
 	'img' => 1,
 	'link' => 1,
@@ -125,7 +129,7 @@ $goodHtmlTags = array(
 	'ul' => 1,
 	'link' => 1,
 	
-	'iframe' => 1,
+	//'iframe' => 1,
 	
 	'audio' => 1,
 	'source' => 1,
@@ -143,6 +147,12 @@ $blockHtmlTags = array(
 	'p' => 1,
 	'style' => 1,
 	'link' => 1,
+	'h1' => 1,
+	'h2' => 1,
+	'h3' => 1,
+	'h4' => 1,
+	'h5' => 1,
+	'h6' => 1,
 	
 	// mix BBCode in. Hack.
 	'code' => 1,
