@@ -1,5 +1,7 @@
 Blargboard
 
+http://kuribo64.net/blargboard/
+
 -------------------------------------------------------------------------------
 
 Board software written in PHP. Uses MySQL for storage.
@@ -38,8 +40,8 @@ Features
 
 * Flexible permission system
 * Plugin system
-* Templates (in the works)
-* URL rewriting, enables human-readable forum and thread URLs for public content
+* Templates (in the works, about 75% done)
+* URL rewriting, enables human-readable forum and thread URLs for public content (requires code editing to enable it as of now)
 * Post layouts
 * typical messageboard features
 
@@ -69,14 +71,17 @@ TODO list
 
 (no particular order there)
 
+ * port the ABXD database installer/updater (all we need to do is define the database structure, actually)
  * finish implementing templates
  * fix the forum editor
  * improve the permission editing interfaces
- * port the 'show/hide sidebar' feature from Kuribo64
- * make a decent homepage (including admin-editable intro blurb, latest news, and last posts)
- * reintegrate the FAQ page, and make an editor for it
+ * port the 'show/hide sidebar' feature from Kuribo64? or just nuke the sidebar?
+ * allow plugins to add/override templates
  * merge/split threads a la phpBB (albeit without the shitty interface)
- * support multiple password hashing methods? (for importing from other board softwares, or for those who feel SHA256 with per-user salt isn't enough)
+ * support multiple password hashing methods? (for importing from other board softwares, or for those who feel SHA256 with per-user salt isn't enough) (kinda addressed via login plugins)
+ * more TODO at Kuribo64 and RVLution
+ 
+ * low priority: change/remove file headers? most of the original files still say 'AcmlmBoard XD'
 
 -------------------------------------------------------------------------------
 
