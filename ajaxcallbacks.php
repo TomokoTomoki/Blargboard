@@ -18,7 +18,7 @@ if($action == "q")	//Quote
 	$qQuote = "	select
 					p.id, p.deleted, pt.text,
 					u.name poster
-				from posts p
+				from {posts} p
 					left join {posts_text} pt on pt.pid = p.id and pt.revision = p.currentrevision
 					left join {threads} t on t.id=p.thread
 					left join {users} u on u.id=p.user
