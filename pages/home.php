@@ -9,26 +9,25 @@ $lastActivity = array();
 $maxitems = 10;
 
 $lastposts = Query("	SELECT
-							p.(id,date),
-							t.(title,forum),
+							t.(title,forum,lastpostdate,lastpostid),
 							u.(_userfields)
 						FROM
-							{posts} p
-							LEFT JOIN {threads} t ON t.id=p.thread
+							{threads} t
 							LEFT JOIN {forums} f ON f.id=t.forum
-							LEFT JOIN {users} u ON u.id=p.user
+							LEFT JOIN {users} u ON u.id=t.lastposter
 						WHERE f.id IN ({0c}) AND f.offtopic=0
-						ORDER BY p.date DESC
+						ORDER BY t.lastpostdate DESC
 						LIMIT {1u}", $viewableforums, $maxitems);
 						
 while ($lp = Fetch($lastposts))
 {
 	$user = getDataPrefix($lp, 'u_');
+	$tags = ParseThreadTags($lp['t_title']);
 	
-	$fmtdate = relativedate($lp['p_date']);
-	$desc = UserLink($user).__(' posted in ').actionLinkTag(htmlspecialchars($lp['t_title']), 'post', $lp['p_id']);
+	$fmtdate = relativedate($lp['t_lastpostdate']);
+	$desc = UserLink($user).__(' posted in ').actionLinkTag($tags[0], 'post', $lp['t_lastpostid']);
 	
-	$lastActivity[$lp['p_date']] = array('description' => $desc, 'formattedDate' => $fmtdate);
+	$lastActivity[$lp['t_lastpostdate']] = array('description' => $desc, 'formattedDate' => $fmtdate);
 }
 
 $bucket = 'lastactivity'; include('lib/pluginloader.php');

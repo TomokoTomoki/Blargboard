@@ -187,12 +187,12 @@ elseif($action == "sr")	//Show Revision
 	if (!HasPermission('mod.editposts', $post['fid']))
 		die('No.');
 
-//	die(var_dump($post));
 	die(makePostText($post));
 }
 elseif($action == "em")	//Email
 {
-	$blah = FetchResult("select email from {users} where id={0} and showemail=1", $id);
+	$privacy = HasPermission('admin.editusers') ? '' : ' and showemail=1';
+	$blah = FetchResult("select email from {users} where id={0}{$privacy}", $id);
 	die(htmlspecialchars($blah));
 }
 elseif($action == "vc")	//View Counter

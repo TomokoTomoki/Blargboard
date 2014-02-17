@@ -391,6 +391,10 @@ if($_POST['actionsave'])
 	if ($editUserMode && ((int)$_POST['primarygroup'] != $user['primarygroup'] || $_POST['dopermaban'])) 
 	{
 		$sets[] = "tempbantime = 0";
+		if ((int)$_POST['primarygroup'] != $user['primarygroup'])
+			$sets[] = "tempbanpl = ".(int)$user['primarygroup'];
+			
+		Report($user['name']."'s primary group was changed from ".$groups[$user['primarygroup']]." to ".$groups[(int)$_POST['primarygroup']]);
 	}
 
 	$query .= join($sets, ", ")." WHERE id = ".$userid;

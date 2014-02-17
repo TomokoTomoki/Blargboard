@@ -1,7 +1,5 @@
 <?php
 
-$title = 'Banhammer';
-
 CheckPermission('admin.banusers');
 
 $id = (int)$_GET['id'];
@@ -16,68 +14,96 @@ if ($_POST['ban'])
 {
 	if ($_POST['token'] !== $loguser['token']) Kill('No.');
 	
-	$time = $_POST['time'] * $_POST['timemult'];
-	if ($time > 0)
+	if ($_POST['permanent'] )
 	{
-		if ($time > 604800)
-			$time = 604800;
-		
-		Query("update {users} set tempbanpl = {0}, tempbantime = {1}, primarygroup = {4}, title = {3} where id = {2}", 
-			$user['u_primarygroup'], time()+$time, $id, $_POST['reason'], Settings::get('bannedGroup'));
-		
-		Report($loguser['name'].' banned '.$user['u_name'].' for '.($time > 86400 ? (ceil($time/86400).' days') : (ceil($time/3600).' hours')).
-			($_POST['reason'] ? ': '.$_POST['reason']:'.'), true);
+		$time = 0;
+		$expire = 0;
 	}
+	else 
+	{
+		$time = $_POST['time'] * $_POST['timemult'];
+		$expire = time() + $time;
+	}
+	
+	if ($expire) $bantitle = __('Banned until ').formatdate($expire);
+	else $bantitle = __('Banned permanently');
+	
+	if (trim($_POST['reason']))
+		$bantitle .= __(': ').$_POST['reason'];
+	
+	Query("update {users} set tempbanpl = {0}, tempbantime = {1}, primarygroup = {4}, title = {3} where id = {2}", 
+		$user['u_primarygroup'], $expire, $id, $bantitle, Settings::get('bannedGroup'));
+	
+	Report($loguser['name'].' banned '.$user['u_name'].($expire ? ' for '.TimeUnits($time) : ' permanently').
+		($_POST['reason'] ? ': '.$_POST['reason']:'.'), true);
+
+	die(header('Location: '.actionLink('profile', $id)));
+}
+else if ($_POST['unban'])
+{
+	if ($_POST['token'] !== $loguser['token']) Kill('No.');
+	if ($user['u_primarygroup'] != Settings::get('bannedGroup')) Kill(__('This user is not banned.'));
+	
+	Query("update {users} set primarygroup = tempbanpl, tempbantime = {0}, title = {1} where id = {2}", 
+		0, '', $id);
+	
+	Report($loguser['name'].' unbanned '.$user['u_name'].'.', true);
 
 	die(header('Location: '.actionLink('profile', $id)));
 }
 
-MakeCrumbs(array(actionLink("profile", $id) => htmlspecialchars($user['u_displayname']?$user['u_displayname']:$user['u_name']), 
-	actionLink('banhammer', $id) => __('Banhammer')));
 
-$userlink = userLink(getDataPrefix($user, 'u_'));
+if (isset($_GET['unban']))
+{
+	$title = __('Unban user');
+	
+	MakeCrumbs(array(actionLink("profile", $id, '', $user['u_name']) => htmlspecialchars($user['u_displayname']?$user['u_displayname']:$user['u_name']), 
+		actionLink('banhammer', $id, 'unban=1') => __('Unban user')));
+		
+	$userlink = userLink(getDataPrefix($user, 'u_'));
+	$fields = array(
+		'target' => $userlink,
+		
+		'btnUnbanUser' => '<input type="submit" name="unban" value="Unban user">',
+	);
+	$template = 'form_unbanuser';
+}
+else
+{
+	$title = __('Ban user');
+	
+	MakeCrumbs(array(actionLink("profile", $id, '', $user['u_name']) => htmlspecialchars($user['u_displayname']?$user['u_displayname']:$user['u_name']), 
+		actionLink('banhammer', $id) => __('Ban user')));
+		
+	$duration = '
+	<label><input type="radio" name="permanent" value="0"> For: </label>
+		<input type="text" name="time" size="4" maxlength="2">
+		<select name="timemult">
+			<option value="3600">hours</option>
+			<option value="86400">days</option>
+			<option value="604800">weeks</option>
+		</select>
+		<br>
+	<label><input type="radio" name="permanent" value="1" checked="checked"> Permanent</label>';
+
+	$userlink = userLink(getDataPrefix($user, 'u_'));
+	$fields = array(
+		'target' => $userlink,
+		'duration' => $duration,
+		'reason' => '<input type="text" name="reason" size=80 maxlength=200>',
+		
+		'btnBanUser' => '<input type="submit" name="ban" value="Ban user">',
+	);
+	$template = 'form_banuser';
+}
+
+echo '
+	<form action="" method="POST">';
+	
+RenderTemplate($template, array('fields' => $fields));
+
+echo '
+		<input type="hidden" name="token" value="'.$loguser['token'].'">
+	</form>';
 
 ?>
-	<form action="" method="POST">
-		<table class="outline margin">
-			<tr class="header1">
-				<th colspan="2">Banhammer</th>
-			</tr>
-			<tr class="cell0">
-				<td style="width:12%;" class="center">
-					Target
-				</td>
-				<td>
-					<?php echo $userlink; ?>
-				</td>
-			</tr>
-			<tr class="cell2">
-				<td class="center">
-					Duration
-				</td>
-				<td>
-					<input type="text" name="time" size="4" maxlength="2">
-					<select name="timemult">
-						<option value="3600">hours</option>
-						<option value="86400">days</option>
-					</select>
-					<br><small>Maximum ban duration is 7 days. Longer bans should be discussed with the staff.</small>
-				</td>
-			</tr>
-			<tr class="cell0">
-				<td class="center">
-					Reason
-				</td>
-				<td>
-					<input type="text" name="reason" style="width:98%;" maxlength="200">
-				</td>
-			</tr>
-			<tr class="cell2">
-				<td>&nbsp;</td>
-				<td>
-					<input type="submit" name="ban" value="Ban user">
-				</td>
-			</tr>
-		</table>
-		<input type="hidden" name="token" value="<?php echo $loguser['token']; ?>">
-	</form>

@@ -111,8 +111,10 @@ if($user['homepageurl'])
 $emailField = __("Private");
 if($user['email'] == "")
 	$emailField = __("None given");
-elseif($user['showemail'])
+else if ($user['showemail'])
 	$emailField = "<span id=\"emailField\">".__("Public")." <button style=\"font-size: 0.7em;\" onclick=\"$(this.parentNode).load('{$boardroot}ajaxcallbacks.php?a=em&amp;id=".$id."');\">".__("Show")."</button></span>";
+else if (HasPermission('admin.editusers'))
+	$emailField = "<span id=\"emailField\">".__("Private")." <button style=\"font-size: 0.7em;\" onclick=\"$(this.parentNode).load('{$boardroot}ajaxcallbacks.php?a=em&amp;id=".$id."');\">".__("Snoop")."</button></span>";
 
 
 $profileParts = array();
@@ -158,17 +160,17 @@ if($lastPost)
 	$thread['title'] = $lastPost['ttit'];
 	$thread['id'] = $lastPost['tid'];
 	$thread['forum'] = $lastPost['fid'];
+	$tags = ParseThreadTags($thread['title']);
 
 	if(!HasPermission('forum.viewforum', $lastPost['fid']))
 		$place = __("a restricted forum");
 	else
 	{
 		$ispublic = HasPermission('forum.viewforum', $lastPost['fid'], true);
-		$pid = $lastPost["pid"];
-		$place = makeThreadLink($thread)." (".actionLinkTag($lastPost["ftit"], "forum", $lastPost["fid"], "", $ispublic?$lastPost["ftit"]:'').")";
-		$place .= " &raquo; ".actionLinkTag($pid, "post", $pid);
+		$pid = $lastPost['pid'];
+		$place = actionLinkTag($tags[0], 'post', $pid)." (".actionLinkTag($lastPost['ftit'], 'forum', $lastPost['fid'], '', $ispublic?$lastPost['ftit']:'').")";
 	}
-	$temp[__("Last post")] = format("{0} ({1} ago)", formatdate($lastPost["date"]), TimeUnits(time() - $lastPost["date"])) .
+	$temp[__("Last post")] = format("{0} ({1} ago)", formatdate($lastPost['date']), TimeUnits(time() - $lastPost['date'])) .
 								"<br>".__("in")." ".$place;
 }
 else
@@ -176,9 +178,13 @@ else
 
 $temp[__("Last view")] = format("{0} ({1} ago)", formatdate($user['lastactivity']), TimeUnits(time() - $user['lastactivity']));
 $temp[__("Score")] = $score;
-$temp[__("Browser")] = $user['lastknownbrowser'];
+
 if(HasPermission('admin.viewips'))
-	$temp[__("Last known IP")] = formatIP($user['lastip']);
+{
+	$temp[__("Last user agent")] = htmlspecialchars($user['lastknownbrowser']);
+	$temp[__("Last IP address")] = formatIP($user['lastip']);
+}
+
 $profileParts[__("General information")] = $temp;
 
 $temp = array();
@@ -325,9 +331,8 @@ if (HasPermission('admin.banusers') && $loguserid != $id)
 {
 	if ($user['primarygroup'] != Settings::get('bannedGroup'))
 		$links[] = actionLinkTag('Ban user', 'banhammer', $id);
-	//else
-	//	$links[] = actionLinkTag('Unban user', 'banhammer', $id, 'unban=1');
-	// TODO should mods be able to unban people?
+	else
+		$links[] = actionLinkTag('Unban user', 'banhammer', $id, 'unban=1');
 }
 
 if(HasPermission('user.editprofile') && $loguserid == $id)

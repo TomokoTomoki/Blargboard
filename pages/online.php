@@ -75,7 +75,8 @@ function listGuests($rGuests)
 		$gdata = array();
 		$gdata['num'] = $i++;
 		
-		$gdata['userAgent'] = '<span title="'.htmlspecialchars($guest['useragent']).'">'.htmlspecialchars(substr($guest['useragent'],0,65)).'</span>';
+		if ($showIPs)
+			$gdata['userAgent'] = '<span title="'.htmlspecialchars($guest['useragent']).'">'.htmlspecialchars(substr($guest['useragent'],0,65)).'</span>';
 		
 		$gdata['lastView'] = cdate("d-m-y G:i:s", $guest['date']);
 		
