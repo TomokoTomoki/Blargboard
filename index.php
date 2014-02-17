@@ -164,8 +164,8 @@ if(!file_exists($themefile))
 
 $layout_credits = 
 '<img src="'.resourceLink('img/poweredbyblarg.png').'" style="float: left; margin-right: 3px;">
-<a href="http://kuribo64.net/blargboard/">Blargboard 1.1</a> &middot; by StapleButter<br>
-Based off <a href="http://abxd.dirbaio.net/">ABXD</a> by Dirbaio, Kawa &amp; co.<br>';
+<a href="http://kuribo64.net/blargboard/" target="_blank">Blargboard 1.1</a> &middot; by StapleButter<br>
+Based off <a href="http://abxd.dirbaio.net/" target="_blank">ABXD</a> by Dirbaio, Kawa &amp; co.<br>';
 	
 
 $layout_contents = "<div id=\"page_contents\">$layout_contents</div>";
