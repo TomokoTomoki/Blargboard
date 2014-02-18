@@ -373,7 +373,7 @@ function parseBBCode($text)
 	while ($i < $nraw)
 	{
 		$cur = $raw[$i++];
-		if ($cur[0] == '<' || $cur[0] == '[') // we got a tag start-- find out where it ends
+		if (($cur[0] == '<' || $cur[0] == '[') && ($cur[1] == '/' || ctype_alnum($cur[1]))) // we got a tag start-- find out where it ends
 		{
 			$closechar = ($cur[0] == '<') ? '>' : ']';
 			$next = $raw[$i++];
