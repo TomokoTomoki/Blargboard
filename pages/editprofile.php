@@ -646,6 +646,8 @@ if (is_dir($dir))
 		        $themes[$file]['name'] = $file;
 		        $themes[$file]['author'] = '';
 		    }
+			
+			$themes[$file]['num'] = 0;
         }
         closedir($dh);
     }

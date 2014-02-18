@@ -56,4 +56,5 @@
 	<script type="text/javascript">
 		$('.eptable').hide();
 		$('#{$selectedTab}').show();
+		$('#{$selectedTab}Button').addClass('selected');
 	</script>
