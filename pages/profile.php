@@ -75,6 +75,8 @@ if($loguserid)
 }
 
 $daysKnown = (time()-$user['regdate'])/86400;
+if (!$daysKnown) $daysKnown = 1;
+
 $posts = FetchResult("select count(*) from {posts} where user={0}", $id);
 $threads = FetchResult("select count(*) from {threads} where user={0}", $id);
 $averagePosts = sprintf("%1.02f", $user['posts'] / $daysKnown);

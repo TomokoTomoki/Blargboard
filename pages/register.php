@@ -107,7 +107,7 @@ if($_POST['register'])
 
 		while($testuser = Fetch($rLogUser))
 		{
-			if($testuser["id"] == $user["id"])
+			if($testuser['id'] == $user['id'])
 				continue;
 
 			$sha = doHash($_POST['pass'].$salt.$testuser['pss']);
@@ -126,8 +126,8 @@ if($_POST['register'])
 		{
 			$sessionID = Shake();
 			setcookie("logsession", $sessionID, 0, $boardroot, "", false, true);
-			Query("INSERT INTO {sessions} (id, user, autoexpire) VALUES ({0}, {1}, {2})", doHash($sessionID.$salt), $user["id"], 0);
-			die(header("Location: ."));
+			Query("INSERT INTO {sessions} (id, user, autoexpire) VALUES ({0}, {1}, {2})", doHash($sessionID.$salt), $user['id'], 0);
+			die(header("Location: ".actionLink('profile', $user['id'], '', $user['name'])));
 		}
 		else
 			die(header("Location: ".actionLink("login")));
