@@ -1,4 +1,4 @@
-	<table class="outline margin moodavatars">
+	<table class="outline margin form moodavatars">
 		<tr class="header1">
 			<th colspan=2>Mood avatars</th>
 		</tr>

@@ -15,7 +15,7 @@ elseif(isset($_POST['actionlogin']))
 	$okay = false;
 	$pass = $_POST['pass'];
 
-	$user = Fetch(Query("select * from {users} where name={0}", $_POST['name']));
+	$user = Fetch(Query("select * from {users} where name COLLATE utf8_general_ci ={0}", $_POST['name']));
 	if($user)
 	{
 		$sha = doHash($pass.$salt.$user['pss']);

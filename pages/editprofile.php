@@ -579,7 +579,7 @@ function HandleDisplayname($field, $item)
 	}
 	else
 	{
-		$dispCheck = FetchResult("select count(*) from {users} where id != {0} and (name = {1} or displayname = {1})", $user['id'], $_POST[$field]);
+		$dispCheck = FetchResult("select count(*) from {users} where id != {0} and (name COLLATE utf8_general_ci = {1} or displayname COLLATE utf8_general_ci = {1})", $user['id'], $_POST[$field]);
 		if($dispCheck)
 		{
 
@@ -599,7 +599,7 @@ function HandleUsername($field, $item)
 	if(IsReallyEmpty($_POST[$field]))
 		$_POST[$field] = $user[$field];
 
-	$dispCheck = FetchResult("select count(*) from {users} where id != {0} and (name = {1} or displayname = {1})", $user['id'], $_POST[$field]);
+	$dispCheck = FetchResult("select count(*) from {users} where id != {0} and (name COLLATE utf8_general_ci = {1} or displayname COLLATE utf8_general_ci = {1})", $user['id'], $_POST[$field]);
 	if($dispCheck)
 	{
 
