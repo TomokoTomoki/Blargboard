@@ -64,6 +64,11 @@ Board owner's tips
 
 http://board.example/?page=makelr -> browse there after adding categories/forums. Regenerates
 the L/R tree used for subforums and such.
+http://board.example/?page=editforumperms&fid=X -> edit per-group permissions for forum ID X.
+Default permissions make the forum accessible to everyone.
+http://board.example/?page=editperms&gid=X -> edit permissions for group ID X. (do not edit 
+permissions for group #1 (localmod)-- it will not work right due to a yet unfixed bug)
+http://board.example/?page=secgroups -> assign secondary groups to a user.
 
 -------------------------------------------------------------------------------
 
