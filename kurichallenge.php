@@ -45,7 +45,8 @@ for ($g = 0; $g < $ngoombas; $g++)
 		$cx = rand(0, 255-$gw);
 		$cy = rand(0, 95-$gh);
 		
-		if ($tilesoccupied[$cy/32][$cx/32]) continue;
+		if (isset($tilesoccupied[$cy/32][$cx/32]) && $tilesoccupied[$cy/32][$cx/32]) 
+			continue;
 		$tilesoccupied[$cy/32][$cx/32] = true;
 		break;
 	}
