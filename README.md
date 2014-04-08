@@ -17,10 +17,25 @@ I forgot about.
 
 -------------------------------------------------------------------------------
 
+Requirements
+
+Blargboard requires PHP 5.3. With a few changes, it could be lowered to 5.2, so this will
+be considered.
+
+There is no exact requirement for MySQL, but make sure to have a recent version.
+
+Everything else is provided in the package.
+
+-------------------------------------------------------------------------------
+
 How to install and use
 
-First of all, if you don't have some PHP and MySQL knowledge, go find something easier
+First of all, if you don't have some PHP knowledge, go find something easier
 to use, like official ABXD, MyBB or FluxBB. Or phpBB if you're insane.
+
+Minimalistic PHP knowledge is required to be able to follow the instructions below.
+MySQL knowledge isn't required but is a plus. You will need to use a tool like
+phpMyAdmin to add forums to your board for now, though.
 
 Get a webserver. Upload the Blargboard codebase to it.
 
@@ -33,6 +48,9 @@ Browse to your freshly installed board and register.
 
 First user to register gets full access. For this reason, avoid disclosing the board URL
 before you are done installing it.
+
+DO NOT TRY USING THE PROVIDED PLUGINS. They haven't be adapted to the newer Blargboard
+codebase yet. Some may work, but others may break parts of your board.
 
 -------------------------------------------------------------------------------
 
