@@ -16,31 +16,34 @@ if(NumRows($rFora))
 else
 	Kill(__("Unknown forum ID."));
 	
-if($loguserid && $_GET['action'] == "markasread")
+if($loguserid)
 {
-	Query("REPLACE INTO {threadsread} (id,thread,date) SELECT {0}, {threads}.id, {1} FROM {threads} WHERE {threads}.forum={2}",
-		$loguserid, time(), $fid);
+	if($_GET['action'] == "markasread")
+	{
+		Query("REPLACE INTO {threadsread} (id,thread,date) SELECT {0}, {threads}.id, {1} FROM {threads} WHERE {threads}.forum={2}",
+			$loguserid, time(), $fid);
 
-	die(header("Location: ".actionLink("board", $forum['board'])));
+		die(header("Location: ".actionLink("board", $forum['board'])));
+	}
+	
+	$isIgnored = FetchResult("select count(*) from {ignoredforums} where uid={0} and fid={1}", $loguserid, $fid) == 1;
+	if(isset($_GET['ignore']))
+	{
+		if(!$isIgnored)
+			Query("insert into {ignoredforums} values ({0}, {1})", $loguserid, $fid);
+		die(header("Location: ".actionLink("forum", $fid)));
+	}
+	else if(isset($_GET['unignore']))
+	{
+		if($isIgnored)
+			Query("delete from {ignoredforums} where uid={0} and fid={1}", $loguserid, $fid);
+		die(header("Location: ".actionLink("forum", $fid)));
+	}
 }
 
 $title = $forum['title'];
 $urlname = HasPermission('forum.viewforum', $fid, true) ? $title : '';
 
-
-$isIgnored = FetchResult("select count(*) from {ignoredforums} where uid={0} and fid={1}", $loguserid, $fid) == 1;
-if(isset($_GET['ignore']))
-{
-	if(!$isIgnored)
-		Query("insert into {ignoredforums} values ({0}, {1})", $loguserid, $fid);
-	die(header("Location: ".actionLink("forum", $fid)));
-}
-else if(isset($_GET['unignore']))
-{
-	if($isIgnored)
-		Query("delete from {ignoredforums} where uid={0} and fid={1}", $loguserid, $fid);
-	die(header("Location: ".actionLink("forum", $fid)));
-}
 
 $links = array();
 if($loguserid)
