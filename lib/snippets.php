@@ -177,13 +177,8 @@ function RecalculateKarma($uid)
 function cdate($format, $date = 0)
 {
 	global $loguser;
-	if($date == 0)
-		$date = time();
-	$hours = (int)($loguser['timezone']/3600);
-	$minutes = floor(abs($loguser['timezone']/60)%60);
-	$plusOrMinus = $hours < 0 ? "" : "+";
-	$timeOffset = $plusOrMinus.$hours." hours, ".$minutes." minutes";
-	return gmdate($format, strtotime($timeOffset, $date));
+	if($date == 0) $date = time();
+	return gmdate($format, $date+$loguser['timezone']);
 }
 
 function Report($stuff, $hidden = 0, $severity = 0)
@@ -191,31 +186,14 @@ function Report($stuff, $hidden = 0, $severity = 0)
 	$full = GetFullURL();
 	$here = substr($full, 0, strrpos($full, "/"))."/";
 
-	if ($severity == 2)
+	/*if ($severity == 2)
 		$req = base64_encode(serialize($_REQUEST));
-	else
+	else*/
 		$req = 'NULL';
 
 	Query("insert into {reports} (ip,user,time,text,hidden,severity,request)
 		values ({0}, {1}, {2}, {3}, {4}, {5}, {6})", $_SERVER['REMOTE_ADDR'], (int)$loguserid, time(), str_replace("#HERE#", $here, $stuff), $hidden, $severity, $req);
 	Query("delete from {reports} where time < {0}", (time() - (60*60*24*30)));
-}
-
-//TODO: This is used for notifications. We should replace this with the coming-soon notifications system ~Dirbaio
-// oh and it doesn't work ~Mega-Mario
-function SendSystemPM($to, $message, $title)
-{
-	global $systemUser;
-
-	//Don't send system PMs if no System user was set
-	if($systemUser == 0)
-		return;
-
-	$rPM = Query("insert into {pmsgs} (userto, userfrom, date, ip, msgread) values ({0}, {1}, {2}, '127.0.0.1', 0)", $to, $systemUser, time());
-	$pid = InsertId();
-	$rPM = Query("insert into {pmsgs_text} (pid, text, title) values ({0}, {1}, {2})", $pid, $message, $title);
-
-	//print "PM sent.";
 }
 
 function Shake()
@@ -365,9 +343,10 @@ function IP2C($ip)
 
 function getBirthdaysText($ret = true)
 {
-	global $luckybastards;
+	global $luckybastards, $loguser;
+	
 	$luckybastards = array();
-	$today = gmdate('m-d');
+	$today = gmdate('m-d', time()+$loguser['timezone']);
 	
 	$rBirthdays = Query("select u.birthday, u.(_userfields) from {users} u where u.birthday > 0 and u.primarygroup!={0} order by u.name", Settings::get('bannedGroup'));
 	$birthdays = array();

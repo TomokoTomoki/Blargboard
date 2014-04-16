@@ -19,6 +19,9 @@ if (isset($_GET['forcelayout']))
 
 $layout_birthdays = getBirthdaysText();
 
+$tpl->assign('logusername', htmlspecialchars($loguser['displayname'] ?: $loguser['name']));
+$tpl->assign('loguserlink', UserLink($loguser));
+
 $metaStuff = array(
 	'description' => Settings::get('metaDescription'),
 	'tags' => Settings::get('metaTags')

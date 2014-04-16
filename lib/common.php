@@ -94,8 +94,6 @@ include('smarty/Smarty.class.php');
 $tpl = new Smarty;
 $tpl->assign('config', array('date' => $loguser['dateformat'], 'time' => $loguser['timeformat']));
 $tpl->assign('loguserid', $loguserid);
-$tpl->assign('logusername', htmlspecialchars($loguser['displayname'] ?: $loguser['name']));
-$tpl->assign('loguserlink', UserLink($loguser));
 
 $mainPage = "board";
 $bucket = "init"; include('lib/pluginloader.php');
