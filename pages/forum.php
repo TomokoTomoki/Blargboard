@@ -31,13 +31,13 @@ if($loguserid)
 	{
 		if(!$isIgnored)
 			Query("insert into {ignoredforums} values ({0}, {1})", $loguserid, $fid);
-		die(header("Location: ".actionLink("forum", $fid)));
+		die(header("Location: ".$_SERVER['HTTP_REFERER']));
 	}
 	else if(isset($_GET['unignore']))
 	{
 		if($isIgnored)
 			Query("delete from {ignoredforums} where uid={0} and fid={1}", $loguserid, $fid);
-		die(header("Location: ".actionLink("forum", $fid)));
+		die(header("Location: ".$_SERVER['HTTP_REFERER']));
 	}
 }
 

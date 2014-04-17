@@ -37,7 +37,7 @@ if ($_POST['ban'])
 	Report($loguser['name'].' banned '.$user['u_name'].($expire ? ' for '.TimeUnits($time) : ' permanently').
 		($_POST['reason'] ? ': '.$_POST['reason']:'.'), true);
 
-	die(header('Location: '.actionLink('profile', $id)));
+	die(header('Location: '.actionLink('profile', $id, '', $user['name'])));
 }
 else if ($_POST['unban'])
 {
@@ -49,7 +49,7 @@ else if ($_POST['unban'])
 	
 	Report($loguser['name'].' unbanned '.$user['u_name'].'.', true);
 
-	die(header('Location: '.actionLink('profile', $id)));
+	die(header('Location: '.actionLink('profile', $id, '', $user['name'])));
 }
 
 

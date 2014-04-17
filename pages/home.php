@@ -103,9 +103,9 @@ while($thread = Fetch($rThreads))
 	if (!$thread['replies'])
 		$comments = 'No comments yet';
 	else if ($thread['replies'] < 2)
-		$comments = actionLinkTag('1 comment', 'thread', 0, 'pid='.$thread['lastpostid'].'#'.$thread['lastpostid']).' (by '.UserLink($last).')';
+		$comments = actionLinkTag('1 comment', 'post', $thread['lastpostid']).' (by '.UserLink($last).')';
 	else
-		$comments = actionLinkTag($thread['replies'].' comments', 'thread', 0, 'pid='.$thread['lastpostid'].'#'.$thread['lastpostid']).' (last by '.UserLink($last).')';
+		$comments = actionLinkTag($thread['replies'].' comments', 'post', $thread['lastpostid']).' (last by '.UserLink($last).')';
 	$pdata['comments'] = $comments;
 
 	if ($thread['closed'])
