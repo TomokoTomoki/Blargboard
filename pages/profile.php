@@ -28,7 +28,6 @@ if($id == $loguserid)
 
 $canDeleteComments = ($id == $loguserid && HasPermission('user.deleteownusercomments')) || HasPermission('admin.adminusercomments');
 $canComment = (HasPermission('user.postusercomments') && $user['primarygroup'] != Settings::get('bannedGroup')) || HasPermission('admin.adminusercomments');
-$canVote = ($loguserid != $id) && (((time()-$loguser['regdate'])/86400) > 9) && HasPermission('user.rateusers'); // useless
 
 if($loguserid && $_REQUEST['token'] == $loguser['token'])
 {
@@ -81,8 +80,8 @@ $posts = FetchResult("select count(*) from {posts} where user={0}", $id);
 $threads = FetchResult("select count(*) from {threads} where user={0}", $id);
 $averagePosts = sprintf("%1.02f", $user['posts'] / $daysKnown);
 $averageThreads = sprintf("%1.02f", $threads / $daysKnown);
-$deletedposts = FetchResult("SELECT COUNT(*) FROM {posts} p WHERE p.user={0} AND p.deleted!=0 AND p.deletedby!={0}", $id);
-$score = 1000 + (10 * $user['postplusones']) - (20 * $deletedposts);
+//$deletedposts = FetchResult("SELECT COUNT(*) FROM {posts} p WHERE p.user={0} AND p.deleted!=0 AND p.deletedby!={0}", $id);
+//$score = 1000 + (10 * $user['postplusones']) - (20 * $deletedposts);
 
 $minipic = getMinipicTag($user);
 
@@ -138,7 +137,7 @@ if($currentRank)
 	$temp[__("Rank")] = $currentRank;
 if($toNextRank)
 	$temp[__("To next rank")] = $toNextRank;
-//$temp[__("Karma")] = $karma.$karmaLinks;
+
 $temp[__("Total posts")] = format("{0} ({1} per day)", $posts, $averagePosts);
 $temp[__("Total threads")] = format("{0} ({1} per day)", $threads, $averageThreads);
 $temp[__("Registered on")] = format("{0} ({1} ago)", formatdate($user['regdate']), TimeUnits($daysKnown*86400));
@@ -179,7 +178,7 @@ else
 	$temp[__("Last post")] = __("Never");
 
 $temp[__("Last view")] = format("{0} ({1} ago)", formatdate($user['lastactivity']), TimeUnits(time() - $user['lastactivity']));
-$temp[__("Score")] = $score;
+//$temp[__("Score")] = $score;
 
 if(HasPermission('admin.viewips'))
 {

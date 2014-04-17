@@ -26,7 +26,6 @@ $permDescs = array
 		'user.sendpms' => __('Send private messages'),
 		'user.postusercomments' => __('Post user comments'),
 		'user.deleteownusercomments' => __('Delete own user comments'),
-		'user.rateusers' => __('Rate users'),
 		'user.votepolls' => __('Vote to polls'),
 		'user.doublepost' => __('Make consecutive posts'),
 		'user.viewhiddenforums' => __('View hidden forums'),
