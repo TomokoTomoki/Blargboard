@@ -1,11 +1,12 @@
 <?php
 
-require 'lib/hpsecurity.php';
+//require 'lib/hpsecurity.php';
 
 $title = 'Edit homepage';
 
 CheckPermission('admin.editsettings');
-	
+Kill('This is a legacy feature that will be removed soon. To edit the homepage text, go to "Edit settings" instead.');
+
 $err = '';
 
 $token = hash('sha256', "{$loguserid},{$loguser['pss']},{$salt},esgf8798df7h98dfg7h4gfs57h4gfh");
