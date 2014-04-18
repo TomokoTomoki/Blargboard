@@ -291,7 +291,7 @@ function relativedate($date)
 
 function formatBirthday($b)
 {
-	return format("{0} ({1} old)", cdate("F j, Y", $b), Plural(floor((time() - $b) / 86400 / 365.2425), "year"));
+	return format("{0} ({1} old)", date("F j, Y", $b), Plural(floor((time() - $b) / 86400 / 365.2425), "year"));
 }
 
 function getSexName($sex) {
