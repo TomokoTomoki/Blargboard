@@ -6,8 +6,10 @@
 $title = __("Member list");
 
 
-if (!isset($_GET['group'])) $_GET['group'] = 'none';
-else $_GET['group'] = (int)$_GET['group'];
+if (!isset($_GET['group'])) 
+	$_GET['group'] = 'none';
+else if ($_GET['group'] !== 'staff' && $_GET['group'] !== 'none')
+	$_GET['group'] = (int)$_GET['group'];
 
 
 $allgroups = array();
@@ -26,6 +28,11 @@ while ($group = Fetch($g))
 	}
 	
 	$allgroups[$group['id']] = $group['name'];
+}
+if (!$s)
+{
+	$allgroups['staff'] = __('(all staff)');
+	$s = true;
 }
 
 
@@ -84,9 +91,9 @@ if ($sort)
 	$getArgs[] = 'sort='.$sort;
 
 $pow = null;
-if($_GET['group'] != "none")
+if($_GET['group'] !== "none")
 {
-	if ($_GET['group'] == 'staff')
+	if ($_GET['group'] === 'staff')
 	{
 		$pow = array();
 		foreach ($usergroups as $g)
@@ -114,7 +121,7 @@ switch($sort)
 
 $where = '1';
 
-if(isset($pow))
+if($pow !== null)
 {
 	if (is_array($pow))
 		$where .= " AND primarygroup IN ({2c})";
