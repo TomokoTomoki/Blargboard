@@ -139,9 +139,9 @@ function deleteForum(what)
 }
 
 
-function deleteCategory(what)
+function deleteCategory()
 {
-	var postdata = $("#deleteform").serialize();
+	var postdata = $("#forumform").serialize();
 
 	if(!confirm("Are you sure that you want to delete the category?"))
 		return;

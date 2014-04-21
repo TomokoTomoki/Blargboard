@@ -2,11 +2,11 @@
 
 //Category/forum editor -- By Nikolaj
 //Secured and improved by Dirbaio
+// Adapted to Blargboard by StapleButter.
 
 $title = __("Edit forums");
 
 CheckPermission('admin.editforums');
-Kill('broken');
 
 MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("editfora") => __("Edit forum list")));
 
@@ -26,13 +26,18 @@ MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("editfora") => _
 	- editforum: Returns the HTML code for the forum settings in right panel.
 		- editforumnew: Returns the forum edit box to create a new forum. This way the huge HTML won't be duplicated in the code.
 		- editforum: Returns the forum edit box to edit a forum.
+		
+		
+	PERMISSION EDITING PRESETS
+	
+	* Full: full access
+	* Standard: view, post threads, reply to threads
+	* Reply-only: view, reply to threads (ie announcement forum)
+	* Read-only: view
+	* No access: (none)
+	* Custom
 
 **/
-
-
-//Make actions be requested by GET also. Makes AJAX stuff easier in some cases. And manual debugging too :)
-if(!isset($_POST["action"]))
-	$_POST["action"] = $_GET["action"];
 
 $noFooter = true;
 
@@ -52,289 +57,183 @@ function recursionCheck($fid, $cid)
 	}
 }
 
-switch($_POST['action'])
+if (isset($_REQUEST['action']) && isset($_POST['key']))
 {
-	case 'updateforum':
+	//Check for the key
+	if ($loguser['token'] != $_POST['key'])
+		Kill(__("No."));
+			
+	switch($_REQUEST['action'])
+	{
+		case 'updateforum':
 
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+			//Get new forum data
+			$id = (int)$_POST['id'];
+			$title = $_POST['title'];
+			if($title == "") dieAjax(__("Title can't be empty."));
+			$description = $_POST['description'];
+			$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
+			$forder = (int)$_POST['forder'];
+			
+			// TODO PERMS
 
-		//Get new forum data
-		$id = (int)$_POST['id'];
-		$title = $_POST['title'];
-		if($title == "") dieAjax(__("Title can't be empty."));
-		$description = $_POST['description'];
-		$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
-		$forder = (int)$_POST['forder'];
-		$minpower = (int)$_POST['minpower'];
-		$minpowerthread = (int)$_POST['minpowerthread'];
-		$minpowerreply = (int)$_POST['minpowerreply'];
-		$accessctrl = (int)$_POST['acc'];
-		if ($accessctrl != 2) $accessctrl = 1;
+			//Send it to the DB
+			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, minpower = {4}, minpowerthread = {5}, minpowerreply = {6}, accesscontrol={8} WHERE id = {7}", $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $id, $accessctrl);
+			
+			dieAjax('Ok');
+			break;
+			
+		case 'updatecategory':
 
-		//Send it to the DB
-		Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, minpower = {4}, minpowerthread = {5}, minpowerreply = {6}, accesscontrol={8} WHERE id = {7}", $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $id, $accessctrl);
-		dieAjax("Ok");
+			//Get new cat data
+			$id = (int)$_POST['id'];
+			$name = $_POST['name'];
+			if($name == "") dieAjax(__("Name can't be empty."));
+			$corder = (int)$_POST['corder'];
+			
+			$board = $_POST['board'];
+			if (!isset($forumBoards[$board])) $board = '';
 
-		break;
-	case 'updatecategory':
+			//Send it to the DB
+			Query("UPDATE {categories} SET name = {0}, corder = {1}, board={3} WHERE id = {2}", $name, $corder, $id, $board);
+			
+			dieAjax('Ok');
+			break;
 
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+		case 'addforum':
 
-		//Get new cat data
-		$id = (int)$_POST['id'];
-		$name = $_POST['name'];
-		if($name == "") dieAjax(__("Name can't be empty."));
-		$corder = (int)$_POST['corder'];
-		$page = (int)$_POST['page'];
+			//Get new forum data
+			$title = $_POST['title'];
+			if($title == "") dieAjax(__("Title can't be empty."));
+			$description = $_POST['description'];
+			$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
+			$forder = (int)$_POST['forder'];
+			
+			// TODO PERMS
 
-		//Send it to the DB
-		Query("UPDATE {categories} SET name = {0}, corder = {1}, page={3} WHERE id = {2}", $name, $corder, $id, $page);
-		dieAjax("Ok");
+			//Figure out the new forum ID.
+			//I think it'd be better to use InsertId, but...
+			$newID = FetchResult("SELECT id+1 FROM {forums} WHERE (SELECT COUNT(*) FROM {forums} f2 WHERE f2.id={forums}.id+1)=0 ORDER BY id ASC LIMIT 1");
+			if($newID < 1) $newID = 1;
 
-		break;
+			//Add the actual forum
+			Query("INSERT INTO {forums} (`id`, `title`, `description`, `catid`, `forder`, `minpower`, `minpowerthread`, `minpowerreply`, `accesscontrol`) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})", $newID, $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $accessctrl);
 
-	case 'addforum':
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+			dieAjax('Ok');
+			break;
 
-		//Get new forum data
-		$title = $_POST['title'];
-		if($title == "") dieAjax(__("Title can't be empty."));
-		$description = $_POST['description'];
-		$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
-		$forder = (int)$_POST['forder'];
-		$minpower = (int)$_POST['minpower'];
-		$minpowerthread = (int)$_POST['minpowerthread'];
-		$minpowerreply = (int)$_POST['minpowerreply'];
-		$accessctrl = (int)$_POST['acc'];
-		if ($accessctrl != 2) $accessctrl = 1;
+		case 'addcategory':
 
-		//Figure out the new forum ID.
-		//I think it'd be better to use InsertId, but...
-		$newID = FetchResult("SELECT id+1 FROM {forums} WHERE (SELECT COUNT(*) FROM {forums} f2 WHERE f2.id={forums}.id+1)=0 ORDER BY id ASC LIMIT 1");
-		if($newID < 1) $newID = 1;
+			//Get new cat data
+			$name = $_POST['name'];
+			if($name == "") dieAjax(__("Name can't be empty."));
+			$corder = (int)$_POST['corder'];
+			
+			$board = (int)$_POST['board'];
+			if (!isset($forumBoards[$board])) $board = '';
 
-		//Add the actual forum
-		Query("INSERT INTO {forums} (`id`, `title`, `description`, `catid`, `forder`, `minpower`, `minpowerthread`, `minpowerreply`, `accesscontrol`) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})", $newID, $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $accessctrl);
+			Query("INSERT INTO {categories} (`name`, `corder`, `board`) VALUES ({0}, {1}, {2})", $name, $corder, $board);
 
-		dieAjax("Ok");
+			dieAjax('Ok');
+			break;
+			
+		case 'deleteforum':
+			//TODO: Move and delete threads mode.
 
-	case 'addcategory':
+			//Get Forum ID
+			$id = (int)$_POST['id'];
 
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+			//Check that forum exists
+			$rForum = Query("SELECT * FROM {forums} WHERE id={0}", $id);
+			if (!NumRows($rForum))
+				dieAjax("No such forum.");
 
-		//Get new cat data
-		$id = (int)$_POST['id'];
-		$name = $_POST['name'];
-		if($name == "") dieAjax(__("Name can't be empty."));
-		$corder = (int)$_POST['corder'];
-		$page = (int)$_POST['page'];
+			//Check that forum has threads.
+			$forum = Fetch($rForum);
+			if($forum['numthreads'] > 0)
+				dieAjax(__("Forum has threads. Move those first."));
 
-		Query("INSERT INTO {categories} (`name`, `corder`, `page`) VALUES ({0}, {1}, {2})", $name, $corder, $page);
+			//Delete
+			Query("DELETE FROM `{forums}` WHERE `id` = {0}", $id);
+			dieAjax('Ok');
+			break;
+			
+		case 'deletecategory':
+			//Get Cat ID
+			$id = (int)$_POST['id'];
 
-		dieAjax("Ok");
+			//Check that forum exists
+			$rCat = Query("SELECT * FROM {categories} WHERE id={0}", $id);
+			if (!NumRows($rCat))
+				dieAjax(__("No such category."));
+				
+			if (FetchResult("SELECT COUNT(*) FROM {forums} WHERE catid={0}", $cid) > 0)
+				dieAjax(__('Cannot delete a category that contains forums.'));
 
-		break;
-	case 'deleteforum':
-		//TODO: Move and delete threads mode.
+			//Delete
+			Query("DELETE FROM `{categories}` WHERE `id` = {0}", $id);
+			dieAjax('Ok');
+			break;
+	}
+}
 
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+if (isset($_REQUEST['action']))
+{
+	switch ($_REQUEST['action'])
+	{
+		case 'forumtable':
+			WriteForumTableContents();
+			dieAjax('');
+			break;
 
-		//Get Forum ID
-		$id = (int)$_POST['id'];
+		case 'editforumnew':
+		case 'editforum':
 
-		//Check that forum exists
-		$rForum = Query("SELECT * FROM {forums} WHERE id={0}", $id);
-		if (!NumRows($rForum))
-			dieAjax("No such forum.");
+			//Get forum ID
+			if($_REQUEST['action'] == 'editforumnew')
+				$fid = -1;
+			else
+				$fid = (int)$_GET['fid'];
 
-		//Check that forum has threads.
-		$forum = Fetch($rForum);
-		if($forum['numthreads'] > 0)
-			dieAjax(__("Forum has threads. Move those first."));
+			WriteForumEditContents($fid);
+			dieAjax('');
+			break;
 
-		//Delete
-		Query("DELETE FROM `{forums}` WHERE `id` = {0}", $id);
-		dieAjax("Ok");
-	case 'deletecategory':
-		//TODO: Do something with the forums left in it?
+		case 'editcategorynew':
+		case 'editcategory':
 
-		//Check for the key
-		if (isset($_POST['action']) && $loguser['token'] != $_POST['key'])
-			Kill(__("No."));
+			//Get cat ID
+			if($_REQUEST['action'] == 'editcategorynew')
+				$cid = -1;
+			else
+				$cid = (int)$_GET['cid'];
 
-		//Get Cat ID
-		$id = (int)$_POST['id'];
-
-		//Check that forum exists
-		$rCat = Query("SELECT * FROM {categories} WHERE id={0}", $id);
-		if (!NumRows($rCat))
-			dieAjax(__("No such category."));
-
-		//Delete
-		Query("DELETE FROM `{categories}` WHERE `id` = {0}", $id);
-		dieAjax("Ok");
-
-	case 'forumtable':
-		writeForumTableContents();
-		dieAjax("");
-		break;
-
-	case 'editforumnew':
-	case 'editforum':
-
-		//Get forum ID
-		$fid = (int)$_GET["fid"];
-		if($_POST['action'] == 'editforumnew')
-			$fid = -1;
-
-		WriteForumEditContents($fid);
-		dieAjax("");
-		break;
-
-	case 'editcategorynew':
-	case 'editcategory':
-
-		//Get cat ID
-		$cid = (int)$_GET["cid"];
-		if($_POST['action'] == 'editcategorynew')
-			$cid = -1;
-
-		WriteCategoryEditContents($cid);
-		dieAjax("");
-		break;
-
-	case 'deletemod':
-		if(!isset($_GET['fid']))
-			Kill(__("Forum ID unspecified."));
-		if(!isset($_GET['mid']))
-			Kill(__("Mod ID unspecified."));
-
-		$fid = (int)$_GET['fid'];
-		$mid = (int)$_GET['mid'];
-
-		query("delete from {forummods} where forum={0} and user={1}", $fid, $mid);
-		dieAjax("Ok");
-		break;
-	case 'addmod':
-		if(!isset($_GET['fid']))
-			Kill(__("Forum ID unspecified."));
-		if(!isset($_GET['mid']))
-			Kill(__("Mod ID unspecified."));
-
-		$fid = (int)$_GET['fid'];
-		$mid = (int)$_GET['mid'];
-
-		$rUser = Fetch(Query("SELECT powerlevel FROM {users} WHERE id={0}", $mid));
-		if(!$rUser || $rUser["powerlevel"] != 1)
-			dieAjax("Invalid user ID: $mid");
-
-		$rMod = Query("insert into {forummods} (forum, user) values ({0}, {1})", $fid, $mid);
-		dieAjax("Ok");
-		break;
-		
-	case 'deleteprivuser':
-		if(!isset($_GET['fid']))
-			Kill(__("Forum ID unspecified."));
-		if(!isset($_GET['uid']))
-			Kill(__("User ID unspecified."));
-
-		$fid = (int)$_GET['fid'];
-		$uid = (int)$_GET['uid'];
-		
-		$allowedusers = FetchResult("SELECT allowedusers FROM {forums} WHERE id={0}", $fid);
-		if (strlen($allowedusers) < 3) $allowed = array();
-		else $allowed = explode('|', substr($allowedusers,1,-1));
-		
-		foreach ($allowed as $k=>$id)
-		{
-			if ($uid == $id)
-			{
-				unset($allowed[$k]);
-				break;
-			}
-		}
-		Query("UPDATE {forums} SET allowedusers={0} WHERE id={1}", '|'.implode('|', $allowed).'|', $fid);
-		
-		dieAjax("Ok");
-		break;
-	case 'addprivuser':
-		if(!isset($_GET['fid']))
-			Kill(__("Forum ID unspecified."));
-		if(!isset($_GET['name']))
-			Kill(__("User name unspecified."));
-
-		$fid = (int)$_GET['fid'];
-		$name = $_GET['name'];
-		
-		$uid = FetchResult("SELECT id FROM {users} WHERE name={0} OR displayname={0}", $name);
-		if ($uid < 1) dieAjax('Unknown user name.');
-
-		$allowedusers = FetchResult("SELECT allowedusers FROM {forums} WHERE id={0}", $fid);
-		if (strlen($allowedusers) < 3) $allowed = array();
-		else $allowed = explode('|', substr($allowedusers,1,-1));
-		
-		$alreadyin = false;
-		foreach ($allowed as $id)
-		{
-			if ($uid == $id)
-			{
-				$alreadyin = true;
-				break;
-			}
-		}
-		if (!$alreadyin)
-			$allowed[] = $uid;
-		Query("UPDATE {forums} SET allowedusers={0} WHERE id={1}", '|'.implode('|', $allowed).'|', $fid);
-		
-		dieAjax("Ok");
-		break;
-
-	case '': //No action, do main code
-		break;
-
-	default: //Unrecognized action
-		dieAjax(format(__("Unknown action: {0}"), $_POST["action"]));
+			WriteCategoryEditContents($cid);
+			dieAjax('');
+			break;
+	}
 }
 
 
 
 //Main code.
 
-print '<script src="'.resourceLink('js/editfora.js').'" type="text/javascript"></script>';
-
-Write('
-<div id="editcontent" style="float: right; width: 45%;">
+echo '
+<script src="'.resourceLink('js/editfora.js').'" type="text/javascript"></script>
+<div id="editcontent" style="float: right; width: 49.7%;">
 	&nbsp;
 </div>
-<div id="flist">
-');
+<div id="flist">';
 
 WriteForumTableContents();
 
-Write('
-</div>');
+echo '
+</div>';
 
 
 
 
 //Helper functions
-
-function cell()
-{
-	global $cell;
-	$cell = ($cell == 1 ? 0 : 1);
-	return $cell;
-}
 
 // $fid == -1 means that a new forum should be made :)
 function WriteForumEditContents($fid)
@@ -342,7 +241,7 @@ function WriteForumEditContents($fid)
 	global $loguser;
 
 	//Get all categories.
-	$rCats = Query("SELECT * FROM {categories} ORDER BY page, corder, id");
+	$rCats = Query("SELECT * FROM {categories} ORDER BY board, corder, id");
 
 	$cats = array();
 	while ($cat = Fetch($rCats))
@@ -382,77 +281,10 @@ function WriteForumEditContents($fid)
 				".__("Delete")."
 			</button>";
 
-		$localmods = "";
-
-		$rMods = query("SELECT u.(_userfields)
-						FROM {forummods} m
-						LEFT JOIN {users} u ON u.id = m.user
-						WHERE m.forum={0}
-						ORDER BY m.user", $fid);
-
-		$addedMods = array();
-
-		if(!numRows($rMods))
-			$localmods .= "(No local moderators assigned to this forum)<br /><br />";
-		else
-		{
-			$localmods .= "<ul>";
-			while($mod = fetch($rMods))
-			{
-				$mod = getDataPrefix($mod, "u_");
-				$localmods .= "<li>".UserLink($mod);
-				$mid = $mod["id"];
-				$addedMods[$mid] = 1;
-				$localmods .= " <sup><a href=\"\" onclick=\"deleteMod($mid); return false;\">&#x2718;</a></li>";
-			}
-			$localmods .= "</ul>";
-		}
-
-		$rMods = query("SELECT u.(_userfields)
-						FROM {users} u
-						WHERE u.powerlevel = 1
-						ORDER BY u.id");
-		$canAddMods = false;
-		$addmod = "Add a mod: ";
-		$addmod .= "<select name=\"addmod\" id=\"addmod\">";
-
-		while($mod = fetch($rMods))
-		{
-			$mod = getDataPrefix($mod, "u_");
-			if(isset($addedMods[$mod["id"]])) continue;
-			$canAddMods = true;
-			$mid = $mod["id"];
-			$mname = $mod["displayname"];
-			if(!$mname)
-				$mname = $mod["name"];
-			$addmod .= "<option value=\"$mid\">$mname ($mid)</option>";
-		}
-
-		$addmod .= "</select>";
-		$addmod .= "<button type=\"button\" onclick=\"addMod(); return false;\">Add</button>";
-		if(!$canAddMods)
-			$addmod = "<br>No moderators available for adding.<br>To add a mod, set his powerlevel to Local Mod first.";
-
-		$localmods .= $addmod;
+		$localmods = "fuck you";
 		
 		
-		$privusers = "Users allowed:";
-
-		if (strlen($forum['allowedusers']) < 3)
-			$privusers .= ' none';
-		else
-		{
-			$allowed = explode('|', substr($forum['allowedusers'],1,-1));
-			foreach ($allowed as $uid)
-			{
-				if ($uid != $allowed[0]) $privusers .= ',';
-				$privusers .= ' '.UserLinkByID($uid);
-				$privusers .= " <sup><a href=\"\" onclick=\"deletePrivUser($uid); return false;\">&#x2718;</a></sup>";
-			}
-		}
-
-		$privusers .= '<br><input type="text" name="puname" id="puname" size="16" maxlength="32" /> ';
-		$privusers .= "<button type=\"button\" onclick=\"addPrivUser(document.getElementById('puname').value); return false;\">Add</button>";
+		$privusers = "fuck you too";
 	}
 	else
 	{
@@ -584,17 +416,9 @@ function WriteForumEditContents($fid)
 // $fid == -1 means that a new forum should be made :)
 function WriteCategoryEditContents($cid)
 {
-	global $loguser;
-
-	//Get all categories.
-	$rCats = Query("SELECT * FROM {categories}");
-
-	$cats = array();
-	while ($cat = Fetch($rCats))
-		$cats[$cat['id']] = $cat;
-
-	if(count($cats) == 0)
-		$cats[0] = "No categories";
+	global $loguser, $forumBoards;
+	
+	$boardlist = '';
 
 	if($cid != -1)
 	{
@@ -604,228 +428,117 @@ function WriteCategoryEditContents($cid)
 			Kill("Category not found.");
 		}
 		$cat = Fetch($rCategory);
+		
+		$candelete = FetchResult("SELECT COUNT(*) FROM {forums} WHERE catid={0}", $cid) == 0;
 
 		$name = htmlspecialchars($cat['name']);
 		$corder = $cat['corder'];
-		$page = $cat['page'];
+		
+		if (count($forumBoards) > 1)
+		{
+			foreach ($forumBoards as $bid=>$bname)
+			{
+				$boardlist .= '<label><input type="radio" name="board" value="'.htmlspecialchars($bid).'"'.($cat['board']==$bid ? ' checked="checked"':'').'> '.htmlspecialchars($bname).'</label>';
+			}
+		}
 
-		$func = "changeCategoryInfo";
-		$button = __("Save");
-		$boxtitle = __("Edit Category");
-		$delbutton = "
-			<button onclick='showDeleteForum(); return false;'>
-				".__("Delete")."
-			</button>";
+		$boxtitle = __("Editing category ").$name;
+			
+		$fields = array
+		(
+			'name' => '<input type="text" name="name" value="'.$name.'" size=64>',
+			'order' => '<input type="text" name="corder" value="'.$corder.'" size=2>',
+			'board' => $boardlist,
+			
+			'btnSave' => '<button onclick="changeCategoryInfo(); return false;">Save</button>',
+			'btnDelete' => '<button '.($candelete ? 'onclick="deleteCategory(); return false;"' : 'disabled="disabled"').'>Delete</button>',
+		);
+		$delMessage = $candelete ? '' : 'Before deleting a category, remove all forums from it.';
 	}
 	else
-	{
-		$title = __("New Category");
-		$corder = 0;
-		$page = 0;
-		$func = "addCategory";
-		$button = __("Add");
-		$boxtitle = __("New Category");
-		$delbutton = "";
+	{		
+		if (count($forumBoards) > 1)
+		{
+			foreach ($forumBoards as $bid=>$bname)
+			{
+				$boardlist .= '<label><input type="radio" name="board" value="'.htmlspecialchars($bid).'"'.($bid=='' ? ' checked="checked"':'').'> '.htmlspecialchars($bname).'</label>';
+			}
+		}
+		
+		$boxtitle = __("New category");
+		
+		$fields = array
+		(
+			'name' => '<input type="text" name="name" value="" size=64>',
+			'order' => '<input type="text" name="corder" value="0" size=2>',
+			'board' => $boardlist,
+			
+			'btnSave' => '<button onclick="addCategory(); return false;">Save</button>',
+			'btnDelete' => '',
+		);
+		$delMessage = '';
 	}
 
-	echo "<form method=\"post\" id=\"forumform\" action=\"".actionLink("editfora")."\">
+	echo "
+	<form method=\"post\" id=\"forumform\" action=\"".actionLink("editfora")."\">
 	<input type=\"hidden\" name=\"key\" value=\"".$loguser["token"]."\">
-	<input type=\"hidden\" name=\"id\" value=\"$cid\">
-	<table class=\"outline margin\">
-		<tr class=\"header1\">
-			<th colspan=\"2\">
-				$boxtitle
-			</th>
-		</tr>
-		<tr class=\"cell1\">
-			<td style=\"width: 25%;\">
-				".__("Name")."
-			</td>
-			<td>
-				<input type=\"text\" style=\"width: 98%;\" name=\"name\" value=\"$name\" />
-			</td>
-		</tr>
-		<tr class=\"cell0\">
-			<td>
-				".__("Listing order")."
-			</td>
-			<td>
-				<input type=\"text\" size=\"2\" name=\"corder\" value=\"$corder\" />
-				<img src=\"".resourceLink("img/icons/icon5.png")."\" title=\"".__("Everything is sorted by listing order first, then by ID. If everything has its listing order set to 0, they will therefore be sorted by ID only.")."\" alt=\"[?]\" />
-			</td>
-		</tr>
-		<tr class=\"cell1\">
-			<td>".__('Page')."</td>
-			<td>
-				<label><input type=\"radio\" name=\"page\" value=\"0\"".($page==0 ? ' checked="checked"':'')."> Main forums</label>
-				<label><input type=\"radio\" name=\"page\" value=\"1\"".($page==1 ? ' checked="checked"':'')."> SMG2.5</label>
-			</td>
-		</tr>
-		<tr class=\"cell2\">
-			<td>
-				&nbsp;
-			</td>
-			<td>
-				<button onclick=\"$func(); return false;\">
-					$button
-				</button>
-				$delbutton
-			</td>
-		</tr>
-	</table></form>
+	<input type=\"hidden\" name=\"id\" value=\"$cid\">";
+	
+	RenderTemplate('form_editcategory', array('formtitle' => $boxtitle, 'fields' => $fields, 'delMessage' => $delMessage));
 
-	<form method=\"post\" id=\"deleteform\" action=\"".actionLink("editfora")."\">
-	<input type=\"hidden\" name=\"key\" value=\"".$loguser["token"]."\">
-	<input type=\"hidden\" name=\"id\" value=\"$cid\">
-	<div id=\"deleteforum\" style=\"display:none\">
-		<table class=\"outline margin\">
-			<tr class=\"header1\">
-
-				<th>
-					".__("Delete category")."
-				</th>
-			</tr>
-			<tr class=\"cell0\">
-				<td>
-					".__("Be careful when deleting categories. Make sure there are no forums in the category before deleting it.")."
-					<br /><br />
-					".__("If you still want to delete it, click below:")."
-					<br />
-					<button onclick=\"deleteCategory('delete'); return false;\">
-						".__("Delete category")."
-					</button>
-				</td>
-			</tr>
-		</table>
-	</div>
+	echo "
 	</form>";
 }
 
 
-function writeForums($cats, $cid, $level)
-{
-	$cat = $cats[$cid];
-	
-	if(isset($cat['forums'])) //<Kawa> empty categories look BAD.
-	{
-		foreach ($cat['forums'] as $cf)
-		{
-			if ($cf['id'] == 1337) // HAX
-			{
-				print '
-	<tr class="cell'.cell().'" style="cursor: hand;">
-		<td style="padding-left: '.(24*$level).'px;'.$sel.'">
-			<span style="opacity:0.5;">'.$cf['title'].'<br />
-			<small>(fake forum)</small></span>
-		</td>
-	</tr>';
-				
-				continue;
-			}
-			
-			$sel = $_GET['s'] == $cf['id'] ? ' outline: 1px solid #888;"' : '';
-			print '
-	<tr class="cell'.cell().'" style="cursor: hand;">
-		<td style="cursor: pointer; padding-left: '.(24*$level).'px;'.$sel.'" class="f" onmousedown="pickForum('.$cf['id'].');" id="forum'.$cf['id'].'">
-			'.$cf['title'].'<br />
-			<small style="opacity: 0.75;">'.$cf['description'].'</small>
-		</td>
-	</tr>';
-			
-			if (isset($cats[-$cf['id']]))
-				writeForums($cats, -$cf['id'], $level+1);
-		}
-	}
-	else
-	{
-			print '
-	<tr class="cell'.cell().'" style="cursor: hand;">
-		<td style="padding-left: 24px;" class="f">
-			'.__("No forums in this category.").'
-		</td>
-	</tr>';
-	}
-}
-
 function WriteForumTableContents()
 {
+	global $forumBoards;
+	
+	$boards = array();
 	$cats = array();
-	$rCats = Query("SELECT * FROM {categories} ORDER BY page, corder, id");
 	$forums = array();
-	if (NumRows($rCats))
+	
+	foreach ($forumBoards as $bid=>$bname)
+		$boards[$bid] = array('id' => $bid, 'name' => $bname, 'cats' => array());
+	
+	$rCats = Query("SELECT * FROM {categories} ORDER BY board, corder, id");
+	while ($cat = Fetch($rCats))
 	{
-		while ($cat = Fetch($rCats))
-		{
-			$cats[$cat['id']] = $cat;
-		}
-		$rForums = Query("SELECT * FROM {forums} ORDER BY forder, id");
-		$forums = array();
-		if (NumRows($rForums)) {
-			while ($forum = Fetch($rForums))
-			{
-				$forums[$forum['id']] = $forum;
-			}
-		}
-	}
-	$hint = '';//$cats ? __("Hint: Click a forum or category to select it.") : '';
-	$newforum = $cats ? '<button onclick="newForum();">'.__("Add Forum").'</button>' : '';
-
-	$buttons = '
-	<tr class="cell2">
-		<td>
-			<span style="float: right;">' . $newforum .
-				'<button onclick="newCategory();">'.__("Add Category").'</button>
-			</span>' . $hint . '
-		</td>
-	</tr>';
-
-	print '
-	<table class="outline margin" style="width: 45%;">
-	<tr class="header1">
-		<th>
-			'.__("Edit forum list").'
-		</th>
-	</tr>';
-	$lastpage = 0;
-	print $buttons;
-	foreach ($forums as $forum)
-	{
-		$cats[$forum['catid']]['forums'][$forum['id']] = $forum;
+		$cats[$cat['board']][$cat['id']] = $cat;
 	}
 	
-	echo '<tr class="header0"><th>Main forums</th></tr>';
-
-	foreach ($cats as $cid=>$cat)
+	$rForums = Query("SELECT * FROM {forums} ORDER BY l");
+	$cid = -1; $lastr = 0; $level = 1;
+	while ($forum = Fetch($rForums))
 	{
-		if ($cid < 0) continue;
+		if ($forum['catid'] >= 0) $cid = $forum['catid'];
 		
-		if ($cat['page'] != $lastpage)
+		if ($lastr)
 		{
-			echo '<tr class="header0"><th>SMG2.5</th></tr>';
-			$lastpage = $cat['page'];
+			if ($forum['r'] < $lastr) // we went up one level
+				$level++;
+			else // we went down a few levels maybe
+				$level -= $forum['l'] - $lastr - 1;
 		}
+		$forum['level'] = $level;
+		$lastr = $forum['r'];
 		
-		$cname = $cat['name'];
-		//if ($cat['page'] == 1)
-		//	$cname = 'SMG2.5 -- '.$cname;
-		
-		print '
-	<tbody id="cat'.$cat['id'].'" class="c">
-		<tr class="cell'.cell().'">
-			<td class="c" style="cursor: pointer;" onmousedown="pickCategory('.$cat['id'].');">
-				<strong>'.htmlspecialchars($cname).'</strong>
-			</td>
-		</tr>';
-
-		writeForums($cats, $cid, 1);
-		
-		print "</tbody>";
+		$forums[$cid][$forum['id']] = $forum;
 	}
-
-	if ($forums) {
-	print $buttons;
-	}
-	print '</table>';
+	
+	$btnNewForum = empty($cats) ? '' : '<button onclick="newForum();">'.__("Add forum").'</button>';
+	$btnNewCategory = '<button onclick="newCategory();">'.__("Add category").'</button>';
+	
+	RenderTemplate('editfora_list', array(
+		'boards' => $boards,
+		'cats' => $cats,
+		'forums' => $forums,
+		'selectedForum' => (int)$_GET['s'],
+		
+		'btnNewForum' => $btnNewForum,
+		'btnNewCategory' => $btnNewCategory,
+	));
 }
 
 function mcs_forumBlock($fora, $catid, $selID, $indent, $fid)
@@ -838,8 +551,8 @@ function mcs_forumBlock($fora, $catid, $selID, $indent, $fid)
 			continue;
 		if ($forum['id'] == $fid)
 			continue;
-		if ($forum['id'] == 1337)	// HAX
-			continue;
+		//if ($forum['id'] == 1337)	// HAX
+		//	continue;
 		
 		$ret .=
 '				<option value="'.$forum['id'].'"'.($forum['id'] == -$selID ? ' selected="selected"':'').'>'
