@@ -395,6 +395,17 @@ function getKeywords($stuff)
 	return substr($finalstuff,0,-1);
 }
 
+function forumRedirectURL($redir)
+{
+	if ($redir[0] == ':')
+	{
+		$redir = explode(':', $redir);
+		return actionLink($redir[1], $redir[2], $redir[3], $redir[4]);
+	}
+	else
+		return $redir;
+}
+
 
 function smarty_function_plural($params, $template)
 {

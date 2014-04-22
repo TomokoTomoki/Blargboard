@@ -2,7 +2,7 @@
 
 if ($loguserid != 1) die('no');
 
-$fora = Query("SELECT *, 0 AS l, 0 AS r, IF(catid>0,0,-catid) AS parent FROM {forums} ORDER BY parent,id");
+$fora = Query("SELECT *, 0 AS l, 0 AS r, IF(catid>0,0,-catid) AS parent FROM {forums} ORDER BY catid,forder,id");
 while ($f = Fetch($fora))
 {
 	$forums[$f['id']] = $f;
@@ -46,8 +46,16 @@ function maketree($level, $curval)
 foreach ($forums as $id=>$f)
 {
 	echo '<tr><td>FORUM #'.$id.':<td>'.$f['title'].'<td>parent='.$f['parent'].'<td>l='.$f['l'].'<td>r='.$f['r'];
+	
+	$old = Fetch(Query("SELECT l, r FROM {forums} WHERE id={0}", $id));
+	echo '<td>oldl='.$old['l'].'<td>oldr='.$old['r'];
+	
 	Query("UPDATE {forums} SET l={0}, r={1} WHERE id={2}", $f['l'], $f['r'], $id);
-	echo '<td>OK';
+	
+	if ($old['l'] == $f['l'] && $old['r'] == $f['r'])
+		echo '<td style="color:#0f0;">OK';
+	else
+		echo '<td style="color:#f00;">BAD/FIXED';
 }
 
 ?></table>

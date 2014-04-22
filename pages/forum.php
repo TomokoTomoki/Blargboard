@@ -16,6 +16,9 @@ if(NumRows($rFora))
 else
 	Kill(__("Unknown forum ID."));
 	
+if ($forum['redirect'])
+	die(header('Location: '.forumRedirectURL($forum['redirect'])));
+	
 if($loguserid)
 {
 	if($_GET['action'] == "markasread")
@@ -120,16 +123,7 @@ function fj_forumBlock($fora, $catid, $selID, $indent)
 	foreach ($fora[$catid] as $forum)
 	{
 		if ($forum['redirect'])
-		{
-			$redir = $forum['redirect'];
-			if ($redir[0] == ':')
-			{
-				$redir = explode(':', $redir);
-				$forumlink = actionLink($redir[1], $redir[2], $redir[3], $redir[4]);
-			}
-			else
-				$forumlink = $redir;
-		}
+			$forumlink = forumRedirectURL($forum['redirect']);
 		else
 			$forumlink = actionLink('forum', $forum['id'], '', HasPermission('forum.viewforum',$forum['id'],true)?$forum['title']:'');
 			

@@ -43,17 +43,17 @@ $noFooter = true;
 
 function recursionCheck($fid, $cid)
 {
-	if ($cid >= 0) return;
+	if ($cid >= 0) return $cid;
 	
 	$check = array();
 	for (;;)
 	{
 		$check[] = -$cid;
 		if ($check[0] == $fid)
-			dieAjax('Endless recursion detected; choose another parent for this forum.');
+			dieAjax(__('Endless recursion detected; choose another parent for this forum.'));
 		
-		$cid = FetchResult("SELECT catid FROM {forums} WHERE id={0}", $cid);
-		if ($cid >= 0) break;
+		$cid = FetchResult("SELECT catid FROM {forums} WHERE id={0}", -$cid);
+		if ($cid >= 0) return $cid;
 	}
 }
 
@@ -75,10 +75,14 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
 			$forder = (int)$_POST['forder'];
 			
-			// TODO PERMS
+			$catid = recursionCheck($id, $category);
+			$board = FetchResult("SELECT board FROM {categories} WHERE id={0}", $catid);
 
 			//Send it to the DB
-			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, minpower = {4}, minpowerthread = {5}, minpowerreply = {6}, accesscontrol={8} WHERE id = {7}", $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $id, $accessctrl);
+			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, hidden={4}, redirect={5}, offtopic={6}, board={8} WHERE id = {7}", 
+				$title, $description, $category, $forder, (int)$_POST['hidden'], $_POST['redirect'], (int)$_POST['offtopic'], $id, $board);
+				
+			SetPerms($id);
 			
 			dieAjax('Ok');
 			break;
@@ -97,6 +101,12 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			//Send it to the DB
 			Query("UPDATE {categories} SET name = {0}, corder = {1}, board={3} WHERE id = {2}", $name, $corder, $id, $board);
 			
+			// update boards of forums in this category
+			$blarg = Fetch(Query("SELECT MIN(l) minl, MAX(r) maxr FROM {forums} WHERE catid={0}", $id));
+			Query("UPDATE {forums} SET board={0} WHERE l>={1} AND r<={2}", $board, $blarg['minl'], $blarg['maxr']);
+			
+			// no need to update the L/R tree. Category order doesn't matter.
+			
 			dieAjax('Ok');
 			break;
 
@@ -108,18 +118,37 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			$description = $_POST['description'];
 			$category = ($_POST['ptype'] == 0) ? (int)$_POST['category'] : -(int)$_POST['pforum'];
 			$forder = (int)$_POST['forder'];
-			
-			// TODO PERMS
 
 			//Figure out the new forum ID.
 			//I think it'd be better to use InsertId, but...
 			$newID = FetchResult("SELECT id+1 FROM {forums} WHERE (SELECT COUNT(*) FROM {forums} f2 WHERE f2.id={forums}.id+1)=0 ORDER BY id ASC LIMIT 1");
 			if($newID < 1) $newID = 1;
+			
+			$catid = recursionCheck($newID, $category);
+			$board = FetchResult("SELECT board FROM {categories} WHERE id={0}", $catid);
+			
+			// L/R tree shiz
+			$l = FetchResult("SELECT MAX(r) FROM {forums} WHERE catid={0} AND (forder<{1} OR (forder={1} AND id<{2}))", $category, $forder, $newID);
+			if (!$l)
+			{
+				if ($category >= 0)
+					$l = FetchResult("SELECT MAX(r) FROM {forums}");
+				else
+					$l = FetchResult("SELECT l FROM {forums} WHERE id={0}", -$category);
+			}
+			$l++;
+			Query("UPDATE {forums} SET l=l+2 WHERE l>={0}", $l);
+			Query("UPDATE {forums} SET r=r+2 WHERE r>={0}", $l);
+			$r = $l + 1;
 
 			//Add the actual forum
-			Query("INSERT INTO {forums} (`id`, `title`, `description`, `catid`, `forder`, `minpower`, `minpowerthread`, `minpowerreply`, `accesscontrol`) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8})", $newID, $title, $description, $category, $forder, $minpower, $minpowerthread, $minpowerreply, $accessctrl);
+			Query("INSERT INTO {forums} (`id`, `title`, `description`, `catid`, `forder`, `hidden`, `redirect`, `offtopic`, `board`, `l`, `r`) VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})", 
+				$newID, $title, $description, $category, $forder, (int)$_POST['hidden'], $_POST['redirect'], (int)$_POST['offtopic'], $board, $l, $r);
+			
+			$id = InsertId();
+			SetPerms($id);
 
-			dieAjax('Ok');
+			dieAjax('Ok|'.$id);
 			break;
 
 		case 'addcategory':
@@ -134,24 +163,21 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 
 			Query("INSERT INTO {categories} (`name`, `corder`, `board`) VALUES ({0}, {1}, {2})", $name, $corder, $board);
 
-			dieAjax('Ok');
+			dieAjax('Ok|'.InsertId());
 			break;
 			
 		case 'deleteforum':
-			//TODO: Move and delete threads mode.
-
 			//Get Forum ID
 			$id = (int)$_POST['id'];
 
 			//Check that forum exists
-			$rForum = Query("SELECT * FROM {forums} WHERE id={0}", $id);
+			$rForum = Query("SELECT id FROM {forums} WHERE id={0}", $id);
 			if (!NumRows($rForum))
 				dieAjax("No such forum.");
 
 			//Check that forum has threads.
-			$forum = Fetch($rForum);
-			if($forum['numthreads'] > 0)
-				dieAjax(__("Forum has threads. Move those first."));
+			if (FetchResult("SELECT COUNT(*) FROM {threads} WHERE forum={0}", $id) > 0)
+				dieAjax(__('Cannot delete a forum that contains threads.'));
 
 			//Delete
 			Query("DELETE FROM `{forums}` WHERE `id` = {0}", $id);
@@ -163,11 +189,11 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			$id = (int)$_POST['id'];
 
 			//Check that forum exists
-			$rCat = Query("SELECT * FROM {categories} WHERE id={0}", $id);
+			$rCat = Query("SELECT id FROM {categories} WHERE id={0}", $id);
 			if (!NumRows($rCat))
 				dieAjax(__("No such category."));
 				
-			if (FetchResult("SELECT COUNT(*) FROM {forums} WHERE catid={0}", $cid) > 0)
+			if (FetchResult("SELECT COUNT(*) FROM {forums} WHERE catid={0}", $id) > 0)
 				dieAjax(__('Cannot delete a category that contains forums.'));
 
 			//Delete
@@ -218,6 +244,14 @@ if (isset($_REQUEST['action']))
 
 //Main code.
 
+?>
+	<style type="text/css">
+		.permselect, .permselect > option {color: black!important;}
+		.perm { display: inline-block; width: 100%; box-sizing: border-box; -moz-box-sizing: border-box; padding-right: 7px; }
+		.perm .permselect { float: right; }
+	</style>
+<?php
+
 echo '
 <script src="'.resourceLink('js/editfora.js').'" type="text/javascript"></script>
 <div id="editcontent" style="float: right; width: 49.7%;">
@@ -247,14 +281,26 @@ function WriteForumEditContents($fid)
 	while ($cat = Fetch($rCats))
 		$cats[$cat['id']] = $cat;
 		
-	$rFora = Query("SELECT * FROM {forums} ORDER BY forder, id");
+	$rFora = Query("SELECT * FROM {forums} ORDER BY l");
 
 	$fora = array();
+	$cid = -1;
 	while ($forum = Fetch($rFora))
-		$fora[$forum['id']] = $forum;
-
-	if(count($cats) == 0)
-		$cats[0] = __("No categories");
+	{
+		if ($forum['catid'] >= 0) $cid = $forum['catid'];
+		$fora[$cid][] = $forum;
+	}
+	
+	$g = Query("SELECT id,name,type,color_unspec FROM {usergroups} ORDER BY type, rank");
+	$groups = array();
+	while ($group = Fetch($g))
+	{
+		$name = htmlspecialchars($group['name']);
+		if ($group['type'] == 0)
+			$name = '<strong style="color:'.htmlspecialchars($group['color_unspec']).';">'.$name.'</strong>';
+		
+		$groups[$group['id']] = array('name' => $name, 'permFields' => '');
+	}
 
 	if($fid != -1)
 	{
@@ -264,155 +310,73 @@ function WriteForumEditContents($fid)
 			Kill(__("Forum not found."));
 		}
 		$forum = Fetch($rForum);
+		
+		$candelete = FetchResult("SELECT COUNT(*) FROM {threads} WHERE forum={0}", $fid) == 0;
 
 		$title = htmlspecialchars($forum['title']);
 		$description = htmlspecialchars($forum['description']);
 		$catselect = MakeCatSelect('cat', $cats, $fora, $forum['catid'], $forum['id']);
-		$accessctrl = $forum['accesscontrol'];
-		$minpower = PowerSelect('minpower', $forum['minpower']);
-		$minpowerthread = PowerSelect("minpowerthread", $forum['minpowerthread']);
-		$minpowerreply = PowerSelect('minpowerreply', $forum['minpowerreply']);
 		$forder = $forum['forder'];
-		$func = "changeForumInfo";
-		$button = __("Save");
-		$boxtitle = __("Edit Forum");
-		$delbutton = "
-			<button onclick='showDeleteForum(); return false;'>
-				".__("Delete")."
-			</button>";
+		
+		$fperms = GetForumPerms($fid);
+		foreach ($groups as $gid=>$group)
+			$groups[$gid]['permFields'] = PermFields($gid, $fperms[$gid]);
 
-		$localmods = "fuck you";
+		$boxtitle = __("Editing forum ").$title;
 		
-		
-		$privusers = "fuck you too";
+		$fields = array
+		(
+			'title' => '<input type="text" name="title" value="'.$title.'" size=64>',
+			'description' => '<input type="text" name="description" value="'.$description.'" size=80>',
+			'parent' => $catselect,
+			'order' => '<input type="text" name="forder" value="'.$forder.'" size=3>',
+			'redirect' => '<input type="text" name="redirect" value="'.htmlspecialchars($forum['redirect']).'" size=80>',
+			'hidden' => '<label><input type="checkbox" name="hidden" value="1"'.($forum['hidden']?' checked="checked"':'').'> '.__('Hidden').'</label>',
+			'offtopic' => '<label><input type="checkbox" name="offtopic" value="1"'.($forum['offtopic']?' checked="checked"':'').'> '.__('Off-topic').'</label>',
+			
+			'btnSave' => '<button onclick="changeForumInfo('.$fid.'); return false;">Save</button>',
+			'btnDelete' => '<button '.($candelete ? 'onclick="deleteForum(); return false;"' : 'disabled="disabled"').'>Delete</button>',
+		);
+		$delMessage = $candelete ? '' : 'Before deleting a forum, remove all threads from it.';
 	}
 	else
 	{
-		$title = __("New Forum");
-		$description = __("Description goes here. <strong>HTML allowed.</strong>");
 		$catselect = MakeCatSelect('cat', $cats, $fora, 1, -1);
-		$accessctrl = 1;
-		$minpower = PowerSelect('minpower', 0);
-		$minpowerthread = PowerSelect("minpowerthread", 0);
-		$minpowerreply = PowerSelect('minpowerreply', 0);
-		$forder = 0;
-		$func = "addForum";
-		$button = __("Add");
-		$boxtitle = __("New Forum");
-		$delbutton = "";
-		$localmods = "(Create the forum before managing mods)";
-		$privusers = '<small>(create the forum before adding users here)</small>';
+		
+		$fperms = GetForumPerms(0);
+		foreach ($groups as $gid=>$group)
+			$groups[$gid]['permFields'] = PermFields($gid, $fperms[$gid]);
+
+		$boxtitle = __("New forum");
+
+		$fields = array
+		(
+			'title' => '<input type="text" name="title" value="" size=64>',
+			'description' => '<input type="text" name="description" value="" size=80>',
+			'parent' => $catselect,
+			'order' => '<input type="text" name="forder" value="0" size=3>',
+			'redirect' => '<input type="text" name="redirect" value="" size=80>',
+			'hidden' => '<label><input type="checkbox" name="hidden" value="1"> '.__('Hidden').'</label>',
+			'offtopic' => '<label><input type="checkbox" name="offtopic" value="1"> '.__('Off-topic').'</label>',
+			
+			'btnSave' => '<button onclick="addForum(); return false;">Save</button>',
+			'btnDelete' => '',
+		);
+		$delMessage = '';
 	}
 
 	echo "
 	<form method=\"post\" id=\"forumform\" action=\"".actionLink("editfora")."\">
 	<input type=\"hidden\" name=\"key\" value=\"".$loguser['token']."\">
-	<input type=\"hidden\" name=\"id\" value=\"$fid\">
-	<table class=\"outline margin\">
-		<tr class=\"header1\">
-			<th colspan=\"2\">
-				$boxtitle
-			</th>
-		</tr>
-		<tr class=\"cell1\">
-			<td style=\"width: 25%;\">
-				".__("Title")."
-			</td>
-			<td>
-				<input type=\"text\" style=\"width: 98%;\" name=\"title\" value=\"$title\" />
-			</td>
-		</tr>
-		<tr class=\"cell0\">
-
-			<td>
-				".__("Description")."
-			</td>
-			<td>
-				<input type=\"text\" style=\"width: 98%;\" name=\"description\" value=\"$description\" />
-			</td>
-		</tr>
-		<tr class=\"cell1\">
-			<td>
-				".__("Parent")."
-			</td>
-			<td>
-				$catselect
-			</td>
-		</tr>
-		<tr class=\"cell0\">
-			<td>
-				".__("Listing order")."
-			</td>
-			<td>
-				<input type=\"text\" size=\"2\" name=\"forder\" value=\"$forder\" />
-				<img src=\"".resourceLink("img/icons/icon5.png")."\" title=\"".__("Everything is sorted by listing order first, then by ID. If everything has its listing order set to 0, they will therefore be sorted by ID only.")."\" alt=\"[?]\" />
-			</td>
-		</tr>
-		<tr class=\"cell1\">
-			<td>
-				".__("Access control")."
-			</td>
-			<td>
-				<label><input type=\"radio\" name=\"acc\" value=\"1\"".($accessctrl==1 ? ' checked="checked"':'')."> ".__("Powerlevel: ")."</label>
-				$minpower<br>
-				<label><input type=\"radio\" name=\"acc\" value=\"2\"".($accessctrl==2 ? ' checked="checked"':'')."> ".__("Private: ")."</label>
-				<br>
-				$privusers
-				<br />
-				<br />
-				".__("To post threads: ")."$minpowerthread
-				<br />
-				".__("To reply: ")."$minpowerreply
-			</td>
-		</tr>
-		<tr class=\"cell0\">
-			<td>
-				".__("Local moderators")."
-			</td>
-			<td>
-				$localmods
-			</td>
-		</tr>
-
-		<tr class=\"cell2\">
-			<td>
-				&nbsp;
-			</td>
-			<td>
-				<button onclick=\"$func(); return false;\">
-					$button
-				</button>
-				$delbutton
-			</td>
-		</tr>
-	</table></form>
-
-	<form method=\"post\" id=\"deleteform\" action=\"".actionLink("editfora")."\">
-	<input type=\"hidden\" name=\"key\" value=\"".$loguser['token']."\">
-	<input type=\"hidden\" name=\"id\" value=\"$fid\">
-	<div id=\"deleteforum\" style=\"display:none\">
-		<table class=\"outline margin\">
-			<tr class=\"header1\">
-
-				<th>
-					".__("Delete forum")."
-				</th>
-			</tr>
-			<tr class=\"cell0\">
-				<td>
-					".__("Instead of deleting a forum, you might want to consider archiving it: Change its name or description to say so, and raise the minimum powerlevel to reply and create threads so it's effectively closed.")."<br /><br />
-					".__("If you still want to delete it, click below:")."<br />
-					<button onclick=\"deleteForum('delete'); return false;\">
-						".__("Delete forum")."
-					</button>
-				</td>
-			</tr>
-		</table>
-	</div>
+	<input type=\"hidden\" name=\"id\" value=\"$fid\">";
+	
+	RenderTemplate('form_editforum', array('formtitle' => $boxtitle, 'fields' => $fields, 'groups' => $groups, 'delMessage' => $delMessage));
+	
+	echo "
 	</form>";
-
-//	, $title, $description, $catselect, $minpower, $minpowerthread, $minpowerreply, $fid, $forder, $loguser['token'], $func, $button, $boxtitle, $delbutton);
 }
+
+
 // $fid == -1 means that a new forum should be made :)
 function WriteCategoryEditContents($cid)
 {
@@ -447,10 +411,10 @@ function WriteCategoryEditContents($cid)
 		$fields = array
 		(
 			'name' => '<input type="text" name="name" value="'.$name.'" size=64>',
-			'order' => '<input type="text" name="corder" value="'.$corder.'" size=2>',
+			'order' => '<input type="text" name="corder" value="'.$corder.'" size=3>',
 			'board' => $boardlist,
 			
-			'btnSave' => '<button onclick="changeCategoryInfo(); return false;">Save</button>',
+			'btnSave' => '<button onclick="changeCategoryInfo('.$cid.'); return false;">Save</button>',
 			'btnDelete' => '<button '.($candelete ? 'onclick="deleteCategory(); return false;"' : 'disabled="disabled"').'>Delete</button>',
 		);
 		$delMessage = $candelete ? '' : 'Before deleting a category, remove all forums from it.';
@@ -470,7 +434,7 @@ function WriteCategoryEditContents($cid)
 		$fields = array
 		(
 			'name' => '<input type="text" name="name" value="" size=64>',
-			'order' => '<input type="text" name="corder" value="0" size=2>',
+			'order' => '<input type="text" name="corder" value="0" size=3>',
 			'board' => $boardlist,
 			
 			'btnSave' => '<button onclick="addCategory(); return false;">Save</button>',
@@ -541,36 +505,16 @@ function WriteForumTableContents()
 	));
 }
 
-function mcs_forumBlock($fora, $catid, $selID, $indent, $fid)
-{
-	$ret = '';
-	
-	foreach ($fora as $forum)
-	{
-		if ($forum['catid'] != $catid)
-			continue;
-		if ($forum['id'] == $fid)
-			continue;
-		//if ($forum['id'] == 1337)	// HAX
-		//	continue;
-		
-		$ret .=
-'				<option value="'.$forum['id'].'"'.($forum['id'] == -$selID ? ' selected="selected"':'').'>'
-	.str_repeat('&nbsp; &nbsp; ', $indent).htmlspecialchars($forum['title'])
-	.'</option>
-';
-		$ret .= mcs_forumBlock($fora, -$forum['id'], $selID, $indent+1, $fid);
-	}
-	
-	return $ret;
-}
 
-function MakeCatSelect($i, $o, $fora, $v, $fid)
+
+function MakeCatSelect($i, $cats, $fora, $v, $fid)
 {
+	global $forumBoards;
+	
 	$r = '
 			<label><input type="radio" name="ptype" value="0"'.($v>=0 ? ' checked="checked"':'').'>Category:</label>
 			<select name="category">';
-	foreach ($o as $opt)
+	foreach ($cats as $opt)
 	{
 		$r .= '
 				<option value="'.$opt['id'].'"'.($v == $opt['id'] ? ' selected="selected"' : '').'>
@@ -585,19 +529,40 @@ function MakeCatSelect($i, $o, $fora, $v, $fid)
 			<label><input type="radio" name="ptype" value="1"'.($v<0 ? ' checked="checked"':'').'>Forum:</label>
 			<select name="pforum">';
 			
-	foreach ($o as $cid=>$cat)
+	foreach ($cats as $cid=>$cat)
 	{
-		$cname = $cat['name'];
-		if ($cat['page'] == 1) $cname = 'SMG2.5 - '.$cname;
+		if (!isset($fora[$cid]) || empty($fora[$cid])) continue;
 		
-		$fb = mcs_forumBlock($fora, $cid, $v, 0, $fid);
-		if (!$fb) continue;
+		$cname = $cat['name'];
+		if ($cat['board']) $cname = $forumBoards[$cat['board']].' - '.$cname;
+		
+		$r .= '
+			<optgroup label="'.htmlspecialchars($cname).'">';
+		
+		$lastr = 0; $level = 0;
+		foreach ($fora[$cid] as $forum)
+		{
+			if ($lastr)
+			{
+				if ($forum['r'] < $lastr) // we went up one level
+					$level++;
+				else // we went down a few levels maybe
+					$level -= $forum['l'] - $lastr - 1;
+			}
+			$lastr = $forum['r'];
 			
-		$r .= 
-'			<optgroup label="'.htmlspecialchars($cname).'">
-'.$fb.
-'			</optgroup>
+			if ($forum['id'] == $fid) continue;
+			if ($forum['redirect']) continue;
+			
+			$r .= '				
+				<option value="'.$forum['id'].'"'.($forum['id'] == -$v ? ' selected="selected"':'').'>'
+				.str_repeat('&nbsp; &nbsp; ', $level).htmlspecialchars($forum['title'])
+				.'</option>
 ';
+		}
+		
+		$r .= '
+			</optgroup>';
 	}
 	
 	$r .= '
@@ -605,22 +570,148 @@ function MakeCatSelect($i, $o, $fora, $v, $fid)
 			
 	return $r;
 }
-function PowerSelect($id, $s)
+
+// returns: per-group permissions
+// -2: deny (locked due to global perm)
+// -1: deny
+// 0: neutral
+// 1: allow
+function GetForumPerms($fid)
 {
-	$r = Format('
-				<select name="{0}">
-	', $id);
-	if ($s < 0) $s = 0;
-	else if ($s > 3) $s = 3;
-	$powers = array(0=>__("Regular"), 1=>__("Local mod"), 2=>__("Full mod"), 3=>__("Admin"));
-	foreach ($powers as $k => $v)
+	$ret = array();
+	
+	// global perms
+	$perms = Query("SELECT id,perm,value FROM {permissions} WHERE applyto=0 AND (SUBSTR(perm,1,6)={0} OR SUBSTR(perm,1,4)={1}) AND arg=0", 
+		'forum.', 'mod.');
+
+	while ($perm = Fetch($perms))
 	{
-		$r .= Format('
-					<option value="{0}"{2}>{1}</option>
-		', $k, $v, ($k == $s ? ' selected="selected"' : ''));
+		$val = $perm['value'];
+		if ($val == -1)
+			$ret[$perm['id']][$perm['perm']] = -2;
 	}
-	$r .= '
-				</select>';
-	return $r;
+	
+	if (!$fid) return $ret;
+	
+	// specific perms
+	$perms = Query("SELECT id,perm,value FROM {permissions} WHERE applyto=0 AND (SUBSTR(perm,1,6)={0} OR SUBSTR(perm,1,4)={1}) AND arg={2}", 
+		'forum.', 'mod.', $fid);
+
+	while ($perm = Fetch($perms))
+	{
+		$val = $perm['value'];
+		
+		if (isset($ret[$perm['id']][$perm['perm']]))
+			$curval = $ret[$perm['id']][$perm['perm']];
+		else 
+			$curval = 0;
+			
+		if ($curval == -2) continue;
+		/*if ($curval == 0)	// neutral -- need specific=allow
+		{
+			if ($val == 0) $val = -1;
+		}
+		else // curval=1 -- allow
+		{
+			if ($val == 0) $val = 1;
+		}*/
+		
+		$ret[$perm['id']][$perm['perm']] = $val;
+	}
+	
+	return $ret;
 }
 
+// val=-2: selector locked to Deny
+function PermSelect($name, $val, $neutral)
+{
+	if (!$val && !$neutral) $val = -1;
+	
+	if ($val == -2)
+		return '
+		<select class="permselect" name="'.str_replace('.', '_', $name).'" disabled="disabled">
+			<option value="-2" selected="selected" style="background:#f88;">'.__('Deny').'</option>
+		</select>';
+	
+	return '
+		<select class="permselect" name="'.str_replace('.', '_', $name).'">
+			<option value="-1" '.($val==-1 ? 'selected="selected"':'').' style="background:#f88;">'.__('Deny').'</option>
+			'.($neutral ? '<option value="0" '.($val==0 ? 'selected="selected"':'').' style="background:#ff8;">'.__('Neutral').'</option>':'').'
+			<option value="1" '.($val==1 ? 'selected="selected"':'').' style="background:#8f8;">'.__('Allow').'</option>
+		</select>';
+}
+
+function PermFields($gid, $gperms)
+{
+	global $permDescs;
+	
+	$ret = '<table class="layout-table"><tr>';
+	$i = 0;
+	$perrow = 2;
+	
+	foreach ($permDescs['forum'] as $perm=>$label)
+	{
+		if (isset($gperms[$perm])) $pval = $gperms[$perm];
+		else $pval = 0;
+		
+		$ret .= '<td><label class="perm">'.$label.': '.PermSelect($perm.'['.$gid.']', $pval, true).'</label></td>';
+		
+		$i++;
+		if (($i % $perrow) == 0) $ret .= '</tr><tr>';
+	}
+	
+	foreach ($permDescs['mod'] as $perm=>$label)
+	{
+		if (isset($gperms[$perm])) $pval = $gperms[$perm];
+		else $pval = 0;
+		
+		$ret .= '<td><label class="perm">'.$label.': '.PermSelect($perm.'['.$gid.']', $pval, true).'</label></td>';
+		
+		$i++;
+		if (($i % $perrow) == 0) $ret .= '</tr><tr>';
+	}
+	
+	return $ret.'</tr></table>';
+}
+
+function SetPerms($fid)
+{
+	global $usergroups, $permDescs;
+	
+	foreach ($usergroups as $gid=>$group)
+	{
+		foreach ($permDescs['forum'] as $perm=>$label)
+		{
+			$blarg = str_replace('.', '_', $perm);
+			
+			if (isset($_POST[$blarg][$gid]))
+				$val = $_POST[$blarg][$gid];
+			else
+				$val = -2;
+				
+			if ($val != -2)
+			{
+				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
+					ON DUPLICATE KEY UPDATE value={4}",
+					$gid, $perm, $fid, $val);
+			}
+		}
+		
+		foreach ($permDescs['mod'] as $perm=>$label)
+		{
+			$blarg = str_replace('.', '_', $perm);
+			
+			if (isset($_POST[$blarg][$gid]))
+				$val = $_POST[$blarg][$gid];
+			else
+				$val = -2;
+				
+			if ($val != -2)
+			{
+				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
+					ON DUPLICATE KEY UPDATE value={4}",
+					$gid, $perm, $fid, $val);
+			}
+		}
+	}
+}
