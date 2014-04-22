@@ -77,10 +77,36 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			
 			$catid = recursionCheck($id, $category);
 			$board = FetchResult("SELECT board FROM {categories} WHERE id={0}", $catid);
-
+			
+			// L/R tree shiz
+			$oldlr = Fetch(Query("SELECT l,r FROM {forums} WHERE id={0}", $id));
+			$diff = $oldlr['r'] - $oldlr['l'] + 1;
+			
+			$c = Query("SELECT id FROM {forums} WHERE l>{0} AND r<{1}", $oldlr['l'], $oldlr['r']);
+			$children = array();
+			while ($blarg = Fetch($c)) $children[] = $blarg['id'];
+			
+			Query("UPDATE forums SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
+			Query("UPDATE forums SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
+			
+			$l = FetchResult("SELECT MAX(r) FROM {forums} WHERE catid={0} AND (forder<{1} OR (forder={1} AND id<{2}))", $category, $forder, $id);
+			if (!$l)
+			{
+				if ($category >= 0)
+					$l = FetchResult("SELECT MAX(r) FROM {forums}");
+				else
+					$l = FetchResult("SELECT l FROM {forums} WHERE id={0}", -$category);
+			}
+			$l++;
+			Query("UPDATE {forums} SET l=l+{0} WHERE l>={1} AND id NOT IN ({2c})", $diff, $l, $children);
+			Query("UPDATE {forums} SET r=r+{0} WHERE r>={1} AND id NOT IN ({2c})", $diff, $l, $children);
+			$r = $l + $diff - 1;
+			
+			Query("UPDATE {forums} SET l=l+{0}, r=r+{0} WHERE id IN ({1c})", $l-$oldlr['l'], $children);
+			
 			//Send it to the DB
-			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, hidden={4}, redirect={5}, offtopic={6}, board={8} WHERE id = {7}", 
-				$title, $description, $category, $forder, (int)$_POST['hidden'], $_POST['redirect'], (int)$_POST['offtopic'], $id, $board);
+			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, hidden={4}, redirect={5}, offtopic={6}, board={8}, l={9}, r={10} WHERE id = {7}", 
+				$title, $description, $category, $forder, (int)$_POST['hidden'], $_POST['redirect'], (int)$_POST['offtopic'], $id, $board, $l, $r);
 				
 			SetPerms($id);
 			
@@ -178,6 +204,19 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			//Check that forum has threads.
 			if (FetchResult("SELECT COUNT(*) FROM {threads} WHERE forum={0}", $id) > 0)
 				dieAjax(__('Cannot delete a forum that contains threads.'));
+				
+			//
+			
+			// L/R tree shiz
+			$oldlr = Fetch(Query("SELECT l,r FROM {forums} WHERE id={0}", $id));
+			$diff = $oldlr['r'] - $oldlr['l'] + 1;
+			
+			$c = FetchResult("SELECT COUNT(*) FROM {forums} WHERE l>{0} AND r<{1}", $oldlr['l'], $oldlr['r']);
+			if ($c > 0)
+				dieAjax(__('Cannot delete a forum that has subforums. Delete them or move them first.'));
+			
+			Query("UPDATE forums SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
+			Query("UPDATE forums SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
 
 			//Delete
 			Query("DELETE FROM `{forums}` WHERE `id` = {0}", $id);
@@ -312,6 +351,8 @@ function WriteForumEditContents($fid)
 		$forum = Fetch($rForum);
 		
 		$candelete = FetchResult("SELECT COUNT(*) FROM {threads} WHERE forum={0}", $fid) == 0;
+		$c = FetchResult("SELECT COUNT(*) FROM {forums} WHERE l>{0} AND r<{1}", $forum['l'], $forum['r']);
+		if ($c > 0) $candelete = false;
 
 		$title = htmlspecialchars($forum['title']);
 		$description = htmlspecialchars($forum['description']);
@@ -337,7 +378,7 @@ function WriteForumEditContents($fid)
 			'btnSave' => '<button onclick="changeForumInfo('.$fid.'); return false;">Save</button>',
 			'btnDelete' => '<button '.($candelete ? 'onclick="deleteForum(); return false;"' : 'disabled="disabled"').'>Delete</button>',
 		);
-		$delMessage = $candelete ? '' : 'Before deleting a forum, remove all threads from it.';
+		$delMessage = $candelete ? '' : ($c ? __('Before deleting a forum, delete or move its subforums.') : __('Before deleting a forum, remove all threads from it.'));
 	}
 	else
 	{
@@ -417,7 +458,7 @@ function WriteCategoryEditContents($cid)
 			'btnSave' => '<button onclick="changeCategoryInfo('.$cid.'); return false;">Save</button>',
 			'btnDelete' => '<button '.($candelete ? 'onclick="deleteCategory(); return false;"' : 'disabled="disabled"').'>Delete</button>',
 		);
-		$delMessage = $candelete ? '' : 'Before deleting a category, remove all forums from it.';
+		$delMessage = $candelete ? '' : __('Before deleting a category, remove all forums from it.');
 	}
 	else
 	{		
@@ -552,7 +593,7 @@ function MakeCatSelect($i, $cats, $fora, $v, $fid)
 			$lastr = $forum['r'];
 			
 			if ($forum['id'] == $fid) continue;
-			if ($forum['redirect']) continue;
+			//if ($forum['redirect']) continue;
 			
 			$r .= '				
 				<option value="'.$forum['id'].'"'.($forum['id'] == -$v ? ' selected="selected"':'').'>'
@@ -692,7 +733,7 @@ function SetPerms($fid)
 			if ($val != -2)
 			{
 				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
-					ON DUPLICATE KEY UPDATE value={4}",
+					ON DUPLICATE KEY UPDATE value={3}",
 					$gid, $perm, $fid, $val);
 			}
 		}
@@ -709,7 +750,7 @@ function SetPerms($fid)
 			if ($val != -2)
 			{
 				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
-					ON DUPLICATE KEY UPDATE value={4}",
+					ON DUPLICATE KEY UPDATE value={3}",
 					$gid, $perm, $fid, $val);
 			}
 		}

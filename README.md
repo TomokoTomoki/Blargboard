@@ -80,11 +80,8 @@ accordingly.
 
 Board owner's tips
 
-http://board.example/?page=makelr -> browse there after adding categories/forums. Regenerates
-the L/R tree used for subforums and such.
-
-http://board.example/?page=editforumperms&fid=X -> edit per-group permissions for forum ID X.
-Default permissions make the forum accessible to everyone.
+http://board.example/?page=makelr -> regenerates the L/R tree used for forum listings and such.
+Use if some of your forums are showing up in wrong places.
 
 http://board.example/?page=editperms&gid=X -> edit permissions for group ID X. (do not edit 
 permissions for group #1 (localmod)-- it will not work right due to a yet unfixed bug)
@@ -99,7 +96,6 @@ TODO list
 
  * port the ABXD database installer/updater (all we need to do is define the database structure, actually)
  * finish implementing templates
- * fix the forum editor
  * improve the permission editing interfaces
  * port the 'show/hide sidebar' feature from Kuribo64? or just nuke the sidebar?
  * allow plugins to add/override templates
