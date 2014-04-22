@@ -34,8 +34,7 @@ First of all, if you don't have some PHP knowledge, go find something easier
 to use, like official ABXD, MyBB or FluxBB. Or phpBB if you're insane.
 
 Minimalistic PHP knowledge is required to be able to follow the instructions below.
-MySQL knowledge isn't required but is a plus. You will need to use a tool like
-phpMyAdmin to add forums to your board for now, though.
+MySQL knowledge isn't required but is a plus.
 
 Get a webserver. Upload the Blargboard codebase to it.
 
