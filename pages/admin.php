@@ -55,17 +55,18 @@ Write("
 			</th>
 		</tr>
 ");
-cell2(actionLinkTag(__("Recalculate statistics"), "recalc"));
-cell2(actionLinkTag(__("Last Known Browsers"), "lastknownbrowsers"));
-cell2(actionLinkTag(__("Manage IP bans"), "ipbans"));
-cell2(actionLinkTag(__("Manage forum list"), "editfora"));
-cell2(actionLinkTag(__("Manage plugins"), "pluginmanager"));
-cell2(actionLinkTag(__("Edit settings"), "editsettings"));
-cell2(actionLinkTag(__("Edit smilies"), "editsmilies"));
-cell2(actionLinkTag(__('Edit home page'), 'edithomepage'));
-//cell2(actionLinkTag(__("Optimize tables"), "optimize"));
-cell2(actionLinkTag(__("View log"), "log"));
-cell2(actionLinkTag(__('Rereg radar'), 'reregs'));
+if ($loguser['root']) 						cell2(actionLinkTag(__("Recalculate statistics"), "recalc"));
+if (HasPermission('admin.manageipbans'))	cell2(actionLinkTag(__("Manage IP bans"), "ipbans"));
+if (HasPermission('admin.editforums'))		cell2(actionLinkTag(__("Manage forum list"), "editfora"));
+if (HasPermission('admin.editsettings'))
+{
+	cell2(actionLinkTag(__("Manage plugins"), "pluginmanager"));
+	cell2(actionLinkTag(__("Edit settings"), "editsettings"));
+}
+if (HasPermission('admin.editsmilies'))		cell2(actionLinkTag(__("Edit smilies"), "editsmilies"));
+if ($loguser['root'])						cell2(actionLinkTag(__("Optimize tables"), "optimize"));
+if (HasPermission('admin.viewlog'))			cell2(actionLinkTag(__("View log"), "log"));
+if (HasPermission('admin.ipsearch'))		cell2(actionLinkTag(__('Rereg radar'), 'reregs'));
 //cell2(actionLinkTag(__("Update table structure"), "updateschema"));
 
 $bucket = "adminleft"; include("./lib/pluginloader.php");

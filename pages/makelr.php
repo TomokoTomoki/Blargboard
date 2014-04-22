@@ -1,6 +1,6 @@
 <?php
 
-if ($loguserid != 1) die('no');
+if(!$loguser['root']) die('no');
 
 $fora = Query("SELECT *, 0 AS l, 0 AS r, IF(catid>0,0,-catid) AS parent FROM {forums} ORDER BY catid,forder,id");
 while ($f = Fetch($fora))
