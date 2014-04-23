@@ -328,45 +328,49 @@ if($_POST['actionsave'])
 					$sets[] = $field." = ".$val;
 					break;
 
-				//TODO: These two are copypasta, fixit
 				case "displaypic":
-					if($_POST['remove'.$field])
-					{
-						@unlink($dataDir."avatars/$userid");
-						$sets[] = $field." = ''";
-						continue;
-					}
-					if($_FILES[$field]['name'] == "" || $_FILES[$field]['error'] == UPLOAD_ERR_NO_FILE)
-						continue;
-					$res = HandlePicture($field, 0);
-					if($res === true)
-						$sets[] = $field." = '#INTERNAL#'";
-					else
-					{
-						Alert($res);
-						$failed = true;
-						$item['fail'] = true;
-					}
-					break;
 				case "minipic":
 					if($_POST['remove'.$field])
 					{
-						@unlink($dataDir."minipic/$userid");
+						$res = true;
 						$sets[] = $field." = ''";
-						continue;
 					}
-					if($_FILES[$field]['name'] == "" || $_FILES[$field]['error'] == UPLOAD_ERR_NO_FILE)
-						continue;
-					$res = HandlePicture($field, 1);
-					if($res === true)
-						$sets[] = $field." = '#INTERNAL#'";
 					else
 					{
-						Alert($res);
-						$failed = true;
-						$item['fail'] = true;
+						if($_FILES[$field]['name'] == "" || $_FILES[$field]['error'] == UPLOAD_ERR_NO_FILE)
+							continue;
+						$usepic = '';
+						$res = HandlePicture($field, ($item['type']=='displaypic') ? 0:1, $usepic);
+						if($res === true)
+						{
+							$sets[] = $field." = '".SqlEscape($usepic)."'";
+						}
+						else
+						{
+							Alert($res);
+							$failed = true;
+							$item['fail'] = true;
+						}
+					}
+					
+					// delete the old image if needed
+					if ($res === true)
+					{
+						if (substr($user[$field],0,6) == '$root/')
+						{
+							// verify that the file they want us to delete is an internal avatar and not something else
+							$path = str_replace('$root/', $dataDir, $user[$field]);
+							if (!file_exists($path.'.internal')) continue;
+							$hash = file_get_contents($path.'.internal');
+							if ($hash === hash_hmac_file('sha256', $path, $salt))
+							{
+								@unlink($path);
+								@unlink($path.'.internal');
+							}
+						}
 					}
 					break;
+				
 				case "bitmask":
 					$val = 0;
 					if ($_POST[$field])
@@ -454,13 +458,13 @@ function dummycallback($field, $item)
 	return true;
 }
 
-function HandlePicture($field, $type)
+function HandlePicture($field, $type, &$usepic)
 {
-	global $userid, $dataDir;
+	global $userid, $dataDir, $salt;
 	
 	if($type == 0)
 	{
-		$extensions = array(".png",".jpg",".gif");
+		$extensions = array(".png",".jpg",".jpeg",".gif");
 		$maxDim = 200;
 		$maxSize = 600 * 1024;
 		$errorname = __('avatar');
@@ -488,28 +492,35 @@ function HandlePicture($field, $type)
 	if($fileSize > $maxSize && !$allowOversize)
 		return format(__("File size for {0} is too high. The limit is {1} bytes, the uploaded image is {2} bytes."), $errorname, $maxSize, $fileSize)."</li>";
 
+	$ext = '.blarg';
 	switch($fileType)
 	{
 		case 1:
 			$sourceImage = imagecreatefromgif($tempFile);
+			$ext = '.gif';
 			break;
 		case 2:
 			$sourceImage = imagecreatefromjpeg($tempFile);
+			$ext = '.jpg';
 			break;
 		case 3:
 			$sourceImage = imagecreatefrompng($tempFile);
+			$ext = '.png';
 			break;
 	}
+	
+	$randomcrap = '_'.time();
+	$targetFile = false;
 
 	$oversize = ($width > $maxDim || $height > $maxDim);
 	if ($type == 0)
 	{
-		$targetFile = $dataDir."avatars/".$userid;
+		$targetFile = 'avatars/'.$userid.$randomcrap.$ext;
 
 		if(!$oversize)
 		{
 			//Just copy it over.
-			copy($tempFile, $targetFile);
+			copy($tempFile, $dataDir.$targetFile);
 		}
 		else
 		{
@@ -524,13 +535,13 @@ function HandlePicture($field, $type)
 				$targetImage = imagecreatetruecolor(floor($maxDim * $ratio), $maxDim);
 				imagecopyresampled($targetImage, $sourceImage, 0,0,0,0, $maxDim * $ratio, $maxDim, $width, $height);
 			}
-			imagepng($targetImage, $targetFile);
+			imagepng($targetImage, $dataDir.$targetFile);
 			imagedestroy($targetImage);
 		}
 	}
 	elseif ($type == 1)
 	{
-		$targetFile = $dataDir."minipics/".$userid;
+		$targetFile = 'minipics/'.$userid.$randomcrap.$ext;
 
 		if ($oversize)
 		{
@@ -538,8 +549,13 @@ function HandlePicture($field, $type)
 			return format(__("Dimensions of {0} must be at most {1} by {1} pixels."), $errorname, $maxDim);
 		}
 		else
-			copy($tempFile, $targetFile);
+			copy($tempFile, $dataDir.$targetFile);
 	}
+	
+	// file created to verify that the avatar was created here
+	file_put_contents($dataDir.$targetFile.'.internal', hash_hmac_file('sha256', $dataDir.$targetFile, $salt));
+	
+	$usepic = '$root/'.$targetFile;
 	return true;
 }
 

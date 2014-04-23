@@ -317,12 +317,10 @@ function makePost($post, $type, $params=array())
 		if(file_exists("${dataDir}avatars/".$poster['id']."_".$post['mood']))
 			$sidebar['avatar'] = "<img src=\"${dataUrl}avatars/".$poster['id']."_".$post['mood']."\" alt=\"\">";
 	}
-	else
+	else if ($poster['picture'])
 	{
-		if($poster['picture'] == '#INTERNAL#')
-			$sidebar['avatar'] = "<img src=\"${dataUrl}avatars/".$poster['id']."\" alt=\"\">";
-		else if($poster['picture'])
-			$sidebar['avatar'] = "<img src=\"".htmlspecialchars($poster['picture'])."\" alt=\"\">";
+		$pic = str_replace('$root/', $dataUrl, $poster['picture']);
+		$sidebar['avatar'] = "<img src=\"".htmlspecialchars($pic)."\" alt=\"\">";
 	}
 
 	$lastpost = ($poster['lastposttime'] ? timeunits(time() - $poster['lastposttime']) : "none");

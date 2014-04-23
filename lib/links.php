@@ -97,11 +97,9 @@ function themeResourceLink($what)
 function getMinipicTag($user)
 {
 	global $dataUrl;
-	$minipic = "";
-	if($user["minipic"] == "#INTERNAL#")
-		$minipic = "<img src=\"${dataUrl}minipics/${user["id"]}\" alt=\"\" class=\"minipic\" />&nbsp;";
-	else if($user["minipic"])
-		$minipic = "<img src=\"".$user['minipic']."\" alt=\"\" class=\"minipic\" />&nbsp;";
+	if (!$user['minipic']) return '';
+	$pic = str_replace('$root/', $dataUrl, $user['minipic']);
+	$minipic = "<img src=\"".htmlspecialchars($pic)."\" alt=\"\" class=\"minipic\" />&nbsp;";
 	return $minipic;
 }
 
