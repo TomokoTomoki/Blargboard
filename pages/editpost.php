@@ -133,19 +133,25 @@ else if(isset($_POST['actionpost']))
 		if($_POST['nopl']) $options |= 1;
 		if($_POST['nosm']) $options |= 2;
 
-		$now = time();
-		$rev = fetchResult("select max(revision) from {posts_text} where pid={0}", $pid);
-		$rev++;
-		$rPostsText = Query("insert into {posts_text} (pid,text,revision,user,date) values ({0}, {1}, {2}, {3}, {4})",
-							$pid, $_POST["text"], $rev, $loguserid, $now);
+		if ($_POST['text'] != $post['text'])
+		{
+			$now = time();
+			$rev = fetchResult("select max(revision) from {posts_text} where pid={0}", $pid);
+			$rev++;
+			Query("insert into {posts_text} (pid,text,revision,user,date) values ({0}, {1}, {2}, {3}, {4})",
+								$pid, $_POST['text'], $rev, $loguserid, $now);
 
-		$rPosts = Query("update {posts} set options={0}, mood={1}, currentrevision = currentrevision + 1 where id={2} limit 1",
-						$options, (int)$_POST['mood'], $pid);
+			Query("update {posts} set options={0}, mood={1}, currentrevision = currentrevision + 1 where id={2} limit 1",
+							$options, (int)$_POST['mood'], $pid);
 
-		// mark the thread as new if we edited the last post
-		// just decrementing the thread's last read time will do
-		if($isLastPost)
-			Query("UPDATE {threadsread} SET date={2} WHERE thread={0} AND id!={1}", $thread['id'], $loguserid, $post['date']-1);
+			// mark the thread as new if we edited the last post
+			// just decrementing the thread's last read time will do
+			if($isLastPost)
+				Query("UPDATE {threadsread} SET date={2} WHERE thread={0} AND id!={1}", $thread['id'], $loguserid, $post['date']-1);
+		}
+		else
+			Query("update {posts} set options={0}, mood={1} where id={2} limit 1",
+							$options, (int)$_POST['mood'], $pid);
 
 		Report("Post edited by [b]".$loguser['name']."[/] in [b]".$thread['title']."[/] (".$forum['title'].") -> [g]#HERE#?pid=".$pid, $isHidden);
 		$bucket = 'editpost'; include("lib/pluginloader.php");
