@@ -151,12 +151,13 @@ while($user = Fetch($rUsers))
 	$daysKnown = (time()-$user['regdate'])/86400;
 	$udata['average'] = sprintf("%1.02f", $user['posts'] / $daysKnown);
 
-	$udata['avatar'] = '';
-
-	if($user['picture'] == '#INTERNAL#')
-		$udata['avatar'] = "<img src=\"${dataUrl}avatars/".$user['id']."\" alt=\"\" style=\"max-width: 60px;max-height:60px;\">";
-	else if($user['picture'])
-		$udata['avatar'] = "<img src=\"".htmlspecialchars($user['picture'])."\" alt=\"\" style=\"max-width: 60px;max-height:60px;\">";
+	if($user['picture'])
+	{
+		$pic = str_replace('$root/', $dataUrl, $user['picture']);
+		$udata['avatar'] = "<img src=\"".htmlspecialchars($pic)."\" alt=\"\" style=\"max-width: 60px;max-height:60px;\">";
+	}
+	else
+		$udata['avatar'] = '';
 		
 	$udata['num'] = $i;
 	
