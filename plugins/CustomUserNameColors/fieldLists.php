@@ -1,3 +1,3 @@
 <?php
 
-$fieldLists["userfields"] .= ",color";
+$fieldLists['userfields'] .= ",color";

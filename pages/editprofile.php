@@ -748,6 +748,10 @@ foreach ($epFields as $catid => $cfields)
 				$output = "<input type=\"password\" name=\"".$field."\" id=\"".$field."\" size=24>";
 				break;
 				
+			case "color":
+				$output = "<input type=\"text\" name=\"".$field."\" id=\"".$field."\" value=\"".htmlspecialchars($item['value'])."\" class=\"color{required:false}\">";
+				break;
+				
 			case "birthday":
 				if (!$item['value']) $bd = array('', '', '');
 				else $bd = explode('-', date('m-d-Y', $item['value']));
