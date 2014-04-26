@@ -1,6 +1,7 @@
-Blargboard
+# Blargboard
 
 http://kuribo64.net/blargboard/
+http://kuribo64.net/?page=forum&id=82
 
 -------------------------------------------------------------------------------
 
@@ -15,9 +16,11 @@ Kawa's project. See http://abxd.dirbaio.net/ for more details.
 It uses Smarty for its templates, and Font Awesome. And possibly some other funny things 
 I forgot about.
 
+This board follows the Acmlmboard concept. If you don't know Acmlmboard, you don't know what you're missing.
+
 -------------------------------------------------------------------------------
 
-Requirements
+# Requirements
 
 Blargboard requires PHP 5.3. With a few changes, it could be lowered to 5.2, so this will
 be considered.
@@ -28,39 +31,51 @@ Everything else is provided in the package.
 
 -------------------------------------------------------------------------------
 
-How to install and use
+# How to install and use
 
-First of all, if you don't have some PHP knowledge, go find something easier
-to use, like official ABXD, MyBB or FluxBB. Or phpBB if you're insane.
+PHP and MySQL knowledge isn't required to use Blargboard but is a plus.
 
-Minimalistic PHP knowledge is required to be able to follow the instructions below.
-MySQL knowledge isn't required but is a plus.
+Get a webserver. Upload the Blargboard codebase to it. Create an empty MySQL database.
 
-Get a webserver. Upload the Blargboard codebase to it.
+Browse to your board's install.php (http://my.board.for.example/install.php) and follow the instructions.
 
-Create a MySQL database and import the provided database.sql file into it.
+If everything went fine, browse to your freshly installed board and configure it. If not, let us know.
 
-On your webserver, open config/database.php and fill it with the right info. Open
-config/salt.php and config/kurikey.php and edit them as instructed.
-
-Browse to your freshly installed board and register.
-
-First user to register gets full access. For this reason, avoid disclosing the board URL
-before you are done installing it.
+We recommend you take some time and make your own board themes and banner to give your board a truly unique feel.
+If you have HTML knowledge, you can even edit the templates to change your board's look more in-depth.
 
 DO NOT TRY USING THE PROVIDED PLUGINS. They haven't be adapted to the newer Blargboard
 codebase yet. Some may work, but others may break parts of your board.
 
 -------------------------------------------------------------------------------
 
-Features
+# How to update your board
 
-* Flexible permission system
-* Plugin system
-* Templates (in the works, about 75% done)
-* URL rewriting, enables human-readable forum and thread URLs for public content (requires code editing to enable it as of now)
-* Post layouts
-* typical messageboard features
+Download the most recent Blargboard package (be it an official release or a Git package).
+
+Copy the files over your existing board's files.
+
+Make sure to not overwrite/delete the config directory, especially config/salt.php! Lose that one and you'll have fun resetting everyone's passwords.
+Everything else is safe to overwrite. Be careful to not lose any changes you have made, though.
+
+Once that is done, run update.php (http://my.board.for.example/update.php) to update the board's database structure.
+
+Depending on the versions, your update may involve running extra scripts to fix certain things. Make sure to follow those instructions.
+
+
+Updating from Blargboard 1.0 isn't covered.
+
+-------------------------------------------------------------------------------
+
+# Features
+
+ * Flexible permission system
+ * Plugin system
+ * Templates (in the works, about 80% done)
+ * URL rewriting, enables human-readable forum and thread URLs for public content (requires code editing to enable it as of now)
+ * Post layouts
+ * more Acmlmboard feel
+ * typical messageboard features
 
 -------------------------------------------------------------------------------
 
@@ -77,7 +92,7 @@ accordingly.
 
 -------------------------------------------------------------------------------
 
-Board owner's tips
+# Board owner's tips
 
 http://board.example/?page=makelr -> regenerates the L/R tree used for forum listings and such.
 Use if some of your forums are showing up in wrong places.
@@ -89,11 +104,20 @@ http://board.example/?page=secgroups -> assign secondary groups to a user.
 
 -------------------------------------------------------------------------------
 
-TODO list
+# Support
+
+The Blargboard help forum is at Kuribo64: http://kuribo64.net/?page=forum&id=82
+
+If anything goes wrong with your board, go there and let us know. Make sure to describe your problems in detail, our crystal ball is scratched so we can't see well.
+
+YOU WILL NOT RECEIVE HELP IF YOU HAVEN'T READ THE INSTRUCTIONS WHEN INSTALLING YOUR BOARD.
+
+-------------------------------------------------------------------------------
+
+# TODO list
 
 (no particular order there)
 
- * port the ABXD database installer/updater (all we need to do is define the database structure, actually)
  * finish implementing templates
  * improve the permission editing interfaces
  * port the 'show/hide sidebar' feature from Kuribo64? or just nuke the sidebar?
