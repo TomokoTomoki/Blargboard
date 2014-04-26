@@ -8,7 +8,7 @@ header('X-Frame-Options: DENY');
 error_reporting(E_ALL ^ E_NOTICE | E_STRICT);
 
 if(!is_file('config/database.php'))
-	die('please install the board before attempting to use it');
+	die(header('Location: install.php'));
 
 
 $boardroot = preg_replace('{/[^/]*$}', '/', $_SERVER['SCRIPT_NAME']);

@@ -67,7 +67,6 @@ if (HasPermission('admin.editsmilies'))		cell2(actionLinkTag(__("Edit smilies"),
 if ($loguser['root'])						cell2(actionLinkTag(__("Optimize tables"), "optimize"));
 if (HasPermission('admin.viewlog'))			cell2(actionLinkTag(__("View log"), "log"));
 if (HasPermission('admin.ipsearch'))		cell2(actionLinkTag(__('Rereg radar'), 'reregs'));
-//cell2(actionLinkTag(__("Update table structure"), "updateschema"));
 
 $bucket = "adminleft"; include("./lib/pluginloader.php");
 

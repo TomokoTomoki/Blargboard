@@ -13,7 +13,22 @@ $keyID = "primary key (`id`)";
 function Import($sqlFile)
 {
 	global $dblink, $dbpref;
-	$dblink->multi_query(str_replace('{$dbpref}', $dbpref, file_get_contents($sqlFile)));
+	$res = $dblink->multi_query(str_replace('{$dbpref}', $dbpref, file_get_contents($sqlFile)));
+
+	$i = 0; 
+	if ($res) 
+	{
+		do 
+		{
+			$i++; 
+		} while ($dblink->more_results() && $dblink->next_result()); 
+	}
+	if ($dblink->errno) 
+	{ 
+		echo "MySQL Error when importing file $sqlFile at statement $i: \n";
+		echo $dblink->error, "\n";
+		die();
+	}
 }
 
 function Upgrade()
@@ -54,7 +69,7 @@ function Upgrade()
 			}
 			if(isset($tableSchema['special']))
 				$create .= ",\n\t".$tableSchema['special'];
-			$create .= "\n) ENGINE=MyISAM;";
+			$create .= "\n) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;";
 			//print "<pre>".$create."</pre>";
 			Query($create);
 		}
@@ -108,8 +123,8 @@ function Upgrade()
 			foreach ($idxs as $idx)
 			{
 				$name = $idx[4] ? $idx[4] : 'PRIMARY';
-				$newindexes[$name]['type'] = $idx[2];
-				$newindexes[$name]['fields'] = preg_replace('@\s+@s', '', $idx[5]);
+				$newindexes[$name]['type'] = strtolower($idx[2]);
+				$newindexes[$name]['fields'] = strtolower(preg_replace('@\s+@s', '', $idx[5]));
 			}
 			$curindexes = array();
 			$idxs = Query("SHOW INDEX FROM `{".$table."}`");
@@ -126,7 +141,7 @@ function Upgrade()
 				else
 					$curindexes[$name]['type'] = '';
 					
-				$curindexes[$name]['fields'] = ($curindexes[$name]['fields'] ? $curindexes[$name]['fields'].',' : '').'`'.$idx['Column_name'].'`';
+				$curindexes[$name]['fields'] = strtolower(($curindexes[$name]['fields'] ? $curindexes[$name]['fields'].',' : '').'`'.$idx['Column_name'].'`');
 			}
 			if (!compareIndexes($curindexes, $newindexes))
 			{
@@ -180,7 +195,7 @@ function compareIndexes($a, $b)
 	foreach ($a as $k=>$v)
 	{
 		if (!array_key_exists($k, $b)) return false;
-		if ($v['type'] != $b[$k]['type'] ) return false;
+		if ($v['type'] != $b[$k]['type']) return false;
 		if ($v['fields'] != $b[$k]['fields']) return false;
 	}
 	
