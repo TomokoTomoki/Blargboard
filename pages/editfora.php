@@ -86,8 +86,8 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			$children = array();
 			while ($blarg = Fetch($c)) $children[] = $blarg['id'];
 			
-			Query("UPDATE forums SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
-			Query("UPDATE forums SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
+			Query("UPDATE {forums} SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
+			Query("UPDATE {forums} SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
 			
 			$l = FetchResult("SELECT MAX(r) FROM {forums} WHERE catid={0} AND (forder<{1} OR (forder={1} AND id<{2}))", $category, $forder, $id);
 			if (!$l)
@@ -215,8 +215,8 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			if ($c > 0)
 				dieAjax(__('Cannot delete a forum that has subforums. Delete them or move them first.'));
 			
-			Query("UPDATE forums SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
-			Query("UPDATE forums SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
+			Query("UPDATE {forums} SET l=l-{0} WHERE l>{1}", $diff, $oldlr['r']);
+			Query("UPDATE {forums} SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
 
 			//Delete
 			Query("DELETE FROM `{forums}` WHERE `id` = {0}", $id);
