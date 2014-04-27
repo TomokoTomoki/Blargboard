@@ -12,7 +12,7 @@ while ($user = Fetch($needfix))
 		$filename = 'avatars/'.$user['id'];
 		Query("UPDATE {users} SET picture={0} WHERE id={1}", '$root/'.$filename, $user['id']);
 		
-		file_put_contents($dataDir.$filename.'.internal', hash_hmac_file('sha256', $dataDir.$filename, $salt));
+		file_put_contents($dataDir.$filename.'.internal', hash_hmac_file('sha256', $dataDir.$filename, $user['id'].$salt));
 	}
 	
 	if ($user['minipic'] == '#INTERNAL#')
@@ -20,7 +20,7 @@ while ($user = Fetch($needfix))
 		$filename = 'minipics/'.$user['id'];
 		Query("UPDATE {users} SET minipic={0} WHERE id={1}", '$root/'.$filename, $user['id']);
 		
-		file_put_contents($dataDir.$filename.'.internal', hash_hmac_file('sha256', $dataDir.$filename, $salt));
+		file_put_contents($dataDir.$filename.'.internal', hash_hmac_file('sha256', $dataDir.$filename, $user['id'].$salt));
 	}
 }
 

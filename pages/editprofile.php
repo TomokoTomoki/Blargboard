@@ -362,7 +362,7 @@ if($_POST['actionsave'])
 							$path = str_replace('$root/', $dataDir, $user[$field]);
 							if (!file_exists($path.'.internal')) continue;
 							$hash = file_get_contents($path.'.internal');
-							if ($hash === hash_hmac_file('sha256', $path, $salt))
+							if ($hash === hash_hmac_file('sha256', $path, $userid.$salt))
 							{
 								@unlink($path);
 								@unlink($path.'.internal');
@@ -553,7 +553,7 @@ function HandlePicture($field, $type, &$usepic)
 	}
 	
 	// file created to verify that the avatar was created here
-	file_put_contents($dataDir.$targetFile.'.internal', hash_hmac_file('sha256', $dataDir.$targetFile, $salt));
+	file_put_contents($dataDir.$targetFile.'.internal', hash_hmac_file('sha256', $dataDir.$targetFile, $userid.$salt));
 	
 	$usepic = '$root/'.$targetFile;
 	return true;
