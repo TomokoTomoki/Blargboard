@@ -489,7 +489,7 @@ $tables = array
 			"lostkeytimer" => $genericInt,
 			"loggedin" => $bool,
 		),
-		"special" => $keyID.", key `posts` (`posts`), key `name` (`name`), key `lastforum` (`lastforum`), key `lastposttime` (`lastposttime`), key `lastactivity` (`lastactivity`)"
+		"special" => $keyID.", key `posts` (`posts`), key `name` (`name`), key `lastforum` (`lastforum`), key `lastposttime` (`lastposttime`), key `lastactivity` (`lastactivity`), key `lastip` (`lastip`)"
 	),
 );
 ?>
