@@ -96,6 +96,8 @@ $footer = '</div></body></html>';
 
 if (file_exists('config/database.php'))
 	die('The board is already installed.'.$footer);
+	
+$footer = '<br><br><a href="javascript:window.history.back();">Go back and try again</a></div></body></html>';
 
 if (version_compare(PHP_VERSION, '5.3.0') < 0)
 	die('Error: Blargboard requires PHP 5.3 or above.'.$footer);
@@ -113,6 +115,9 @@ if ($_POST['submit'])
 	
 	if (!$boardusername || !$boardpassword)
 		die('Please enter a board username and password.'.$footer);
+		
+	if ($boardpassword !== $_POST['bpconfirm'])
+		die('Error: the passwords you entered don\'t match.'.$footer);
 	
 	$test = new mysqli($_POST['dbserver'], $_POST['dbusername'], $_POST['dbpassword'], $_POST['dbname']);
 	if ($test->connect_error)
@@ -185,6 +190,7 @@ else
 	
 	<tr><td>Board username:</td><td><input type="text" name="boardusername" size=64 maxlength=20 value=""></td></tr>
 	<tr><td>Board password:</td><td><input type="password" name="boardpassword" size=64 value=""></td></tr>
+	<tr><td>Confirm board password:</td><td><input type="password" name="bpconfirm" size=64 value=""></td></tr>
 	<tr><td colspan=2>An owner account with these credentials will be created on your board after the install process has completed.</td></tr>
 	<tr><td colspan=2>&nbsp;</td></tr>
 	
