@@ -1,5 +1,5 @@
 <?php
 
-$permStrings['user']['user.editnamecolor'] = __('Edit username color');
+$permDescs['user']['user.editnamecolor'] = __('Edit username color');
 
 ?>
