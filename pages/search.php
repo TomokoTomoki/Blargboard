@@ -115,7 +115,7 @@ if(isset($_GET['q']))
 			
 		$search = Query("
 			SELECT
-				t.id, t.title, t.user, t.lastpostdate,
+				t.id, t.title, t.user, t.lastpostdate, t.forum, 
 				u.(_userfields)
 			FROM {threads} t
 				LEFT JOIN {users} u ON u.id=t.user
