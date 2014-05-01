@@ -97,7 +97,7 @@ if(isset($_GET['q']))
 	
 	$res = Fetch(Query("SELECT ".($_GET['inposts']?'postresults':'threadresults')." AS results FROM {searchcache} WHERE queryhash={0}", md5($searchQuery)));
 	$results = explode(',', $res['results']);
-	$nres = count($results);
+	$nres = 0;
 	$rdata = array();
 	
 	if(isset($_GET['from'])) $from = (int)$_GET['from'];
@@ -107,6 +107,12 @@ if(isset($_GET['q']))
 
 	if (!$_GET['inposts'])
 	{
+		$nres = FetchResult("
+			SELECT COUNT(*)
+			FROM {threads} t
+			WHERE t.id IN ({0c}) AND t.forum IN ({1c})", 
+			$results, $viewableforums);
+			
 		$search = Query("
 			SELECT
 				t.id, t.title, t.user, t.lastpostdate,
@@ -135,6 +141,14 @@ if(isset($_GET['q']))
 	}
 	else
 	{
+		$nres = FetchResult("
+			SELECT COUNT(*)
+			FROM {posts_text} pt
+				LEFT JOIN {posts} p ON pt.pid = p.id
+				LEFT JOIN {threads} t ON t.id = p.thread
+			WHERE pt.pid IN ({0c}) AND t.forum IN ({1c}) AND pt.revision = p.currentrevision", 
+			$results, $viewableforums);
+			
 		$search = Query("
 			SELECT
 				pt.text, pt.pid,
@@ -169,7 +183,7 @@ if(isset($_GET['q']))
 		}
 	}
 	
-	if ($nres == 0) $retext = __('No results found');
+	if ($nres == 0) $restext = __('No results found');
 	else if ($nres == 1) $restext = __('1 result found');
 	else $restext = $nres.__(' results found');
 	
