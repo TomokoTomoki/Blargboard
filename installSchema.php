@@ -207,7 +207,7 @@ $tables = array
 			"drafting" => $bool,
 			"draft_to" => $var128,
 		),
-		"special" => $keyID.", key `userto` (`userto`), key `userfrom` (`userfrom`), key `msgread` (`msgread`), key `date` (`date`), key `drafting` (`drafting`)"
+		"special" => "key `id` (`id`), key `userto` (`userto`), key `userfrom` (`userfrom`), key `msgread` (`msgread`), key `date` (`date`), key `drafting` (`drafting`)"
 	),
 	"pmsgs_text" => array
 	(
