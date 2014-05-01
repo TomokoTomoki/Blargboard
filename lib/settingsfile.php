@@ -141,6 +141,13 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 			"name" => "Add rel=nofollow to all user-posted links",
 			'category' => 'Functionality'
 		),
+		"maintenance" => array (
+			"type" => "boolean",
+			"default" => "0",
+			"name" => "Maintenance mode",
+			'category' => 'Functionality',
+			'rootonly' => 1,
+		),
 		
 		
 		'PoRATitle' => array(

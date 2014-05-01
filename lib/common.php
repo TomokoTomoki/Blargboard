@@ -55,6 +55,7 @@ include("mysqlfunctions.php");
 include("settingssystem.php");
 Settings::load();
 Settings::checkPlugin("main");
+
 include("feedback.php");
 include("language.php");
 include("snippets.php");
@@ -76,6 +77,12 @@ include("pluginsystem.php");
 loadFieldLists();
 include("loguser.php");
 include("permissions.php");
+
+if (Settings::get('maintenance') && !$loguser['root'] && (!isset($_GET['page']) || $_GET['page'] != 'login'))
+{
+	die('The board is in maintenance mode, please try again later. Our apologies for the inconvenience.');
+}
+
 include('firewall.php');
 include("ranksets.php");
 include("bbcode_parser.php");
