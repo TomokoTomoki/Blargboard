@@ -7,18 +7,28 @@ $title = __("Edit settings");
 CheckPermission('admin.editsettings');
 
 $plugin = "main";
-if(isset($_GET["id"]))
-	$plugin = $_GET["id"];
-if(isset($_POST["_plugin"]))
-	$plugin = $_POST["_plugin"];
+if(isset($_GET['id']))
+	$plugin = $_GET['id'];
+if(isset($_POST['_plugin']))
+	$plugin = $_POST['_plugin'];
+	
+if (isset($_GET['field']))
+{
+	$htmlfield = $_GET['field'];
+	if (!isset($settings[$htmlfield])) Kill(__('No.'));
+	if ($settings[$htmlfield]['type'] != 'texthtml') Kill(__('No.'));
+	
+	$htmlname = $settings[$htmlfield]['name'];
+}
+else $htmlfield = null;
 
 if(!ctype_alnum($plugin))
 	Kill(__("No."));
 
 if($plugin == "main")
-	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("editsettings") => __("Edit settings")));
+	MakeCrumbs(array(actionLink("admin") => __("Admin"), '' => __("Edit settings")));
 else
-	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin manager"), '' => $plugins[$plugin]["name"]));
+	MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin manager"), '' => $plugins[$plugin]['name']));
 
 $settings = Settings::getSettingsFile($plugin);
 $oursettings = Settings::$settingsArray[$plugin];
@@ -26,6 +36,9 @@ $invalidsettings = array();
 
 if(isset($_POST["_plugin"]))
 {
+	if ($_POST['key'] !== $loguser['token'])
+		Kill(__('No.'));
+		
 	//Save the settings.
 	$valid = true;
 
@@ -69,19 +82,11 @@ if(isset($_POST["_plugin"]))
 		Alert(__("Settings were not saved because there were invalid values. Please correct them and try again."));
 }
 
-$plugintext = "";
-if($plugin != "main")
-	$plugintext = " for plugin ".$plugin;
-print "
+
+echo "
 	<form action=\"".actionLink("editsettings")."\" method=\"post\">
 		<input type=\"hidden\" name=\"_plugin\" value=\"$plugin\">
-		<table class=\"outline margin width100\">
-
-			<tr class=\"header1\">
-				<th colspan=\"2\">
-					".__("Settings")."$plugintext
-				</th>
-			</tr>";
+		<input type=\"hidden\" name=\"key\" value=\"{$loguser['token']}\">";
 
 $settingfields = array();
 $settingfields[''] = ''; // ensures the uncategorized entries come first
@@ -91,9 +96,16 @@ foreach($settings as $name => $data)
 	if ($data['rootonly'] && !$loguser['root'])
 		continue;
 		
-	$friendlyname = $name;
+	if ($data['type'] == 'texthtml' && $htmlfield == null)
+		continue;
+	if ($htmlfield != null && $htmlfield != $name)
+		continue;
+		
+	$sdata = array();
+		
+	$sdata['name'] = $name;
 	if(isset($data['name']))
-		$friendlyname = $data['name'];
+		$sdata['name'] = $data['name'];
 
 	$type = $data['type'];
 	$help = $data['help'];
@@ -114,8 +126,10 @@ foreach($settings as $name => $data)
 		$input = "<input type=\"text\" id=\"$name\" name=\"$name\" value=\"$value\" class=\"width75\"/>";
 	else if($type == "password")
 		$input = "<input type=\"password\" id=\"$name\" name=\"$name\" value=\"$value\" class=\"width75\"/>";
-	else if($type == "textbox" || $type == "textbbcode" || $type == "texthtml")
-		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"8\" style=\"width: 98%;\">$value</textarea>";
+	else if($type == "textbox" || $type == "textbbcode")
+		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"8\">$value</textarea>";
+	else if($type == "texthtml")
+		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"30\">$value</textarea>";
 	else if($type == "forum")
 		$input = makeForumList($name, $value, true);
 	else if ($type == 'group')
@@ -126,45 +140,31 @@ foreach($settings as $name => $data)
 		$input = makeLayoutList($name, $value);
 	else if($type == "language")
 		$input = makeLangList($name, $value);
+		
+	$sdata['field'] = $input;
 
-	$invalidicon = "";
 	if($invalidsettings[$name])
-		$invalidicon = "[INVALID]";
+		$sdata['name'] = "<span style=\"color: #f44;\">{$sdata['name']} (invalid)</span>";
 
 	if($help)
-		$help = "<br><small>$help</small>";
+		$sdata['name'] .= "<br><small>$help</small>";
 
-	$settingfields[$data['category']] .= "<tr class=\"cell0\">
-				<td class=\"cell1 center\">
-					<label for=\"$name\">$friendlyname</label>$help
-				</td>
-				<td>
-					$input
-					$invalidicon
-				</td>
-			</tr>";
+	$settingfields[$data['category']][] = $sdata;
 }
 
-foreach ($settingfields as $cat=>$fields)
-{
-	if ($cat) echo '<tr class="header1"><th colspan=2>'.htmlspecialchars($cat).'</th></tr>';
+if (!$settingfields['']) unset($settingfields['']);
+
+$fields = array(
+	'btnSaveExit' => "<input type=\"submit\" name=\"_exit\" value=\"".__("Save and Exit")."\">",
+	'btnSave' => "<input type=\"submit\" name=\"_action\" value=\"".__("Save")."\">",
+);
+
+RenderTemplate('form_settings', array('settingfields' => $settingfields, 'htmlfield' => $htmlfield, 'fields' => $fields));
+
+echo "
+	</form>";
 	
-	echo $fields;
-}
-
-print "			<tr class=\"header1\"><th colspan=2>&nbsp;</th></tr>
-				<tr class=\"cell2\">
-				<td style=\"width:20%;\">
-				</td>
-				<td>
-					<input type=\"submit\" name=\"_exit\" value=\"".__("Save and Exit")."\" />
-					<input type=\"submit\" name=\"_action\" value=\"".__("Save")."\" />
-					<input type=\"hidden\" name=\"key\" value=\"{31}\" />
-				</td>
-			</tr>
-		</table>
-	</form>
-";
+	
 
 function makeSelect($fieldName, $checkedIndex, $choicesList, $extras = "")
 {
@@ -178,13 +178,6 @@ function makeSelect($fieldName, $checkedIndex, $choicesList, $extras = "")
 					</select>", $fieldName, $extras, $options);
 	return $result;
 }
-
-function prepare($text)
-{
-	$s = str_replace("\\'", "'", addslashes($text));
-	return $s;
-}
-
 
 function makeThemeList($fieldname, $value)
 {
@@ -237,6 +230,7 @@ function makeLangList($fieldname, $value)
 }
 
 //From the PHP Manual User Comments
+// ... this is unused?
 function foldersize($path)
 {
 	$total_size = 0;

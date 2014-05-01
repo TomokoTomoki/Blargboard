@@ -3,133 +3,85 @@
 	$settings = array(
 		"boardname" => array (
 			"type" => "text",
-			"default" => "AcmlmBoard XD",
-			"name" => "Board name"
+			"default" => "Blargboard",
+			"name" => "Board name",
+			'category' => 'Board identity'
 		),
 		"metaDescription" => array (
 			"type" => "text",
-			"default" => "AcmlmBoard XD",
-			"name" => "Meta description"
+			"default" => "A Blargboard board",
+			"name" => "Meta description",
+			'category' => 'Board identity'
 		),
 		"metaTags" => array (
 			"type" => "text",
-			"default" => "AcmlmBoard XD abxd",
-			"name" => "Meta tags"
-		),
-		"dateformat" => array (
-			"type" => "text",
-			"default" => "m-d-y, h:i a",
-			"name" => "Date format"
-		),
-		"customTitleThreshold" => array (
-			"type" => "integer",
-			"default" => "100",
-			"name" => "Custom Title Threshold"
-		),
-		"oldThreadThreshold" => array (
-			"type" => "integer",
-			"default" => "3",
-			"name" => "Old Thread Threshold months"
-		),
-		"viewcountInterval" => array (
-			"type" => "integer",
-			"default" => "10000",
-			"name" => "Viewcount Report Interval"
-		),
-		"ajax" => array (
-			"type" => "boolean",
-			"default" => "1",
-			"name" => "Enable AJAX"
-		),
-		"guestLayouts" => array (
-			"type" => "boolean",
-			"default" => "0",
-			"name" => "Show post layouts to guests"
-		),
-		"registrationWord" => array (
-			"type" => "text",
-			"default" => "",
-			"name" => "Word needed for registration",
-			"help" => "If set, the registration page will send the user to the FAQ page to look for the word",
+			"default" => "blargboard blarg board",
+			"name" => "Meta tags",
+			'category' => 'Board identity'
 		),
 		"breadcrumbsMainName" => array (
 			"type" => "text",
 			"default" => "Main",
-			"name" => "Text in breadcrumbs 'main' link",
+			"name" => "Text in breadcrumbs' first link",
+			'category' => 'Board identity'
 		),
 		"menuMainName" => array (
 			"type" => "text",
 			"default" => "Main",
-			"name" => "Text in menu 'main' link",
+			"name" => "Text in menu's first link",
+			'category' => 'Board identity'
 		),
-		"mailResetSender" => array (
+		
+		
+		"dateformat" => array (
 			"type" => "text",
-			"default" => "",
-			"name" => "Password Reset e-mail Sender",
-			"help" => "Email address used to send the pasword reset e-mails. If left blank, the password reset feature is disabled.",
+			"default" => "m-d-y, h:i a",
+			"name" => "Default date format",
+			'category' => 'Presentation'
+		),
+		"guestLayouts" => array (
+			"type" => "boolean",
+			"default" => "0",
+			"name" => "Show post layouts to guests",
+			'category' => 'Presentation'
 		),
 		"defaultTheme" => array (
 			"type" => "theme",
-			"default" => "gold",
-			"name" => "Default Board Theme",
+			"default" => "blargboard",
+			"name" => "Default board theme",
+			'category' => 'Presentation'
 		),
 		"showGender" => array (
 			"type" => "boolean",
 			"default" => "1",
-			"name" => "Color usernames based on gender"
+			"name" => "Color usernames based on gender",
+			'category' => 'Presentation'
 		),
 		"defaultLanguage" => array (
 			"type" => "language",
 			"default" => "en_US",
 			"name" => "Board language",
-		),
-		"floodProtectionInterval" => array (
-			"type" => "integer",
-			"default" => "10",
-			"name" => "Minimum time between user posts"
-		),
-		"nofollow" => array (
-			"type" => "boolean",
-			"default" => "0",
-			"name" => "Add rel=nofollow to all user-posted links"
+			'category' => 'Presentation'
 		),
 		"tagsDirection" => array (
 			"type" => "options",
 			"options" => array('Left' => 'Left', 'Right' => 'Right'),
 			"default" => 'Right',
 			"name" => "Direction of thread tags",
+			'category' => 'Presentation'
 		),
 		"alwaysMinipic" => array (
 			"type" => "boolean",
 			"default" => "0",
-			"name" => "Show Minipics everywhere",
+			"name" => "Show minipics everywhere",
+			'category' => 'Presentation'
 		),
 		"showExtraSidebar" => array (
 			"type" => "boolean",
 			"default" => "1",
 			"name" => "Show extra info in post sidebar",
+			'category' => 'Presentation'
 		),
-		"rssTitle" => array (
-			"type" => "text",
-			"default" => "Blargboard RSS",
-			"name" => "RSS feed title"
-		),
-		"rssDesc" => array (
-			"type" => "text",
-			"default" => "A news feed for Blargboard",
-			"name" => "RSS feed description"
-		),
-		'PoRATitle' => array(
-			'type' => 'text',
-			'default' => 'What\'s up today?',
-			'name' => 'Info box title'
-		),
-		"PoRAText" => array (
-			"type" => "texthtml",
-			"default" => "Welcome to Blargboard. Edit this.",
-			"name" => "Info box text",
-		),
-
 		"profilePreviewText" => array (
 			"type" => "textbbcode",
 			"default" => "This is a sample post. You [b]probably[/b] [i]already[/i] [u]know[/u] what this is for.
@@ -141,21 +93,81 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
     printf(\"Hello World!
 \");
 }[/source]",
-			"name" => "Post preview text"
+			"name" => "Post preview text",
+			'category' => 'Presentation'
 		),
 		
-		'homepageText' => array(
-			'type' => 'texthtml',
-			'default' => 'Welcome to Blargboard.<br><br>Fill this with relevant info.',
-			'name' => 'Homepage contents',
-			'hidden' => true,
+		
+		"customTitleThreshold" => array (
+			"type" => "integer",
+			"default" => "100",
+			"name" => "Custom title threshold (posts)",
+			'category' => 'Functionality'
 		),
-		'faqText' => array(
-			'type' => 'texthtml',
-			'default' => 'Blargboard FAQ. Put your rules and stuff here.',
-			'name' => 'FAQ contents',
-			'hidden' => true,
+		"oldThreadThreshold" => array (
+			"type" => "integer",
+			"default" => "3",
+			"name" => "Old thread threshold (months)",
+			'category' => 'Functionality'
 		),
+		"viewcountInterval" => array (
+			"type" => "integer",
+			"default" => "10000",
+			"name" => "Viewcount report interval",
+			'category' => 'Functionality'
+		),
+		"ajax" => array (
+			"type" => "boolean",
+			"default" => "1",
+			"name" => "Enable AJAX",
+			'category' => 'Functionality'
+		),
+		"mailResetSender" => array (
+			"type" => "text",
+			"default" => "",
+			"name" => "Password Reset e-mail sender",
+			"help" => "Email address used to send the pasword reset e-mails. If left blank, the password reset feature is disabled.",
+			'category' => 'Functionality'
+		),
+		"floodProtectionInterval" => array (
+			"type" => "integer",
+			"default" => "10",
+			"name" => "Minimum time between user posts (seconds)",
+			'category' => 'Functionality'
+		),
+		"nofollow" => array (
+			"type" => "boolean",
+			"default" => "0",
+			"name" => "Add rel=nofollow to all user-posted links",
+			'category' => 'Functionality'
+		),
+		
+		
+		'PoRATitle' => array(
+			'type' => 'text',
+			'default' => 'Blargbox',
+			'name' => 'Info box title',
+			'category' => 'Information',
+		),
+		"PoRAText" => array (
+			"type" => "textbox",
+			"default" => "Welcome to Blargboard. Edit this.",
+			"name" => "Info box text",
+			'category' => 'Information',
+		),
+		"rssTitle" => array (
+			"type" => "text",
+			"default" => "Blargboard RSS",
+			"name" => "RSS feed title",
+			'category' => 'Information',
+		),
+		"rssDesc" => array (
+			"type" => "text",
+			"default" => "A news feed for Blargboard",
+			"name" => "RSS feed description",
+			'category' => 'Information',
+		),
+		
 		
 		'newsForum' => array(
 			'type' => 'forum',
@@ -182,6 +194,7 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 			'category' => 'Forum settings',
 		),
 		
+		
 		'defaultGroup' => array (
 			'type' => 'group',
 			'default' => 0,
@@ -202,6 +215,20 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 			'name' => 'Group for banned users',
 			'category' => 'Group settings',
 			'rootonly' => 1,
+		),
+		
+		
+		'homepageText' => array(
+			'type' => 'texthtml',
+			'default' => 'Welcome to Blargboard.<br><br>Fill this with relevant info.',
+			'name' => 'Homepage contents',
+			'category' => 'Homepage contents',
+		),
+		'faqText' => array(
+			'type' => 'texthtml',
+			'default' => 'Blargboard FAQ. Put your rules and stuff here.',
+			'name' => 'FAQ contents',
+			'category' => 'FAQ contents',
 		),
 	);
 ?>

@@ -67,8 +67,6 @@ if($_POST['register'])
 			$err = format(__("You really should {0}read the FAQ{1}&hellip;"), "<a href=\"".actionLink("faq")."\">", "</a>");
 		else if ($_POST['likesCake'])
 			$err = __("Robots not allowed.");
-		else if(Settings::get("registrationWord") != "" && strcasecmp($_POST['theWord'], Settings::get("registrationWord")))
-			$err = format(__("That's not the right word. Are you sure you really {0}read the FAQ{1}?"), "<a href=\"".actionLink("faq")."\">", "</a>");
 		else if(strlen($_POST['pass']) < 4)
 			$err = __("Your password must be at least four characters long.");
 		else if ($_POST['pass'] !== $_POST['pass2'])
