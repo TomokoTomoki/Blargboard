@@ -33,7 +33,7 @@ else if(isset($_POST['action']))
 	if($_POST['mail'] != $_POST['mail2'])
 		Kill(__("The e-mail addresses you entered don't match, try again."));
 
-	$user = Query("select id, name, password, email, lostkeytimer, pss from {users} where name COLLATE utf8_general_ci = {0} and email COLLATE utf8_general_ci = {1}", $_POST['name'], $_POST['mail']);
+	$user = Query("select id, name, password, email, lostkeytimer, pss from {users} where name = {0} and email = {1}", $_POST['name'], $_POST['mail']);
 	if(NumRows($user) != 0)
 	{
 		$user = Fetch($user);

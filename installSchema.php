@@ -1,12 +1,13 @@
 <?php
 
+$utf8ci = ' CHARACTER SET utf8 COLLATE utf8_general_ci';
 $hugeInt = "bigint(20) NOT NULL DEFAULT '0'";
 $genericInt = "int(11) NOT NULL DEFAULT '0'";
 $smallerInt = "int(8) NOT NULL DEFAULT '0'";
 $bool = "tinyint(1) NOT NULL DEFAULT '0'";
 $notNull = " NOT NULL DEFAULT ''";
 $text = "text DEFAULT ''"; //NOT NULL breaks in certain versions/settings.
-$postText = "mediumtext DEFAULT ''";
+$postText = "mediumtext$utf8ci DEFAULT ''";
 $var128 = "varchar(128)".$notNull;
 $var256 = "varchar(256)".$notNull;
 $var1024 = "varchar(1024)".$notNull;
@@ -213,7 +214,7 @@ $tables = array
 		"fields" => array
 		(
 			"pid" => $AI,
-			"title" => $var256,
+			"title" => "varchar(256)".$utf8ci.$notNull,
 			"text" => $postText,
 		),
 		"special" => "primary key (`pid`)"
@@ -311,6 +312,18 @@ $tables = array
 			"request" => $text,
 		),
 	),
+	"searchcache" => array
+	(
+		"fields" => array
+		(
+			"queryhash" => "char(32)".$notNull,
+			"query" => $text,
+			"date" => $genericInt,
+			"threadresults" => $text,
+			"postresults" => $text,
+		),
+		"special" => "PRIMARY KEY (`queryhash`)"
+	),
 	"secondarygroups" => array
 	(
 		"fields" => array
@@ -366,7 +379,7 @@ $tables = array
 			"date" => $genericInt,
 			"firstpostid" => $genericInt,
 			"views" => $genericInt,
-			"title" => "varchar(100)".$notNull,
+			"title" => "varchar(100)".$utf8ci.$notNull,
 			"icon" => "varchar(200)".$notNull,
 			"replies" => $genericInt,
 			"lastpostdate" => $genericInt,
@@ -392,7 +405,7 @@ $tables = array
 	(
 		"fields" => array
 		(
-			"id" => "varchar(16)".$notNull,
+			"id" => "char(16)".$notNull,
 			"physicalname" => "varchar(64)".$notNull,
 			"filename" => "varchar(512)".$notNull,
 			"description" => $var1024,
@@ -440,7 +453,7 @@ $tables = array
 		"fields" => array
 		(
 			"id" => $AI,
-			"name" => "varchar(32)".$notNull,
+			"name" => "varchar(32)".$utf8ci.$notNull,
 			"displayname" => "varchar(32)".$notNull,
 			"password" => $var256,
 			"pss" => "varchar(16)".$notNull,
@@ -460,7 +473,7 @@ $tables = array
 			"lastknownbrowser" => $var1024,
 			"location" => $var128,
 			"birthday" => $genericInt,
-			"email" => "varchar(60)".$notNull,
+			"email" => "varchar(60)".$utf8ci.$notNull,
 			"homepageurl" => "varchar(80)".$notNull,
 			"homepagename" => "varchar(100)".$notNull,			
 			"lastposttime" => $genericInt,

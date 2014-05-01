@@ -89,7 +89,7 @@ if ($_POST['submit'])
 	$debugMode = 1;
 	
 	$rootgroup = FetchResult("SELECT value FROM {settings} WHERE plugin={0} AND name={1}", 'main', 'rootGroup');
-	$res = Query("SELECT password,pss FROM {users} WHERE (name COLLATE utf8_general_ci = {0} OR displayname COLLATE utf8_general_ci = {0}) AND primarygroup={1}", 
+	$res = Query("SELECT password,pss FROM {users} WHERE (name = {0} OR displayname = {0}) AND primarygroup={1}", 
 		$boardusername, $rootgroup);
 		
 	if (!NumRows($res)) die('Invalid username or password.'.$footer);

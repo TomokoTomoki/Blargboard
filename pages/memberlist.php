@@ -135,7 +135,7 @@ $query = $_GET['name'];
 
 if($query != "")
 {
-	$where.= " and (name COLLATE utf8_general_ci like {3} or displayname COLLATE utf8_general_ci like {3})";
+	$where.= " and (name like {3} or displayname like {3})";
 	$getArgs[] = 'name='.urlencode($query);
 }
 

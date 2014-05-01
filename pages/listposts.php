@@ -15,10 +15,6 @@ else
 
 $title = __("Post list");
 
-$extrashit = '';
-if (isset($_GET['plusones']))
-	$extrashit = ' AND p.postplusones>0';
-
 
 $total = FetchResult("
 			SELECT

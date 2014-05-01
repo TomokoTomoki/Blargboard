@@ -84,6 +84,12 @@ function Upgrade()
 				$fieldName = $field['Field'];
 				$foundFields[] = $fieldName;
 				$type = $field['Type'];
+				
+				$encoding = Fetch(Query("SELECT CHARACTER_SET_NAME charset, COLLATION_NAME coll FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA={0} AND TABLE_NAME='{".$table."}' AND COLUMN_NAME={1}", 
+					$dbname, $fieldName));
+				if ($encoding['charset'] && ($encoding['charset'] != 'utf8' || $encoding['coll'] != 'utf8_bin'))
+					$type .= " CHARACTER SET {$encoding['charset']} COLLATE {$encoding['coll']}";
+				
 				if($field['Null'] == "NO")
 					$type .= " NOT NULL";
 				//if($field['Default'] != "")

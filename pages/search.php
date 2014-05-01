@@ -1,84 +1,85 @@
 <?php
 
-if(isset($_POST['google']))
+define('CACHE_TIME', 3600);
+
+if(isset($_REQUEST['q']))
 {
-	$here = GetFullURL();
-	$here = substr($here, 0, strrpos($here, "/"));
-	if($urlRewriting) //hack
-		$here = substr($here, 0, strrpos($here, "/"));
-	header("Location: http://www.google.com/search?q=".urlencode($_POST['google']." site:".$here));
+	$searchQuery = $_REQUEST['q'];
+	$searchQuery = strtolower(preg_replace('@\s+@', ' ', $searchQuery));
+	$sqhash = md5($searchQuery);
+	
+	$res = FetchResult("SELECT date FROM {searchcache} WHERE queryhash={0}", $sqhash);
+	if ($res == -1 || $res < (time()-CACHE_TIME))
+	{
+		$bool = htmlspecialchars($searchQuery);
+
+		$search = Query("
+			SELECT t.id tid
+			FROM {threads} t
+			WHERE MATCH(t.title) AGAINST({0} IN BOOLEAN MODE)
+			ORDER BY t.lastpostdate DESC", 
+			$bool);
+
+		$tresults = array();
+		if(NumRows($search))
+		{
+			while($result = Fetch($search))
+				$tresults[] = $result['tid'];
+		}
+
+		$search = Query("
+			SELECT pt.pid pid
+			FROM {posts_text} pt
+				LEFT JOIN {posts} p ON pt.pid = p.id
+			WHERE pt.revision = p.currentrevision AND MATCH(pt.text) AGAINST({0} IN BOOLEAN MODE)
+			ORDER BY p.date DESC", 
+			$bool);
+
+		$presults = array();
+		if(NumRows($search))
+		{
+			while($result = Fetch($search))
+				$presults[] = $result['pid'];
+		}
+		
+		Query("
+			INSERT INTO {searchcache} (queryhash,query,date,threadresults,postresults) 
+			VALUES ({0},{1},{2},{3},{4})
+			ON DUPLICATE KEY UPDATE date={2}, threadresults={3}, postresults={4}",
+			$sqhash, $searchQuery, time(), implode(',', $tresults), implode(',', $presults));
+	}
+	
+	if (isset($_POST['q']))
+		die(header('Location: '.actionLink('search', '', 'q='.urlencode($searchQuery).'&inposts='.$_POST['inposts'])));
 }
 
-echo "	<table>
-		<tr>
-			<td style=\"width: 70%; border: 0px none; vertical-align: top; padding-right: 1em; padding-bottom: 1em;\">";
+MakeCrumbs(array(actionLink("search") => __("Search")));
 
 echo "
-	<form name=\"searchform\"  action=\"".actionLink("search")."\" method=\"post\">
-		<table class=\"outline margin\">
-			<tr class=\"header0\"><th>
-				<strong>".__("Google search")."</strong>
-			</th></tr>
-			<tr><td class=\"cell0\">
-				<input type=\"text\" maxlength=\"1024\" name=\"google\" style=\"width: 80%;\" />
-				&nbsp;
-				<input type=\"submit\" value=\"".__("Search")."\" />
-			</td></tr>
-		</table>
-	</form>
-	<script type=\"text/javascript\">
-		document.searchform.google.focus();
-	</script>
-";
-
-if(false)
-{
-	echo "
-		<form action=\"".actionLink("search")."\" method=\"post\">
-			<table class=\"outline margin\">
-				<tr class=\"header0\"><th>
-					<strong>".__("Internal search")."</strong>
-				</th></tr>
-				<tr><td class=\"cell0\">
-					<input type=\"text\" maxlength=\"1024\" name=\"q\" style=\"width: 80%;\" value=\"".htmlspecialchars($_POST['q'])."\">
-					&nbsp;
-					<input type=\"submit\" value=\"".__("Search")."\">
-				</td></tr>
-			</table>
-		</form>
-	";
-
-	echo "	</td>
-			<td style=\"border: 0px none; vertical-align: top; padding-right: 1em; padding-bottom: 1em;\">";
-
-	echo "
-			<table class=\"outline margin\">
-				<tr class=\"header0\"><th>
-					".__("Search help")."
-				</th></tr>
-				<tr><td class=\"cell0\">
-					".__("Internal search checks both thread titles and post text, returning results from both.")."
-					<dl>
-						<dt><samp>foo bar</samp></dt>
-						<dd>".__("Find entries with either term")."</dd>
-						<dt><samp>\"foo bar\"</samp></dt>
-						<dd>".__("Find entries with full phrase")."</dd>
-						<dt><samp>+foo -bar</samp></dt>
-						<dd>".__("Find entries with <var>foo</var> but not <var>bar</var>")."</dd>
-					</dl>
-				</td></tr>
-			</table>";
-}
-
-echo "</td></tr></table>";
-
-
-if(isset($_POST['q']))
-{
-	Kill('Internal search temporarily disabled. Our apologies for the inconvenience.');
+	<form action=\"".actionLink("search")."\" method=\"post\">";
 	
-	$searchQuery = $_POST["q"];
-	$totalResults = 0;
+$fields = array(
+	'terms' => "<input type=\"text\" maxlength=\"1024\" name=\"q\" style=\"width:100%;border-sizing:border-box;-moz-border-sizing:border-box;\" value=\"".htmlspecialchars($_REQUEST['q'])."\">",
+	'searchin' => '
+		<label><input type="radio" name="inposts" value="0"'.($_REQUEST['inposts']==0 ? ' checked="checked"' : '').'>'.__('Thread titles').'</label> 
+		<label><input type="radio" name="inposts" value="1"'.($_REQUEST['inposts']==1 ? ' checked="checked"' : '').'>'.__('Posts').'</label>',
+	
+	'btnSubmit' => "<input type=\"submit\" value=\"".__("Search")."\">",
+);
+
+RenderTemplate('form_search', array('fields' => $fields));
+
+echo "
+	</form>";
+
+
+if(isset($_GET['q']))
+{
+	$viewableforums = ForumsWithPermission('forum.viewforum');
+	
+	$searchQuery = $_GET['q'];
+	$searchQuery = strtolower(preg_replace('@\s+@', ' ', $searchQuery));
+	
 	$bool = htmlspecialchars($searchQuery);
 	$t = explode(" ", $bool);
 	$terms = array();
@@ -93,128 +94,88 @@ if(isset($_POST['q']))
 		else if($term != "")
 			$terms[] = $term;
 	}
-	$final = "";
+	
+	$res = Fetch(Query("SELECT ".($_GET['inposts']?'postresults':'threadresults')." AS results FROM {searchcache} WHERE queryhash={0}", md5($searchQuery)));
+	$results = explode(',', $res['results']);
+	$nres = count($results);
+	$rdata = array();
+	
+	if(isset($_GET['from'])) $from = (int)$_GET['from'];
+	else $from = 0;
+	$tpp = $loguser['threadsperpage'];
+	if($tpp<1) $tpp=50;
 
-	$search = Query("
-		SELECT
-			t.id, t.title, t.user,
-			u.(_userfields)
-		FROM {threads} t
-			LEFT JOIN {users} u ON u.id=t.user
-		WHERE MATCH(t.title) AGAINST({0} IN BOOLEAN MODE)
-		ORDER BY t.lastpostdate DESC
-		LIMIT 0,100", $bool);
-
-	if(NumRows($search))
+	if (!$_GET['inposts'])
 	{
-		$results = "";
-		while($result = Fetch($search))
-		{
-			$snippet = MakeSnippet($result['title'], $terms, true);
-			$userlink = UserLink(getDataPrefix($result, "u_"));
-			$threadlink = makeThreadLink($result);
+		$search = Query("
+			SELECT
+				t.id, t.title, t.user, t.lastpostdate,
+				u.(_userfields)
+			FROM {threads} t
+				LEFT JOIN {users} u ON u.id=t.user
+			WHERE t.id IN ({0c}) AND t.forum IN ({1c})
+			ORDER BY t.lastpostdate DESC
+			LIMIT {2u},{3u}", $results, $viewableforums, $from, $tpp);
 
-			if($snippet != "")
+		if(NumRows($search))
+		{
+			while($result = Fetch($search))
 			{
-				$totalResults++;
-				$results .= "
-	<tr class=\"cell0\">
-		<td class=\"smallFonts\">
-			$userlink
-		</td>
-		<td>
-			$threadlink
-		</td>
-	</tr>";
+				$r = array();
+				
+				$r['link'] = makeThreadLink($result);
+				$r['description'] = '';
+				
+				$r['user'] = UserLink(getDataPrefix($result, "u_"));
+				$r['formattedDate'] = formatdate($result['lastpostdate']);
+				
+				$rdata[] = $r;
 			}
 		}
-
-		if($results != "")
-			$final .= "
-<table class=\"outline margin\">
-	<tr class=\"header0\">
-		<th colspan=\"4\">Thread title results</th>
-	</tr>
-	<tr class=\"header1\">
-		<th style=\"width:15%\">User</th>
-		<th>Thread</th>
-	</tr>
-	$results
-</table>";
 	}
-
-	$search = Query("
-		SELECT
-			pt.text, pt.pid,
-			t.title, t.id,
-			u.(_userfields)
-		FROM {posts_text} pt
-			LEFT JOIN {posts} p ON pt.pid = p.id
-			LEFT JOIN {threads} t ON t.id = p.thread
-			LEFT JOIN {users} u ON u.id = p.user
-		WHERE pt.revision = p.currentrevision AND MATCH(pt.text) AGAINST({0} IN BOOLEAN MODE)
-		ORDER BY p.date DESC
-		LIMIT 0,100", $bool);
-
-	if(NumRows($search))
-	{
-		$results = "";
-		while($result = Fetch($search))
-		{
-//			$result['text'] = str_replace("<!--", "~#~", str_replace("-->", "~#~", $result['text']));
-			$snippet = MakeSnippet($result['text'], $terms);
-			$userlink = UserLink(getDataPrefix($result, "u_"));
-			$threadlink = makeThreadLink($result);
-			$posturl = actionLink("thread", "", "pid=".$result['pid']."#".$result['pid']);
-
-			if($snippet != "")
-			{
-				$totalResults++;
-				$results .= "
-	<tr class=\"cell0\">
-		<td class=\"smallFonts\">
-			$userlink
-		</td>
-		<td>
-			$snippet
-		</td>
-		<td class=\"smallFonts\">
-			$threadlink
-		</td>
-		<td class=\"smallFonts\">
-			&raquo;&nbsp;<a href=\"$posturl\">{$result['pid']}</a>
-		</td>
-	</tr>";
-			}
-		}
-
-		if($results != "")
-		{
-			$final .= "
-<table class=\"outline margin\">
-	<tr class=\"header0\">
-		<th colspan=\"4\">Text results</th>
-	</tr>
-	<tr class=\"header1\">
-		<th>User</th>
-		<th>Text</th>
-		<th>Thread</th>
-		<th>ID</th>
-	</tr>
-	$results
-</table>";
-		}
-	}
-
-	if($totalResults == 0)
-		Alert(Format("No results for \"{0}\".", htmlspecialchars($searchQuery)), "Search");
 	else
-		Write("
-<div class=\"outline header2 cell2 margin\" style=\"text-align: center; font-size: 130%;\">
-	{0}
-</div>
-{1}
-", Plural($totalResults, "result"), $final);
+	{
+		$search = Query("
+			SELECT
+				pt.text, pt.pid,
+				p.date,
+				t.title, t.id,
+				u.(_userfields)
+			FROM {posts_text} pt
+				LEFT JOIN {posts} p ON pt.pid = p.id
+				LEFT JOIN {threads} t ON t.id = p.thread
+				LEFT JOIN {users} u ON u.id = p.user
+			WHERE pt.pid IN ({0c}) AND t.forum IN ({1c}) AND pt.revision = p.currentrevision
+			ORDER BY p.date DESC
+			LIMIT {2u},{3u}", $results, $viewableforums, $from, $tpp);
+
+		if(NumRows($search))
+		{
+			$results = "";
+			while($result = Fetch($search))
+			{
+				$r = array();
+				
+				$tags = ParseThreadTags($result['title']);
+				
+	//			$result['text'] = str_replace("<!--", "~#~", str_replace("-->", "~#~", $result['text']));
+				$r['description'] = MakeSnippet($result['text'], $terms);
+				$r['user'] = UserLink(getDataPrefix($result, "u_"));
+				$r['link'] = actionLinkTag($tags[0], "post", $result['pid']);
+				$r['formattedDate'] = formatdate($result['date']);
+				
+				$rdata[] = $r;
+			}
+		}
+	}
+	
+	if ($nres == 0) $retext = __('No results found');
+	else if ($nres == 1) $restext = __('1 result found');
+	else $restext = $nres.__(' results found');
+	
+	$pagelinks = PageLinks(actionLink('search', '', 'q='.urlencode($searchQuery).'&inposts='.$_GET['inposts'].'&from='), $tpp, $from, $nres);
+	
+	RenderTemplate('searchresults', array('results' => $rdata, 'nresults' => $nres, 'resultstext' => $restext, 'pagelinks' => $pagelinks));
 }
 
 
