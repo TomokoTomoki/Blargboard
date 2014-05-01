@@ -157,7 +157,7 @@
 			<tr>
 			<td style="text-align: left;">
 				{$layout_credits}
-				{$perfdata}
+				<!-- {$perfdata} -->
 			</td>
 			<td style="text-align: right;">
 				{$mobileswitch}
