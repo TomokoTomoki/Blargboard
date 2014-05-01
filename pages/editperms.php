@@ -52,6 +52,7 @@ if ($_POST['saveaction'] || $_POST['addfpermaction'])
 			if ($v == 0) continue;
 			
 			$perm = PermData($k);
+			if (!CanEditPerm($perm['perm'], $fid)) continue;
 			Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES ({0},{1},{2},{3},{4})
 				ON DUPLICATE KEY UPDATE value={4}",
 				$applyto, $id, $perm['perm'], $fid, $v);
@@ -65,6 +66,7 @@ if ($_POST['saveaction'] || $_POST['addfpermaction'])
 		if ($v == $_POST['orig_'.$k]) continue;
 		
 		$perm = PermData($k);
+		if (!CanEditPerm($perm['perm'], $perm['arg'])) continue;
 		if ($v == 0)
 			Query("DELETE FROM {permissions} WHERE applyto={0} AND id={1} AND perm={2} AND arg={3}",
 				$applyto, $id, $perm['perm'], $perm['arg']);
@@ -76,6 +78,19 @@ if ($_POST['saveaction'] || $_POST['addfpermaction'])
 	
 	die(header('Location: '.actionLink('editperms', '', ($applyto==0?'gid=':'uid=').$id)));
 }
+
+?>
+	<style type="text/css">
+		.permselect, .permselect > option {color: black!important;}
+	</style>
+	<script type="text/javascript">
+		function dopermselects()
+		{
+			$('.permselect').change(function() { this.style.background = this.selectedOptions[0].style.background; }).change();
+		}
+		$(document).ready(dopermselects);
+	</script>
+<?php
 
 $permlist = array();
 $fpermlist = array();
@@ -139,11 +154,14 @@ function PermSwitch($field, $threeway, $_val)
 {
 	$val = $_val;
 	if (!$threeway && $val == 0) $val = -1;
+					
 	return '
-					<label class="highlight_red"><input type="radio" name="'.$field.'" value="-1"'.(($val==-1) ? ' checked="checked"':'').'> '.__('Deny').'</label>
-					'.($threeway ? '<label class="highlight_yellow"><input type="radio" name="'.$field.'" value="0"'.(($val==0) ? ' checked="checked"':'').'> '.__('Neutral').'</label>' : '').'
-					<label class="highlight_green"><input type="radio" name="'.$field.'" value="1"'.(($val==1) ? ' checked="checked"':'').'> '.__('Allow').'</label>
-					<input type="hidden" name="orig_'.$field.'" value="'.$_val.'">';
+		<select class="permselect" name="'.$field.'">
+			<option value="-1" '.($val==-1 ? 'selected="selected"':'').' style="background:#f88;">'.__('Deny').'</option>
+			'.($threeway ? '<option value="0" '.($val==0 ? 'selected="selected"':'').' style="background:#ff8;">'.__('Neutral').'</option>':'').'
+			<option value="1" '.($val==1 ? 'selected="selected"':'').' style="background:#8f8;">'.__('Allow').'</option>
+		</select>
+		<input type="hidden" name="orig_'.$field.'" value="'.$_val.'">';
 }
 
 function PermLabel($val)
@@ -171,11 +189,12 @@ function PermTable($cat)
 		if ($permid == 'forum.viewforum') continue;
 		
 		$pkey = 'perm_'.str_replace('.', '_', $permid);
+		$isforumperm = (substr($permid,0,6) == 'forum.' || substr($permid,0,4) == 'mod.');
 		
 		echo '
 			<tr>
 				<td class="cell2 center" style="width: 250px;">'.htmlspecialchars($permname).'</td>
-				<td class="cell1">'.(CanEditPerm($permid) ? PermSwitch($pkey, $applyto==1 || $usergroups[$id]['type']==1, $permlist[$permid]) : PermLabel($permlist[$permid])).'</td>
+				<td class="cell1">'.(CanEditPerm($permid) ? PermSwitch($pkey, $applyto==1 || $usergroups[$id]['type']==1 || $isforumperm, $permlist[$permid]) : PermLabel($permlist[$permid])).'</td>
 			</tr>';
 	}
 }

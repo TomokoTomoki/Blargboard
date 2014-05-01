@@ -32,7 +32,7 @@ function getSetting($settingname, $useUser = false)
 
 class BadPluginException extends Exception { }
 
-
+// TODO cache all those data so we don't have to scan directories at each run
 function getPluginData($plugin, $load = true)
 {
 	global $pluginpages, $pluginbuckets, $plugintemplates, $misc, $abxd_version;

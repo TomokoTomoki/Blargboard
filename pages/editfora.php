@@ -90,19 +90,27 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			Query("UPDATE {forums} SET r=r-{0} WHERE r>{1}", $diff, $oldlr['r']);
 			
 			$l = FetchResult("SELECT MAX(r) FROM {forums} WHERE catid={0} AND (forder<{1} OR (forder={1} AND id<{2}))", $category, $forder, $id);
-			if (!$l)
+			if (!$l || $l == -1)
 			{
 				if ($category >= 0)
-					$l = FetchResult("SELECT MAX(r) FROM {forums}");
+					$l = 0;
 				else
 					$l = FetchResult("SELECT l FROM {forums} WHERE id={0}", -$category);
 			}
 			$l++;
-			Query("UPDATE {forums} SET l=l+{0} WHERE l>={1} AND id NOT IN ({2c})", $diff, $l, $children);
-			Query("UPDATE {forums} SET r=r+{0} WHERE r>={1} AND id NOT IN ({2c})", $diff, $l, $children);
 			$r = $l + $diff - 1;
 			
-			Query("UPDATE {forums} SET l=l+{0}, r=r+{0} WHERE id IN ({1c})", $l-$oldlr['l'], $children);
+			if (!empty($children))
+			{
+				Query("UPDATE {forums} SET l=l+{0} WHERE l>={1} AND id NOT IN ({2c})", $diff, $l, $children);
+				Query("UPDATE {forums} SET r=r+{0} WHERE r>={1} AND id NOT IN ({2c})", $diff, $l, $children);
+				Query("UPDATE {forums} SET l=l+{0}, r=r+{0} WHERE id IN ({1c})", $l-$oldlr['l'], $children);
+			}
+			else
+			{
+				Query("UPDATE {forums} SET l=l+{0} WHERE l>={1}", $diff, $l);
+				Query("UPDATE {forums} SET r=r+{0} WHERE r>={1}", $diff, $l);
+			}
 			
 			//Send it to the DB
 			Query("UPDATE {forums} SET title = {0}, description = {1}, catid = {2}, forder = {3}, hidden={4}, redirect={5}, offtopic={6}, board={8}, l={9}, r={10} WHERE id = {7}", 
@@ -732,9 +740,13 @@ function SetPerms($fid)
 				
 			if ($val != -2)
 			{
-				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
-					ON DUPLICATE KEY UPDATE value={3}",
-					$gid, $perm, $fid, $val);
+				if ($val == 0)
+					Query("DELETE FROM {permissions} WHERE applyto=0 AND id={0} AND perm={1} AND arg={2}",
+						$gid, $perm, $fid);
+				else
+					Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
+						ON DUPLICATE KEY UPDATE value={3}",
+						$gid, $perm, $fid, $val);
 			}
 		}
 		
@@ -749,9 +761,13 @@ function SetPerms($fid)
 				
 			if ($val != -2)
 			{
-				Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
-					ON DUPLICATE KEY UPDATE value={3}",
-					$gid, $perm, $fid, $val);
+				if ($val == 0)
+					Query("DELETE FROM {permissions} WHERE applyto=0 AND id={0} AND perm={1} AND arg={2}",
+						$gid, $perm, $fid);
+				else
+					Query("INSERT INTO {permissions} (applyto,id,perm,arg,value) VALUES (0,{0},{1},{2},{3})
+						ON DUPLICATE KEY UPDATE value={3}",
+						$gid, $perm, $fid, $val);
 			}
 		}
 	}
