@@ -9,7 +9,7 @@
 		<tr class="cell{cycle values='0,1'}">
 			<td>
 				<strong>{$plugin.name}</strong> {if $plugin.author}(by {$plugin.author}){/if}<br>
-				{$plugin.description}
+				<span class="smallFonts">{$plugin.description}</span>
 			</td>
 			<td class="cell2">
 				{$plugin.actions}
@@ -33,7 +33,7 @@
 		<tr class="cell{cycle values='0,1'}">
 			<td>
 				<strong>{$plugin.name}</strong> {if $plugin.author}(by {$plugin.author}){/if}<br>
-				{$plugin.description}
+				<span class="smallFonts">{$plugin.description}</span>
 			</td>
 			<td class="cell2">
 				{$plugin.actions}
