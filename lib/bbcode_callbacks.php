@@ -25,6 +25,8 @@ $bbcodeCallbacks = array(
 	"tr" => "bbcodeTableRow",
 	"trh" => "bbcodeTableRowHeader",
 	"td" => "bbcodeTableCell",
+	
+	'youtube' => 'bbcodeYoutube',
 );
 
 //Allow plugins to register their own callbacks (new bbcode tags)
@@ -60,7 +62,7 @@ function bbcodeURLAuto($match)
 	// This is almost like lcfirst() from PHP 5.3.0
 	$match[0][0] = strtolower($text[0]);
 	if ($match[0][0] === "w") $match[0] = "http://$match[0]";
-	return '<a href="'.$text.'">'.$match[0].'</a>';
+	return '<a href="'.htmlspecialchars($text).'">'.$match[0].'</a>';
 }
 
 function bbcodeImage($contents, $arg)
@@ -155,7 +157,7 @@ function bbcodeQuoteGeneric($contents, $arg, $text)
 	{
 		$who = htmlspecialchars($match[1]);
 		$id = (int) $match[2];
-		return "<div class='quote'><div class='quoteheader'>$text <a href=\"".actionLink("post", $id)."\">$who</a></div><div class='quotecontent'>$contents</div></div>";
+		return "<div class='quote'><div class='quoteheader'><a href=\"".actionLink("post", $id)."\">$text $who</a></div><div class='quotecontent'>$contents</div></div>";
 	}
 	else
 	{
@@ -222,4 +224,42 @@ function trimbr($string)
 	$string = preg_replace('/(?:<br\s*\/?>\s*)+$/', '', $string);
 	$string = trim($string);
 	return $string;
+}
+
+function getYoutubeIdFromUrl($url) 
+{
+    $pattern =
+        '%^# Match any youtube URL
+        (?:https?://)?  # Optional scheme. Either http or https
+        (?:www\.)?      # Optional www subdomain
+        (?:             # Group host alternatives
+          youtu\.be/    # Either youtu.be,
+        | youtube\.com  # or youtube.com
+          (?:           # Group path alternatives
+            /embed/     # Either /embed/
+          | /v/         # or /v/
+          | /watch\?v=  # or /watch\?v=
+          )             # End path alternatives.
+        )               # End host alternatives.
+        ([\w-]{10,12})  # Allow 10-12 for 11 char youtube id.
+        $%x'
+        ;
+    $result = preg_match($pattern, $url, $matches);
+    if (false !== $result) {
+        return $matches[1];
+    }
+    return false;
+}
+
+function bbcodeYoutube($contents, $arg)
+{
+	$contents = trim($contents);
+	$id = getYoutubeIdFromUrl($contents);
+	if($id)
+		$contents = $id;
+
+	if(!preg_match("/^[\-0-9_a-zA-Z]+$/", $contents))
+		return "[Invalid youtube video ID]";
+
+	return '[youtube]'.$contents.'[/youtube]';
 }

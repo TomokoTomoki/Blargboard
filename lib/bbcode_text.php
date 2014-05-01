@@ -15,7 +15,7 @@ function loadSmilies()
 	$smiliesReplaceOrig = $smiliesReplaceNew = array();
 	for ($i = 0; $i < count($smilies); $i++)
 	{
-		$smiliesReplaceOrig[] = "/(?<!\w)".preg_quote(htmlspecialchars($smilies[$i]['code']), "/")."(?!\w)/";
+		$smiliesReplaceOrig[] = "/(?<!\w)".preg_quote($smilies[$i]['code'], "/")."(?!\w)/";
 		$smiliesReplaceNew[] = "<img class=\"smiley\" alt=\"\" src=\"".resourceLink("img/smilies/".$smilies[$i]['image'])."\" />";
 	}
 }
@@ -47,7 +47,7 @@ function rainbowify($s)
 }
 
 //Main post text replacing.
-function postDoReplaceText($s, $parentTag)
+function postDoReplaceText($s, $parentTag, $parentMask)
 {
 	global $postNoSmilies, $postPoster, $smiliesReplaceOrig, $smiliesReplaceNew;
 
@@ -69,7 +69,7 @@ function postDoReplaceText($s, $parentTag)
 	//Automatic links
 	// does it really have to be that complex?! we're not phpBB
 	//$s = preg_replace_callback('((?:(?:view-source:)?(?:[Hh]t|[Ff])tps?://(?:(?:[^:&@/]*:[^:@/]*)@)?|\bwww\.)[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*(?::[0-9]+)?(?:/(?:->(?=\S)|&amp;|[\w\-/%?=+#~:\'@*^$!]|[.,;\'|](?=\S)|(?:(\()|(\[)|\{)(?:->(?=\S)|[\w\-/%&?=+;#~:\'@*^$!.,;]|(?:(\()|(\[)|\{)(?:->(?=\S)|l[\w\-/%&?=+;#~:\'@*^$!.,;])*(?(3)\)|(?(4)\]|\})))*(?(1)\)|(?(2)\]|\})))*)?)', 'bbcodeURLAuto', $s);
-	if ($parentTag != 'a' && $parentTag != 'url')
+	if (!($parentMask & TAG_NOAUTOLINK))
 	{
 		$s = preg_replace_callback('@(?:(?:http|ftp)s?://|\bwww\.)[\w\-/%&?=+#~\'\@*^$\.,;!:]+[\w\-/%&?=+#~\'\@*^$]@i', 'bbcodeURLAuto', $s);
 	}

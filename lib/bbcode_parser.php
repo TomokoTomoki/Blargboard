@@ -3,379 +3,178 @@
 // BBCode parser core.
 // Parses BBCode and HTML intelligently so the output is reasonably well-formed, and doesn't contain evil stuff.
 
-/*
-	$parsestatus:
-	0 - HTML Entites, Smilies. nl2br
-	1 - HTML Entites
-	2 - nothing.
-*/
+// TODO list
+// * check that some tags only appear where they're allowed (ie <td> only in <tr>)
 
-function parseText($text, $parentTag)
+define('TAG_GOOD', 			0x0001);	// valid tag
+
+define('TAG_BLOCK', 		0x0002);	// block tag (subject to newline removal after start/end tags)
+define('TAG_SELFCLOSING',	0x0004);	// self-closing (br, img, ...)
+define('TAG_CLOSEOPTIONAL',	0x0008);	// closing tag optional (tr, td, li, p, ...)
+define('TAG_RAWCONTENTS',	0x0010);	// tag whose contents shouldn't be parsed (<style>, [code], etc)
+define('TAG_NOAUTOLINK',	0x0020);	// prevent autolinking 
+
+$HTMLTagList = array
+(
+	'a'			=>	TAG_GOOD | TAG_NOAUTOLINK,
+	'b'			=>	TAG_GOOD,
+	'big'		=>	TAG_GOOD,
+	'br'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	'caption'	=>	TAG_GOOD | TAG_CLOSEOPTIONAL,
+	'center'	=>	TAG_GOOD,
+	'code'		=>	TAG_GOOD,
+	'dd'		=>	TAG_GOOD,
+	'del'		=>	TAG_GOOD,
+	'div'		=>	TAG_GOOD | TAG_BLOCK,
+	'dl'		=>	TAG_GOOD,
+	'dt'		=>	TAG_GOOD,
+	'em'		=>	TAG_GOOD,
+	'font'		=>	TAG_GOOD,
+	'h1'		=>	TAG_GOOD | TAG_BLOCK,
+	'h2'		=>	TAG_GOOD | TAG_BLOCK,
+	'h3'		=>	TAG_GOOD | TAG_BLOCK,
+	'h4'		=>	TAG_GOOD | TAG_BLOCK,
+	'h5'		=>	TAG_GOOD | TAG_BLOCK,
+	'h6'		=>	TAG_GOOD | TAG_BLOCK,
+	'hr'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	'i'			=>	TAG_GOOD,
+	'img'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	'input'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	'kbd'		=>	TAG_GOOD,
+	'li'		=>	TAG_GOOD | TAG_CLOSEOPTIONAL,
+	'nobr'		=>	TAG_GOOD,
+	'ol'		=>	TAG_GOOD,
+	'p'			=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'pre'		=>	TAG_GOOD | TAG_RAWCONTENTS,
+	's'			=>	TAG_GOOD,
+	'small'		=>	TAG_GOOD,
+	'span'		=>	TAG_GOOD,
+	'strong'	=>	TAG_GOOD,
+	'style'		=>	TAG_GOOD | TAG_BLOCK | TAG_RAWCONTENTS,
+	'sub'		=>	TAG_GOOD,
+	'sup'		=>	TAG_GOOD,
+	'table'		=>	TAG_GOOD | TAG_BLOCK,
+	'tbody'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'td'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'textarea'	=>	TAG_GOOD | TAG_BLOCK | TAG_RAWCONTENTS,
+	'tfoot'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'th'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'thead'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'tr'		=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'u'			=>	TAG_GOOD,
+	'ul'		=>	TAG_GOOD,
+	'link'		=>	TAG_GOOD | TAG_BLOCK | TAG_SELFCLOSING,
+	
+	'audio'		=>	TAG_GOOD,
+);
+
+$BBCodeTagList = array
+(
+	'b'			=>	TAG_GOOD,
+	'i'			=>	TAG_GOOD,
+	'u'			=>	TAG_GOOD,
+	's'			=>	TAG_GOOD,
+	
+	'url'		=>	TAG_GOOD | TAG_NOAUTOLINK,
+	'img'		=>	TAG_GOOD | TAG_NOAUTOLINK,
+	'imgs'		=>	TAG_GOOD | TAG_NOAUTOLINK,
+	
+	'user'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	'thread'	=>	TAG_GOOD | TAG_SELFCLOSING,
+	'forum'		=>	TAG_GOOD | TAG_SELFCLOSING,
+	
+	'quote'		=>	TAG_GOOD | TAG_BLOCK,
+	'reply'		=>	TAG_GOOD | TAG_BLOCK,
+	
+	'spoiler' 	=>	TAG_GOOD | TAG_BLOCK,
+	'code'		=>	TAG_GOOD | TAG_BLOCK | TAG_RAWCONTENTS,
+	
+	'table'		=> 	TAG_GOOD | TAG_BLOCK,
+	'tr'		=> 	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'trh'		=> 	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	'td'		=> 	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
+	
+	'youtube' 	=> 	TAG_GOOD | TAG_NOAUTOLINK,
+);
+
+$TagLists = array('<' => $HTMLTagList, '[' => $BBCodeTagList);
+
+
+function filterTag($tag, $attribs, $contents, $close)
 {
-	global $parseStatus, $postNoSmilies, $postNoBr, $postPoster;
-
-	if($parseStatus <= 1)
+	global $HTMLTagList, $bbcodeCallbacks;
+	
+	$tagname = substr($tag,1);
+	
+	if ($tag[0] == '<')
 	{
-		$text = html_entity_decode($text, ENT_COMPAT, 'UTF-8');
-		$text = htmlspecialchars($text, ENT_COMPAT, 'UTF-8');
-	}
-
-	if($parseStatus == 0)
-	{
-		if(!$postNoBr)
-			$text = nl2br($text);
-
-		$text = postDoReplaceText($text, $parentTag);
-	}
-
-	return $text;
-}
-
-
-// TODO: consider optimization
-// put all the tags in one array, with bitmasks defining how they're handled
-
-$tagParseStatus = array(
-	'ul' => 1,
-	'ol' => 1,
-	'li' => 0,
-
-	'table' => 1,
-	'td' => 0,
-	'th' => 0,
-
-	'img' => 2,
-	'imgs' => 2,
-	'code' => 2,
-	'source' => 2,
-	'pre' => 2,
-	'style' => 2,
-);
-
-$autocloseTags = array(
-	'li' => array('li' => 1, 'ul' => 1, 'ol' => 1),
-	'td' => array('td' => 1, 'tr' => 1, 'trh' => 1, 'table' => 1),
-	'tr' => array('tr' => 1, 'trh' => 1, 'table' => 1),
-	'trh' => array('tr' => 1, 'trh' => 1, 'table' => 1),
-);
-
-$heavyTags = array(
-	'code' => 1,
-	'source' => 1,
-	'pre' => 1,
-);
-
-$singleTags = array(
-	'user' => 1,
-	'forum' => 1,
-	'thread' => 1,
-);
-$singleHtmlTags = array(
-	//'p' => 1,
-	'br' => 1,
-	'img' => 1,
-	'link' => 1,
-	
-	'source' => 1,
-);
-
-$goodHtmlTags = array(
-	'a' => 1,
-	'b' => 1,
-	'big' => 1,
-	'br' => 1,
-	'caption' => 1,
-	'center' => 1,
-	'code' => 1,
-	'dd' => 1,
-	'del' => 1,
-	'div' => 1,
-	'dl' => 1,
-	'dt' => 1,
-	'em' => 1,
-	'font' => 1,
-	'h1' => 1,
-	'h2' => 1,
-	'h3' => 1,
-	'h4' => 1,
-	'h5' => 1,
-	'h6' => 1,
-	'hr' => 1,
-	'i' => 1,
-	'img' => 1,
-	'input' => 1,
-	'kbd' => 1,
-	'li' => 1,
-	'nobr' => 1,
-	'ol' => 1,
-	'p' => 1,
-	'pre' => 1,
-	's' => 1,
-	'small' => 1,
-	'span' => 1,
-	'strong' => 1,
-	'style' => 1,
-	'sub' => 1,
-	'sup' => 1,
-	'table' => 1,
-	'tbody' => 1,
-	'td' => 1,
-	'textarea' => 1,
-	'tfoot' => 1,
-	'th' => 1,
-	'thead' => 1,
-	'tr' => 1,
-	'u' => 1,
-	'ul' => 1,
-	'link' => 1,
-	
-	//'iframe' => 1,
-	
-	'audio' => 1,
-	'source' => 1,
-);
-
-$blockHtmlTags = array(
-	'div' => 1,
-	'table' => 1,
-	'tbody' => 1,
-	'thead' => 1,
-	'tfoot' => 1,
-	'tr' => 1,
-	'th' => 1,
-	'td' => 1,
-	'p' => 1,
-	'style' => 1,
-	'link' => 1,
-	'h1' => 1,
-	'h2' => 1,
-	'h3' => 1,
-	'h4' => 1,
-	'h5' => 1,
-	'h6' => 1,
-	
-	// mix BBCode in. Hack.
-	'code' => 1,
-	'source' => 1,
-	'quote' => 1,
-	'spoiler' => 1,
-);
-
-
-function tokenValidTag($tagname, $bbcode)
-{
-	global $bbcodeCallbacks, $goodHtmlTags;
-
-	if($bbcode && !array_key_exists($tagname, $bbcodeCallbacks))
-			return false;
-
-	if(!$bbcode && !array_key_exists($tagname, $goodHtmlTags))
-		return false;
-
-	return true;
-}
-
-function parseToken($token)
-{
-	$type = 0;
-	$match = array();
-	$inregex = "(\w+)=?(.*)";
-
-	if(preg_match('@^\\[/'.$inregex.'\]$@', $token, $match))
-		$type = 2;
-	else if(preg_match('@^\\['.$inregex.'\\]$@', $token, $match))
-		$type = 1;
-	else if(preg_match("@^</$inregex>$@", $token, $match))
-		$type = 4;
-	else if(preg_match("@^<$inregex>$@", $token, $match))
-		$type = 3;
-
-	if($type == 0)
-		return array(
-			'type' => 0,
-			'text' => $token
-		);
-
-	$tagname = strtolower($match[1]);
-	$attrs = trim($match[2]);
-
-	if(!tokenValidTag($tagname, $type < 3))
-		return array(
-			'type' => 0,
-			'text' => $token
-		);
+		$output = $tag.$attribs.$contents;
+		// TODO filter attributes? (remove onclick etc)
+		// this is done by the security filter, though, so it'd be redundant
 		
-	if ($tagname == 'iframe' && $type == 3)
-	{
-		if (!preg_match('@^width="\d+" height="\d+" src="http://www\.youtube\.com/embed/[a-z0-9-_]{11}" frameborder="\d+" allowfullscreen$@i', $attrs))
-			return array(
-			'type' => 0,
-			'text' => $token
-			);
+		if ($close || !($HTMLTagList[$tagname] & (TAG_CLOSEOPTIONAL | TAG_SELFCLOSING)))
+			$output .= '</'.$tagname.'>';
 	}
-
-	return array(
-		'type' => $type,
-		'tag' => $tagname,
-		'text' => $token,
-		'attributes' => $attrs
-	);
-}
-
-function parse($parentToken)
-{
-	global $tokens, $tokenPtr, $heavyTags, $singleTags, $singleHtmlTags, $tagParseStatus, $parseStatus, $bbcodeCallbacks, $allowTables, $autocloseTags, $bbcodeIsTableHeader, $tokenCt;
-	global $blockHtmlTags;
-
-	$lasttoken = $parentToken;
-
-	$parentTag = $parentToken['tag'];
-
-	//Single tags just can't/aren't supposed to be closed, like [user=xx]
-	if($parentToken['type'] == 1)
-		$singleTag = array_key_exists($parentTag, $singleTags);
 	else
-		$singleTag = array_key_exists($parentTag, $singleHtmlTags);
-
-	$finished = $singleTag;
-
-	//Heavy tags just put everything as text until close tag.
-	$heavyTag = $parentToken != 0 && array_key_exists($parentTag, $heavyTags);
-
-	//Backup parse status
-	$oldParseStatus = $parseStatus;
-	$oldAllowTables = $allowTables;
-
-	//Force parse status if tag wants to.
-	if($parentToken != 0)
-		if(array_key_exists($parentTag, $tagParseStatus))
-			$parseStatus = $tagParseStatus[$parentTag];
-
-	if(($parentToken['type'] == 3 || $parentToken['type'] == 1) && $parentTag == 'table')
-		$allowTables = true;
-
-	if($parentTag == 'trh')
-		$bbcodeIsTableHeader = true;
-
-	while($tokenPtr < $tokenCt && !$finished)
 	{
-		$token = $tokens[$tokenPtr++];
-
-		$printAsText = false;
-		$result = '';
-		switch($token['type'])
-		{
-			case 0: //Text
-				$printAsText = true;
-				break;
-			case 1: //BBCode open
-			case 3: //HTML open
-				if($parentToken['type'] == $token['type']
-						&& array_key_exists($parentTag, $autocloseTags)
-						&& array_key_exists($token['tag'], $autocloseTags[$parentTag]))
-				{
-//					$result .= "[AUTO]";
-					$finished = true;
-					$tokenPtr--;
-				}
-				else if(!$allowTables && ($token['tag'] == 'td' || $token['tag'] == 'tr' || $token['tag'] == 'th'))
-					$printAsText = true;
-				else
-					if(!$heavyTag)
-						$result .= parse($token);
-				break;
-
-			case 2: //BBCode close
-			case 4: //HTML close
-				if($parentToken != 0 && $parentToken['type']+1 == $token['type'] && $token['tag'] == $parentTag)
-					$finished = true;
-				else if($parentToken != 0
-						&& $parentToken['type']+1 == $token['type']
-						&& array_key_exists($parentTag, $autocloseTags)
-						&& array_key_exists($token['tag'], $autocloseTags[$parentTag]))
-				{
-//					$result .= "[AUTO]";
-					$finished = true;
-					$tokenPtr--;
-				}
-				else
-					$printAsText = true;
-				break;
-		}
-
-		if($heavyTag && !$finished)
-			$printAsText = true;
-
-		if($printAsText)
-		{
-			if (!$heavyTag && array_key_exists($lasttoken['tag'], $blockHtmlTags))
-				$token['text'] = preg_replace("@^\r?\n@", '', $token['text']);
-			
-			$textcontents .= $token['text'];
-		}
-		else
-		{
-			if($textcontents)
-				$contents .= parseText($textcontents, $parentTag);
-			$textcontents = '';
-			$contents .= $result;
-		}
-		
-		$lasttoken = $token;
+		$attribs = substr($attribs,1,-1);
+		$output = $bbcodeCallbacks[$tagname]($contents, $attribs);
 	}
+	
+	return $output;
+}
 
-	if($parentTag == 'trh')
-		$bbcodeIsTableHeader = false;
-
-	if($textcontents)
-		$contents .= parseText($textcontents, $parentTag);
-
-	//Restore saved parse status.
-	$parseStatus = $oldParseStatus;
-	$allowTables = $oldAllowTables;
-
-	if($parentToken == 0)
-		return $contents;
-
-	if($parentToken['type'] == 1) //BBCode
-	{
-		$func = $bbcodeCallbacks[$parentTag];
-		if($func)
-			return $func($contents, $parentToken['attributes']);
-		else
-			return $contents;
-	}
-	else if($parentToken['type'] == 3) //HTML
-	{
-		$attr = $parentToken['attributes'];
-		if ($attr) $attr = ' '.$attr;
-		
-		if ($parentTag == 'nobr')
-			return preg_replace('@<br\s*/?>@i', '', $contents); // hack
-		elseif($singleTag)
-			return '<'.$parentTag.$attr.'>';
-		else
-			return '<'.$parentTag.$attr.'>'.$contents.'</'.$parentTag.'>';
-	}
-	else return 'WTF?';
+function filterText($s, $parentTag, $parentMask)
+{
+	if ($parentMask & TAG_RAWCONTENTS) return $s;
+	$s = nl2br($s);
+	$s = postDoReplaceText($s, $parentTag, $parentMask);
+	return $s;
 }
 
 
 function parseBBCode($text)
 {
 	global $tokens, $tokenPtr, $parseStatus, $tokenCt;
+	global $TagLists;
 	$spacechars = array(' ', "\t", "\r", "\n");
 	
-	$raw = preg_split('@([\[<]/?\w+)@', $text, 0, PREG_SPLIT_DELIM_CAPTURE);
-	$tokens = array();
+	$raw = preg_split('@([\[<]/?[a-zA-Z][a-zA-Z0-9]*)@', $text, 0, PREG_SPLIT_DELIM_CAPTURE);
+	$outputstack = array(0 => array('tag' => '', 'attribs' => '', 'contents' => ''));
+	$si = 0;
+	
+	$currenttag = '';
+	$currentmask = 0;
 	
 	$i = 0; $nraw = count($raw);
 	while ($i < $nraw)
 	{
 		$cur = $raw[$i++];
-		if (($cur[0] == '<' || $cur[0] == '[') && ($cur[1] == '/' || ctype_alpha($cur[1]))) // we got a tag start-- find out where it ends
+		if ($cur[0] == '<' || $cur[0] == '[') // we got a tag start-- find out where it ends
 		{
+			$isclosing = $cur[1] == '/';
+			$tagname = substr($cur, ($isclosing ? 2:1));
+			$taglist = $TagLists[$cur[0]];
 			$closechar = ($cur[0] == '<') ? '>' : ']';
+			
+			// raw contents tags (<style> & co)
+			// continue outputting RAW content until we meet a matching closing tag
+			if (($currentmask & TAG_RAWCONTENTS) && (!$isclosing || $currenttag != $cur[0].$tagname))
+			{
+				$outputstack[$si]['contents'] .= $cur;
+				continue;
+			}
+			
+			// invalid tag -- output it escaped
+			if (!array_key_exists($tagname, $taglist))
+			{
+				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($cur), $currenttag, $currentmask);
+				continue;
+			}
+			
+			// we got a proper tag? find where it ends
+			$tagmask = $taglist[$tagname];
+			
 			$next = $raw[$i++];
 			
 			$j = 0;
@@ -435,27 +234,91 @@ function parseBBCode($text)
 			}
 			
 			if (!$endfound) // tag end not found-- call it invalid
-				$tokens[] = htmlspecialchars($cur.$next);
+				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($cur.$next), $currenttag, $currentmask);
 			else
 			{
-				$tokens[] = $cur.substr($next,0,$j+1);
-				if ($j < $nlen-1) $tokens[] = substr($next,$j+1);
+				$tagattribs = substr($next,0,$j+1);
+				$followingtext = substr($next,$j+1);
+				
+				if ($tagmask & TAG_BLOCK)
+					$followingtext = preg_replace("@^\r?\n@", '', $followingtext);
+				
+				if ($isclosing)
+				{
+					$tgood = false;
+					
+					// tag closing. Close any tags that need it before.
+					while ($si > 0)
+					{
+						$closer = $outputstack[$si--];
+						$ccontents = $closer['contents'];
+						$cattribs = $closer['attribs'];
+						$ctag = $closer['tag'];
+						$ctagname = substr($ctag,1);
+						
+						if ($ctag != $cur[0].$tagname && !($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
+							$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
+						else
+						{
+							$tgood = true;
+							break;
+						}
+					}
+					
+					$currenttag = $outputstack[$si]['tag'];
+					$currentmask = $TagLists[$currenttag[0]][substr($currenttag,1)];
+					
+					if ($tgood)
+						$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, true).filterText($followingtext, $currenttag, $currentmask);
+					else
+						$outputstack[$si]['contents'] .= filterText(htmlspecialchars($followingtext), $currenttag, $currentmask);
+				}
+				else if ($tagmask & TAG_SELFCLOSING)
+				{
+					$followingtext = filterText($followingtext, $currenttag, $currentmask);
+					$outputstack[$si]['contents'] .= filterTag($cur, $tagattribs, '', false).$followingtext;
+				}
+				else
+				{
+					$followingtext = filterText($followingtext, $cur, $tagmask);
+					
+					if (($currentmask & TAG_CLOSEOPTIONAL) && $currenttag == $cur)
+					{
+						$closer = $outputstack[$si--];
+						$ccontents = $closer['contents'];
+						$cattribs = $closer['attribs'];
+						$ctag = $closer['tag'];
+						$ctagname = substr($ctag,1);
+						
+						if (!($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
+							$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
+					}
+						
+					$outputstack[++$si] = array('tag' => $cur, 'attribs' => $tagattribs, 'contents' => $followingtext);
+					
+					$currenttag = $cur;
+					$currentmask = $tagmask;
+				}
 			}
 		}
 		else if ($cur)
-			$tokens[] = $cur;
+			$outputstack[$si]['contents'] .= filterText($cur, $currenttag, $currentmask);
+	}
+	
+	// close any leftover opened tags
+	while ($si > 0)
+	{
+		$closer = $outputstack[$si--];
+		$ccontents = $closer['contents'];
+		$cattribs = $closer['attribs'];
+		$ctag = $closer['tag'];
+		$ctagname = substr($ctag,1);
+		
+		if (!($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
+			$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
 	}
 
-	//$tokens = preg_split('/(\[(?:\w+(?:=".*?"|=[^]]*)?|\/\w+)\]|<[^\[\]<>]+>)/S', $text, 0, PREG_SPLIT_DELIM_CAPTURE);
-	$tokens = array_map('parseToken', $tokens);
-
-	$parseStatus = 0;
-	$tokenCt = count($tokens);
-	$tokenPtr = 0;
-	$parentTag = '';
-
-	$res = parse(0);
-	return $res;
+	return $outputstack[$si]['contents'];
 }
 
 ?>

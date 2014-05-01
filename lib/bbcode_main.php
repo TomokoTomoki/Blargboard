@@ -29,6 +29,7 @@ function cleanUpPost($postText, $poster = "", $noSmilies = false, $noBr = false)
 
 	$s = parseBBCode($s);
 
+	// TODO do it more nicely
 	$s = preg_replace_callback("@<a[^>]+href\s*=\s*\"(.*?)\"@si", 'ApplyNetiquetteToLinks', $s);
 	$s = preg_replace_callback("@<a[^>]+href\s*=\s*'(.*?)'@si", 'ApplyNetiquetteToLinks', $s);
 	$s = preg_replace_callback("@<a[^>]+href\s*=\s*([^\"'][^\s>]*)@si", 'ApplyNetiquetteToLinks', $s);
@@ -86,16 +87,17 @@ function securityPostFilter($s)
 
 	$s = preg_replace("@(on)(\w+?\s*?)=@si", '$1$2&#x3D;', $s);
 	
-	$s = preg_replace('@<(/?(?:script|meta|xmp|plaintext|noscript|iframe|embed|object|base|textarea).*?)>@si', '&lt;$1&gt;', $s);
+	$s = preg_replace('@<(/?(?:script|meta|xmp|plaintext|noscript|iframe|embed|object|base|textarea))@si', '&lt;$1', $s);
 	
-	// hack
-	$s = preg_replace('@\[ythax\]([a-zA-Z0-9-_]{11})/(&amp;loop=1)?\[/ythax\]@i', 
-		'<iframe width="560" height="315" src="http://www.youtube.com/embed/$1$2" frameborder="0" allowfullscreen></iframe>', $s);
+	// convert youtube tags now that we ran the security filter
+	$s = preg_replace('@\[youtube\]([a-zA-Z0-9-_]{11})\[/youtube\]@i', 
+		'<iframe width="560" height="315" src="//www.youtube.com/embed/$1" frameborder="0" allowfullscreen></iframe>', $s);
 
 	$s = preg_replace("'-moz-binding'si"," -mo<em></em>z-binding", $s);
 	//$s = preg_replace("'filter:'si","filter<em></em>:>", $s);
 	//$s = preg_replace("'javascript:'si","javascript<em></em>:>", $s);
 
+	// TODO do it more nicely
 	$s = preg_replace_callback("@(href|src)\s*=\s*\"([^\"]+)\"@si", "FilterJS", $s);
 	$s = preg_replace_callback("@(href|src)\s*=\s*'([^']+)'@si", "FilterJS", $s);
 	$s = preg_replace_callback("@(href|src)\s*=\s*([^\s>]+)@si", "FilterJS", $s);
