@@ -40,6 +40,7 @@ else
 if(!ctype_alnum($page))
 	$page = $mainPage;
 
+// TODO make them take URL names into account? or nuke them?
 if($page == $mainPage)
 {
 	if(isset($_GET['fid']) && (int)$_GET['fid'] > 0 && !isset($_GET['action']))
@@ -76,7 +77,7 @@ if (!$fakeerror)
 				$plugin = $pluginpages[$page];
 				$self = $plugins[$plugin];
 				
-				$page = "./plugins/".$self['dir']."/page_".$page.".php";
+				$page = "./plugins/".$self['dir']."/pages/".$page.".php";
 				if(!file_exists($page))
 					throw new Exception(404);
 				include($page);

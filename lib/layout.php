@@ -6,17 +6,31 @@
 
 function RenderTemplate($template, $options=null)
 {
-	global $tpl, $mobileLayout;
+	global $tpl, $mobileLayout, $plugintemplates, $plugins;
 	
-	// TODO let plugins add/override templates
-	
-	if ($mobileLayout)
+	if (array_key_exists($template, $plugintemplates))
 	{
-		$tplname = 'templates/mobile/'.$template.'.tpl';
-		if (!file_exists($tplname)) $tplname = 'templates/'.$template.'.tpl';
+		$plugin = $plugintemplates[$template];
+		$self = $plugins[$plugin];
+		
+		if ($mobileLayout)
+		{
+			$tplname = 'plugins/'.$self['dir'].'/templates/mobile/'.$template.'.tpl';
+			if (!file_exists($tplname)) $tplname = 'plugins/'.$self['dir'].'/templates/'.$template.'.tpl';
+		}
+		else
+			$tplname = 'plugins/'.$self['dir'].'/templates/'.$template.'.tpl';
 	}
 	else
-		$tplname = 'templates/'.$template.'.tpl';
+	{
+		if ($mobileLayout)
+		{
+			$tplname = 'templates/mobile/'.$template.'.tpl';
+			if (!file_exists($tplname)) $tplname = 'templates/'.$template.'.tpl';
+		}
+		else
+			$tplname = 'templates/'.$template.'.tpl';
+	}
 	
 	if ($options)
 		$tpl->assign($options);
