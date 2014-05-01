@@ -7,22 +7,22 @@ CheckPermission('admin.editsettings');
 MakeCrumbs(array(actionLink("admin") => __("Admin"), actionLink("pluginmanager") => __("Plugin Manager")));
 
 
-if($_GET["action"] == "enable")
+if($_REQUEST['action'] == "enable")
 {
-	if($_GET["key"] != $loguser['token'])
+	if($_REQUEST['key'] != $loguser['token'])
 		Kill("No.");
 
-	Query("insert into {enabledplugins} values ({0})", $_GET["id"]);
+	Query("insert into {enabledplugins} values ({0})", $_REQUEST['id']);
 	Upgrade();
 
 	die(header("location: ".actionLink("pluginmanager")));
 }
-if($_GET["action"] == "disable")
+if($_REQUEST['action'] == "disable")
 {
-	if($_GET["key"] != $loguser['token'])
+	if($_REQUEST['key'] != $loguser['token'])
 		Kill("No.");
 
-	Query("delete from {enabledplugins} where plugin={0}", $_GET["id"]);
+	Query("delete from {enabledplugins} where plugin={0}", $_REQUEST['id']);
 	die(header("location: ".actionLink("pluginmanager")));
 }
 
@@ -52,9 +52,9 @@ if($pluginsDir !== FALSE)
 
 			$pluginDatas[$plugin] = $plugindata;
 			if(isset($plugins[$plugin]))
-				$enabledplugins[$plugin] = $plugindata["name"];
+				$enabledplugins[$plugin] = $plugindata['name'];
 			else
-				$disabledplugins[$plugin] = $plugindata["name"];
+				$disabledplugins[$plugin] = $plugindata['name'];
 		}
 	}
 
@@ -63,29 +63,32 @@ if($pluginsDir !== FALSE)
 asort($enabledplugins);
 asort($disabledplugins);
 
-print '<table class="outline margin width50">';
-print '<tr class="header0"><th colspan="2">'.__("Enabled plugins").'</th></tr>';
-foreach($enabledplugins as $plugin => $pluginname)
-	listPlugin($plugin, $pluginDatas[$plugin]);
-print '<tr class="header0"><th colspan="2">'.__("Disabled plugins").'</th></tr>';
-foreach($disabledplugins as $plugin => $pluginname)
-	listPlugin($plugin, $pluginDatas[$plugin]);
+$ep = array();
+$dp = array();
 
-print '</table>';
+foreach($enabledplugins as $plugin => $pluginname)
+	$ep[] = listPlugin($plugin, $pluginDatas[$plugin]);
+
+foreach($disabledplugins as $plugin => $pluginname)
+	$dp[] = listPlugin($plugin, $pluginDatas[$plugin]);
+
+RenderTemplate('pluginlist', array('enabledPlugins' => $ep, 'disabledPlugins' => $dp));
+
 
 function listPlugin($plugin, $plugindata)
 {
-	global $cell, $plugins, $loguser;
+	global $plugins, $loguser;
+	
+	$pdata = $plugindata;
+	
+	$hasperms = false;
+	if (!isset($plugins[$plugin]) && file_exists('plugins/'.$plugin.'/permStrings.php'))
+		$hasperms = true;
+		
+	if ($hasperms)
+		$pdata['description'] .= '<br><strong>This plugin has permissions. After enabling it, make sure to configure them properly.</strong>';
 
-	print '<tr class="cell'.$cell.'"><td>';
-	print "<b>".$plugindata["name"]."</b><br />";
-	if($plugindata["author"])
-		$author = '<br />'.__("Made by:")." ".$plugindata["author"];
-	print '<span style="display:block;margin-left:30px;">'.$plugindata["description"].$author.'</span>';
-	print '</td><td>';
-
-	print '<ul class="pipemenu">';
-
+		
 	$text = __("Enable");
 	$act = "enable";
 	if(isset($plugins[$plugin]))
@@ -93,17 +96,16 @@ function listPlugin($plugin, $plugindata)
 		$text = __("Disable");
 		$act = "disable";
 	}
-	print actionLinkTagItem($text, "pluginmanager", $plugin, "action=".$act."&key=".$loguser['token']);
+	$pdata['actions'] = '<ul class="pipemenu">'.actionLinkTagItem($text, "pluginmanager", $plugin, "action=".$act."&key=".$loguser['token']);
 
-	if(in_array("settingsfile", $plugindata["buckets"]))
+	if(in_array("settingsfile", $plugindata['buckets']))
 	{
 		if(isset($plugins[$plugin]))
-			print actionLinkTagItem(__("Settings&hellip;"), "editsettings", $plugin);
+			$pdata['actions'] .= actionLinkTagItem(__("Settings&hellip;"), "editsettings", $plugin);
 	}
-	print '</ul>';
-	print '</td></tr>';
-
-	$cell++;
-	$cell %= 2;
+	$pdata['actions'] .= '</ul>';
+	
+	return $pdata;
 }
+
 ?>
