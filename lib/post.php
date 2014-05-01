@@ -83,23 +83,16 @@ function getActivity($id)
 	return $activityCache[$id];
 }
 
-$layouCache = array();
-
-function makePostText($post)
+function makePostText($post, $poster)
 {
-	global $loguser, $layoutCache, $blocklayouts, $boardroot, $dataDir;
-
-	LoadBlockLayouts();
-	$poster = getDataPrefix($post, 'u_');
-	$isBlocked = $poster['globalblock'] || $loguser['blocklayouts'] || $post['options'] & 1 || isset($blocklayouts[$poster['id']]);
+	global $boardroot, $dataDir;
 
 	$noSmilies = $post['options'] & 2;
 
 	//Do Ampersand Tags
 	$tags = array
 	(
-//This tag breaks because of layout caching.
-//		"postnum" => $post['num'],
+		"postnum" => $post['num'],
 		"postcount" => $poster['posts'],
 		"numdays" => floor((time()-$poster['regdate'])/86400),
 		"date" => formatdate($post['date']),
@@ -107,38 +100,11 @@ function makePostText($post)
 	);
 	$bucket = "amperTags"; include("./lib/pluginloader.php");
 
-	$postText = $post['text'];
-	$postText = ApplyTags($postText, $tags);
-	$postText = CleanUpPost($postText, $poster['name'], $noSmilies, false);
-
-	//Post header and footer.
-	// TODO GET RID OF THIS FUCKING HACK
-	$magicString = "###POSTTEXTGOESHEREOMG###";
-	$separator = "";
-
-	if($isBlocked)
-		$postLayout = $magicString;
-	else
-	{
-		if(!isset($layoutCache[$poster['id']]))
-		{
-			if (!$poster['postheader'] && $poster['signature'])
-				$poster['signature'] = '<div class="signature">'.$poster['signature'].'</div>';
-			
-			$postLayout = $poster['postheader'].$magicString.$poster['signature'];
-			$postLayout = ApplyTags($postLayout, $tags);
-			$postLayout = CleanUpPost($postLayout, $poster['name'], $noSmilies, false);
-			$layoutCache[$poster['id']] = $postLayout;
-		}
+	if($poster['signature'])
+		if(!$poster['signsep'])
+			$separator = "<br>_________________________<br>";
 		else
-			$postLayout = $layoutCache[$poster['id']];
-
-		if($poster['signature'])
-			if(!$poster['signsep'])
-				$separator = "<br>_________________________<br>";
-			else
-				$separator = "<br>";
-	}
+			$separator = "<br>";
 	
 	$attachblock = '';
 	if ($post['has_attachments'])
@@ -160,7 +126,10 @@ function makePostText($post)
 		}
 	}
 
-	$postText = str_replace($magicString, "<!-- LOL -->".$postText.$attachblock.$separator, $postLayout);
+	$postText = $poster['postheader'].$post['text'].$attachblock.$separator.$poster['signature'];
+	$postText = ApplyTags($postText, $tags);
+	$postText = CleanUpPost($postText, $noSmilies, false);
+	
 	return $postText;
 }
 
@@ -352,11 +321,22 @@ function makePost($post, $type, $params=array())
 	
 	if(!$isBlocked)
 	{
+		$poster['postheader'] = trim($poster['postheader']);
+		$poster['signature'] = trim($poster['signature']);
+		
 		$post['haslayout'] = $poster['postheader']?1:0;
-		$post['fulllayout'] = $poster['fulllayout'];
+		$post['fulllayout'] = $poster['fulllayout'] && $post['haslayout'];
+		
+		if (!$post['haslayout'] && $poster['signature'])
+			$poster['signature'] = '<div class="signature">'.$poster['signature'].'</div>';
+	}
+	else
+	{
+		$poster['postheader'] = '';
+		$poster['signature'] = '';
 	}
 
-	$post['contents'] = makePostText($post);
+	$post['contents'] = makePostText($post, $poster);
 
 	//PRINT THE POST!
 	

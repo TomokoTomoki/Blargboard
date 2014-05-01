@@ -248,28 +248,39 @@ function parseBBCode($text)
 					$tgood = false;
 					
 					// tag closing. Close any tags that need it before.
-					while ($si > 0)
+					
+					$k = $si;
+					while ($k > 0)
 					{
-						$closer = $outputstack[$si--];
-						$ccontents = $closer['contents'];
-						$cattribs = $closer['attribs'];
-						$ctag = $closer['tag'];
-						$ctagname = substr($ctag,1);
-						
-						if ($ctag != $cur[0].$tagname && !($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
-							$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
-						else
+						$closer = $outputstack[$k--];
+						if ($closer['tag'] == $cur[0].$tagname)
 						{
 							$tgood = true;
 							break;
 						}
 					}
 					
-					$currenttag = $outputstack[$si]['tag'];
-					$currentmask = $TagLists[$currenttag[0]][substr($currenttag,1)];
-					
 					if ($tgood)
+					{
+						while ($si > 0)
+						{
+							$closer = $outputstack[$si--];
+							$ccontents = $closer['contents'];
+							$cattribs = $closer['attribs'];
+							$ctag = $closer['tag'];
+							$ctagname = substr($ctag,1);
+							
+							if ($ctag != $cur[0].$tagname)
+								$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
+							else
+								break;
+						}
+						
+						$currenttag = $outputstack[$si]['tag'];
+						$currentmask = $TagLists[$currenttag[0]][substr($currenttag,1)];
+						
 						$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, true).filterText($followingtext, $currenttag, $currentmask);
+					}
 					else
 						$outputstack[$si]['contents'] .= filterText(htmlspecialchars($followingtext), $currenttag, $currentmask);
 				}
