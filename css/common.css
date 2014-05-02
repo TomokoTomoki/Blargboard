@@ -633,10 +633,10 @@ table.post, table.custompost
 	margin-bottom: 0.75em;
 }
 
-table.post *
+/*table.post *
 {
 	word-break: break-all !important;
-}
+}*/
 
 table.post td.side,
 table.custompost td.side,
