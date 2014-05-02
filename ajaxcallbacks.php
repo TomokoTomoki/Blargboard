@@ -164,7 +164,7 @@ elseif($action == "sr")	//Show Revision
 {
 	$rPost = Query("
 			SELECT
-				p.id, p.date, p.num, p.deleted, p.deletedby, p.reason, p.options, p.mood, p.ip,
+				p.*,
 				pt.text, pt.revision, pt.user AS revuser, pt.date AS revdate,
 				u.(_userfields), u.(rankset,title,picture,posts,postheader,signature,signsep,lastposttime,lastactivity,regdate,globalblock),
 				ru.(_userfields),
@@ -187,7 +187,7 @@ elseif($action == "sr")	//Show Revision
 	if (!HasPermission('mod.editposts', $post['fid']))
 		die('No.');
 
-	die(makePostText($post));
+	die(makePostText($post, getDataPrefix($post, 'u_')));
 }
 elseif($action == "em")	//Email
 {

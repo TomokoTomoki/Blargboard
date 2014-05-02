@@ -2,6 +2,8 @@
 //  AcmlmBoard XD - Thread submission/preview page
 //  Access: users
 
+require('lib/upload.php');
+
 $title = __("New thread");
 
 if(!$loguserid) //Not logged in?
@@ -41,8 +43,16 @@ $OnlineUsersFid = $fid;
 
 MakeCrumbs(forumCrumbs($forum) + array('' => __("New thread")));
 
-if(isset($_POST['actionpreview']))
+$attachs = array();
+
+if (isset($_POST['saveuploads']))
 {
+	$attachs = HandlePostAttachments(0, false);
+}
+else if(isset($_POST['actionpreview']))
+{
+	$attachs = HandlePostAttachments(0, false);
+	
 	if($_POST['poll'])
 	{
 		$options = array();
@@ -106,6 +116,8 @@ if(isset($_POST['actionpreview']))
 	if($_POST['nopl']) $previewPost['options'] |= 1;
 	if($_POST['nosm']) $previewPost['options'] |= 2;
 	$previewPost['mood'] = (int)$_POST['mood'];
+	$previewPost['has_attachments'] = !empty($attachs);
+	$previewPost['preview_attachs'] = $attachs;
 
 	foreach($loguser as $key => $value)
 		$previewPost['u_'.$key] = $value;
@@ -231,6 +243,9 @@ else if(isset($_POST['actionpost']))
 		$rFora = Query("update {forums} set numthreads=numthreads+1, numposts=numposts+1, lastpostdate={0}, lastpostuser={1}, lastpostid={2} where id={3} limit 1", time(), $loguserid, $pid, $fid);
 
 		Query("update {threads} set date={2}, firstpostid={0}, lastpostid = {0} where id = {1}", $pid, $tid, time());
+		
+		$attachs = HandlePostAttachments($pid, true);
+		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", !empty($attachs), $pid);
 
 		Report("New ".($_POST['poll'] ? "poll" : "thread")." by [b]".$loguser['name']."[/]: [b]".$_POST['title']."[/] (".$forum['title'].") -> [g]#HERE#?tid=".$tid, $isHidden);
 
@@ -242,6 +257,8 @@ else if(isset($_POST['actionpost']))
 
 		die(header("Location: ".actionLink("thread", $tid)));
 	}
+	else
+		$attachs = HandlePostAttachments(0, false);
 }
 
 // Let the user try again.
@@ -386,9 +403,11 @@ $fields = array(
 echo "
 	<script src=\"".resourceLink("js/threadtagging.js")."\"></script>
 	<script src=\"".resourceLink('js/polleditor.js')."\"></script>
-	<form name=\"postform\" action=\"".actionLink("newthread", $fid)."\" method=\"post\">";
+	<form name=\"postform\" action=\"".actionLink("newthread", $fid)."\" method=\"post\" enctype=\"multipart/form-data\">";
 					
 RenderTemplate('form_newthread', array('fields' => $fields, 'pollMode' => (int)$_POST['poll']));
+
+PostAttachForm($attachs);
 
 echo "
 		<input type=\"hidden\" name=\"poll\" id=\"pollModeVal\" value=\"".((int)$_POST['poll'])."\">

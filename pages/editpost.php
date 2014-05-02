@@ -2,6 +2,8 @@
 //  AcmlmBoard XD - Post editing page
 //  Access: users
 
+require('lib/upload.php');
+
 $title = __("Edit post");
 
 if(!$loguserid)
@@ -97,8 +99,26 @@ MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?
 
 LoadPostToolbar();
 
-if(isset($_POST['actionpreview']))
+$attachs = array();
+if ($post['has_attachments'])
 {
+	$res = Query("SELECT id,filename 
+		FROM {uploadedfiles}
+		WHERE parenttype={0} AND parentid={1} AND deldate=0
+		ORDER BY filename",
+		'post_attachment', $pid);
+	while ($a = Fetch($res))
+		$attachs[$a['id']] = $a['filename'];
+}
+
+if (isset($_POST['saveuploads']))
+{
+	$attachs = HandlePostAttachments(0, false);
+}
+else if(isset($_POST['actionpreview']))
+{
+	$attachs = HandlePostAttachments(0, false);
+	
 	$previewPost['text'] = $_POST['text'];
 	$previewPost['num'] = $post['num'];
 	$previewPost['id'] = 0;
@@ -106,6 +126,9 @@ if(isset($_POST['actionpreview']))
 	if($_POST['nopl']) $previewPost['options'] |= 1;
 	if($_POST['nosm']) $previewPost['options'] |= 2;
 	$previewPost['mood'] = (int)$_POST['mood'];
+	$previewPost['has_attachments'] = !empty($attachs);
+	$previewPost['preview_attachs'] = $attachs;
+	
 	foreach($user as $key => $value)
 		$previewPost['u_'.$key] = $value;
 	MakePost($previewPost, POST_SAMPLE);
@@ -152,12 +175,17 @@ else if(isset($_POST['actionpost']))
 		else
 			Query("update {posts} set options={0}, mood={1} where id={2} limit 1",
 							$options, (int)$_POST['mood'], $pid);
+							
+		$attachs = HandlePostAttachments($pid, true);
+		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", !empty($attachs), $pid);
 
 		Report("Post edited by [b]".$loguser['name']."[/] in [b]".$thread['title']."[/] (".$forum['title'].") -> [g]#HERE#?pid=".$pid, $isHidden);
 		$bucket = 'editpost'; include("lib/pluginloader.php");
 
 		die(header("Location: ".actionLink("post", $pid)));
 	}
+	else
+		$attachs = HandlePostAttachments(0, false);
 }
 
 if(isset($_POST['actionpreview']) || isset($_POST['actionpost']))
@@ -193,9 +221,11 @@ $fields = array(
 );
 
 echo "
-	<form name=\"postform\" action=\"".actionLink("editpost", $pid)."\" method=\"post\">";
+	<form name=\"postform\" action=\"".actionLink("editpost", $pid)."\" method=\"post\" enctype=\"multipart/form-data\">";
 
 RenderTemplate('form_editpost', array('fields' => $fields));
+
+PostAttachForm($attachs);
 
 echo "
 		<input type=\"hidden\" name=\"key\" value=\"{$loguser['token']}\">

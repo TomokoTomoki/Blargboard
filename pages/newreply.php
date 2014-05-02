@@ -2,6 +2,8 @@
 //  AcmlmBoard XD - Reply submission/preview page
 //  Access: users
 
+require('lib/upload.php');
+
 $title = __("New reply");
 
 if(!$loguserid) //Not logged in?
@@ -54,8 +56,16 @@ if(!$thread['sticky'] && Settings::get("oldThreadThreshold") > 0 && $thread['las
 	Alert(__("You are about to bump an old thread. This is usually a very bad idea. Please think about what you are about to do before you press the Post button."));
 
 
-if(isset($_POST['actionpreview']))
+$attachs = array();
+
+if (isset($_POST['saveuploads']))
 {
+	$attachs = HandlePostAttachments(0, false);
+}
+else if(isset($_POST['actionpreview']))
+{
+	$attachs = HandlePostAttachments(0, false);
+	
 	$previewPost['text'] = $_POST["text"];
 	$previewPost['num'] = $loguser['posts']+1;
 	$previewPost['posts'] = $loguser['posts']+1;
@@ -64,6 +74,9 @@ if(isset($_POST['actionpreview']))
 	if($_POST['nopl']) $previewPost['options'] |= 1;
 	if($_POST['nosm']) $previewPost['options'] |= 2;
 	$previewPost['mood'] = (int)$_POST['mood'];
+	$previewPost['has_attachments'] = !empty($attachs);
+	$previewPost['preview_attachs'] = $attachs;
+	
 	foreach($loguser as $key => $value)
 		$previewPost['u_'.$key] = $value;
 		
@@ -92,10 +105,11 @@ else if(isset($_POST['actionpost']))
 		if($lastPost < Settings::get("floodProtectionInterval"))
 		{
 			//Check for last post the user posted.
-			$lastPost = Fetch(Query("SELECT * FROM {posts} WHERE user={0} ORDER BY date DESC LIMIT 1", $loguserid));
+			$lastPost = Fetch(Query("SELECT p.id,p.thread,pt.text FROM {posts} p LEFT JOIN {posts_text} pt ON pt.pid=p.id AND pt.revision=p.currentrevision 
+				WHERE p.user={0} ORDER BY p.date DESC LIMIT 1", $loguserid));
 
 			//If it looks similar to this one, assume the user has double-clicked the button.
-			if($lastPost['thread'] == $tid)
+			if($lastPost['thread'] == $tid && $lastPost['text'] == $_POST['text'])
 			{
 				$pid = $lastPost['id'];
 				die(header("Location: ".actionLink("thread", 0, "pid=".$pid."#".$pid)));
@@ -162,6 +176,9 @@ else if(isset($_POST['actionpost']))
 
 		$rThreads = Query("update {threads} set lastposter={0}, lastpostdate={1}, replies=replies+1, lastpostid={2}".$mod." where id={3} limit 1",
 			$loguserid, $now, $pid, $tid);
+			
+		$attachs = HandlePostAttachments($pid, true);
+		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", !empty($attachs), $pid);
 
 		Report("New reply by [b]".$loguser['name']."[/] in [b]".$thread['title']."[/] (".$forum['title'].") -> [g]#HERE#?pid=".$pid, $isHidden);
 
@@ -169,6 +186,8 @@ else if(isset($_POST['actionpost']))
 
 		die(header("Location: ".actionLink("post", $pid)));
 	}
+	else
+		$attachs = HandlePostAttachments(0, false);
 }
 
 $prefill = htmlspecialchars($_POST['text']);
@@ -257,10 +276,12 @@ $fields = array(
 );
 
 echo "
-	<form name=\"postform\" action=\"".actionLink("newreply", $tid)."\" method=\"post\">
+	<form name=\"postform\" action=\"".actionLink("newreply", $tid)."\" method=\"post\" enctype=\"multipart/form-data\">
 		<input type=\"hidden\" name=\"ninja\" value=\"$ninja\">";
 					
 RenderTemplate('form_newreply', array('fields' => $fields));
+
+PostAttachForm($attachs);
 
 echo "
 		</form>

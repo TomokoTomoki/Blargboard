@@ -109,19 +109,52 @@ function makePostText($post, $poster)
 	$attachblock = '';
 	if ($post['has_attachments'])
 	{
-		$attachs = Query("SELECT id,filename,physicalname,description,downloads 
-			FROM {uploadedfiles}
-			WHERE parenttype={0} AND parentid={1} AND deldate=0",
-			'post_attachment', $post['id']);
+		if (isset($post['preview_attachs']))
+		{
+			$ispreview = true;
+			$fileids = array_keys($post['preview_attachs']);
+			$attachs = Query("SELECT id,filename,physicalname,description,downloads 
+				FROM {uploadedfiles}
+				WHERE id IN ({0c})",
+				$fileids);
+		}
+		else
+		{
+			$ispreview = false;
+			$attachs = Query("SELECT id,filename,physicalname,description,downloads 
+				FROM {uploadedfiles}
+				WHERE parenttype={0} AND parentid={1} AND deldate=0
+				ORDER BY filename",
+				'post_attachment', $post['id']);
+		}
+		
 		while ($attach = Fetch($attachs))
 		{
-			$link = '<a href="'.$boardroot.'get.php?id='.htmlspecialchars($attach['id']).'">'.htmlspecialchars($attach['filename']).'</a>';
+			$url = $boardroot.'get.php?id='.htmlspecialchars($attach['id']);
+			$linkurl = $ispreview ? '#' : $url;
 			$filesize = filesize($dataDir.'uploads/'.$attach['physicalname']);
 			
 			$attachblock .= '<br><div class="post_attachment">';
-			$attachblock .= '<strong>'.__('Attachment: ').$link.'</strong><br>';
-			$attachblock .= '<div class="smallFonts">'.htmlspecialchars($attach['description']).'<br>';
-			$attachblock .= BytesToSize($filesize).__(' &mdash; Downloaded ').Plural($attach['downloads'], 'time').'</div>';
+			
+			$fext = substr($attach['filename'], -4);
+			if ($fext == '.png' || $fext == '.jpg' || $fext == 'jpeg' || $fext == '.gif')
+			{
+				$alt = htmlspecialchars($attach['filename']).' &mdash; '.BytesToSize($filesize).', viewed '.Plural($attach['downloads'], 'time');
+				
+				$attachblock .= '<a href="'.$linkurl.'"><img src="'.$url.'" alt="'.$alt.'" title="'.$alt.'" style="max-width:300px; max-height:300px;"></a>';
+			}
+			else
+			{
+				$link = '<a href="'.$linkurl.'">'.htmlspecialchars($attach['filename']).'</a>';
+				
+				$desc = htmlspecialchars($attach['description']);
+				if ($desc) $desc .= '<br>';
+				
+				$attachblock .= '<strong>'.__('Attachment: ').$link.'</strong><br>';
+				$attachblock .= '<div class="smallFonts">'.$desc;
+				$attachblock .= BytesToSize($filesize).__(' &mdash; Downloaded ').Plural($attach['downloads'], 'time').'</div>';
+			}
+			
 			$attachblock .= '</div>';
 		}
 	}

@@ -105,6 +105,12 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 			"name" => "Post layout type",
 			'category' => 'Functionality'
 		),
+		"postAttach" => array (
+			"type" => "boolean",
+			"default" => "0",
+			"name" => "Allow post attachments",
+			'category' => 'Functionality'
+		),
 		"customTitleThreshold" => array (
 			"type" => "integer",
 			"default" => "100",
