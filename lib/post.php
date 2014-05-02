@@ -136,7 +136,7 @@ function makePostText($post, $poster)
 			
 			$attachblock .= '<br><div class="post_attachment">';
 			
-			$fext = substr($attach['filename'], -4);
+			$fext = strtolower(substr($attach['filename'], -4));
 			if ($fext == '.png' || $fext == '.jpg' || $fext == 'jpeg' || $fext == '.gif')
 			{
 				$alt = htmlspecialchars($attach['filename']).' &mdash; '.BytesToSize($filesize).', viewed '.Plural($attach['downloads'], 'time');
