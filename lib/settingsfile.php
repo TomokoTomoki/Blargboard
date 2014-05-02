@@ -122,10 +122,17 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 			"name" => "Enable AJAX",
 			'category' => 'Functionality'
 		),
+		"ownerEmail" => array (
+			"type" => "text",
+			"default" => "",
+			"name" => "Owner email address",
+			"help" => "This email address will be shown to IP-banned users and on other occasions.",
+			'category' => 'Functionality'
+		),
 		"mailResetSender" => array (
 			"type" => "text",
 			"default" => "",
-			"name" => "Password Reset e-mail sender",
+			"name" => "Password Reset email sender",
 			"help" => "Email address used to send the pasword reset e-mails. If left blank, the password reset feature is disabled.",
 			'category' => 'Functionality'
 		),

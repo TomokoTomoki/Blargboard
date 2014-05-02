@@ -163,10 +163,10 @@ if (isset($_REQUEST['action']) && isset($_POST['key']))
 			
 			// L/R tree shiz
 			$l = FetchResult("SELECT MAX(r) FROM {forums} WHERE catid={0} AND (forder<{1} OR (forder={1} AND id<{2}))", $category, $forder, $newID);
-			if (!$l)
+			if (!$l || $l == -1)
 			{
 				if ($category >= 0)
-					$l = FetchResult("SELECT MAX(r) FROM {forums}");
+					$l = 0;
 				else
 					$l = FetchResult("SELECT l FROM {forums} WHERE id={0}", -$category);
 			}

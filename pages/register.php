@@ -12,8 +12,6 @@ $sexes = array(__("Male"), __("Female"), __("N/A"));
 
 if($_POST['register'])
 {
-	$hostname = gethostbyaddr($_SERVER['REMOTE_ADDR']);
-	
 	$iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
 	$iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
 	$kuridata = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, md5($kurikey, true), base64_decode($_POST['kuridata']), MCRYPT_MODE_ECB, $iv);
@@ -33,10 +31,19 @@ if($_POST['register'])
 	if ($kurichallenge[1] != $kuridata[1]) Kill('Hack attempt detected');
 	
 	$ngoombas = intval($kurichallenge[2]);
-	if ($ngoombas != (int)$_POST['kurichallenge'])
+	
+	if ($check < (time()-300))
+		$err = __('The token has expired. Reload the page and try again.');
+	else if ($ngoombas != (int)$_POST['kurichallenge'])
 		$err = __('You failed the challenge. Look harder.');
-	else if ($_SERVER['HTTP_X_FORWARDED_FOR'] || stristr($hostname, 'proxy')!==FALSE || stristr($hostname, 'tor')!==FALSE)
-		$err = __('Registrations from proxies are not allowed.');
+	else if (IsProxy())
+	{
+		$adminemail = Settings::get('ownerEmail');
+		if ($adminemail) $halp = '<br><br>If you aren\'t using a proxy, contact the board owner at: '.$adminemail;
+		else $halp = '';
+		
+		$err = __('Registrations from proxies are not allowed. Turn off your proxy and try again.'.$halp);
+	}
 	else
 	{
 		$name = $_POST['name'];
@@ -142,7 +149,7 @@ else
 
 $kuriseed = crc32($kurikey.microtime());
 srand($kuriseed);
-$check = rand();
+$check = time();
 $kurichallenge = "{$kuriseed}|{$check}|".rand(3,12);
 
 $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_ECB);
@@ -171,7 +178,7 @@ echo "<form action=\"".actionLink("register")."\" method=\"post\">";
 
 RenderTemplate('form_register', array('fields' => $fields));
 
-echo "<span style=\"display : none;\"><input type=\"checkbox\" name=\"likesCake\" /> I am a robot</span></form>";
+echo "<span style=\"display : none;\"><input type=\"checkbox\" name=\"likesCake\"> I am a robot</span></form>";
 
 
 function MakeOptions($fieldName, $checkedIndex, $choicesList)
@@ -180,9 +187,30 @@ function MakeOptions($fieldName, $checkedIndex, $choicesList)
 	foreach($choicesList as $key=>$val)
 		$result .= format("
 					<label>
-						<input type=\"radio\" name=\"{1}\" value=\"{0}\"{2} />
+						<input type=\"radio\" name=\"{1}\" value=\"{0}\"{2}>
 						{3}
 					</label>", $key, $fieldName, $checks[$key], $val);
 	return $result;
 }
+
+function IsProxy()
+{
+	if ($_SERVER['HTTP_X_FORWARDED_FOR'] && $_SERVER['HTTP_X_FORWARDED_FOR'] != $_SERVER['REMOTE_ADDR'])
+		return true;
+		
+	$page = curl_init('http://www.stopforumspam.com/api?ip='.$_SERVER['REMOTE_ADDR']);
+	curl_setopt($page, CURLOPT_TIMEOUT, 10);
+	curl_setopt($page, CURLOPT_CONNECTTIMEOUT, 10);
+	curl_setopt($page, CURLOPT_RETURNTRANSFER, TRUE);
+	curl_setopt($page, CURLOPT_USERAGENT, 'Blargboard');
+		
+	$result = curl_exec($page);
+	curl_close($page);
+
+	if (stripos($result, '<appears>yes</appears>') !== FALSE)
+		return true;
+		
+	return false;
+}
+
 ?>
