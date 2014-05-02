@@ -112,10 +112,11 @@ How to add groups: add to the usergroups table via PMA
 How to add/remove secondary groups to someone: add to/remove from the secondarygroups table via PMA (or use ?page=secgroups for adding)
  * userid: the user's ID
  * groupid: the group's ID. Do not use the ID of a primary group!
+ 
 WARNING: when banning someone, make sure that the secondary groups' permissions won't override the banned group's permissions. If that happens, you'll need to delete the secondarygroups assignments for the user.
 
 
-How to <insert action>: first look into your board's admin panel, settings panel, etc... then if you still can't find, ask us. But please don't be a noob and ask us about every little thing.
+How to (insert action): first look into your board's admin panel, settings panel, etc... then if you still can't find, ask us. But please don't be a noob and ask us about every little thing.
 
 -------------------------------------------------------------------------------
 
