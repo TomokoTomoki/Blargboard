@@ -178,7 +178,7 @@ else if(isset($_POST['actionpost']))
 			$loguserid, $now, $pid, $tid);
 			
 		$attachs = HandlePostAttachments($pid, true);
-		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", !empty($attachs), $pid);
+		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", (!empty($attachs))?1:0, $pid);
 
 		Report("New reply by [b]".$loguser['name']."[/] in [b]".$thread['title']."[/] (".$forum['title'].") -> [g]#HERE#?pid=".$pid, $isHidden);
 

@@ -245,7 +245,7 @@ else if(isset($_POST['actionpost']))
 		Query("update {threads} set date={2}, firstpostid={0}, lastpostid = {0} where id = {1}", $pid, $tid, time());
 		
 		$attachs = HandlePostAttachments($pid, true);
-		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", !empty($attachs), $pid);
+		Query("UPDATE {posts} SET has_attachments={0} WHERE id={1}", (!empty($attachs))?1:0, $pid);
 
 		Report("New ".($_POST['poll'] ? "poll" : "thread")." by [b]".$loguser['name']."[/]: [b]".$_POST['title']."[/] (".$forum['title'].") -> [g]#HERE#?tid=".$tid, $isHidden);
 
