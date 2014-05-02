@@ -64,6 +64,7 @@ $HTMLTagList = array
 	'u'			=>	TAG_GOOD,
 	'ul'		=>	TAG_GOOD,
 	'link'		=>	TAG_GOOD | TAG_BLOCK | TAG_SELFCLOSING,
+	'wbr' 		=>	TAG_GOOD | TAG_SELFCLOSING,
 	
 	'audio'		=>	TAG_GOOD,
 );
@@ -126,7 +127,13 @@ function filterTag($tag, $attribs, $contents, $close)
 
 function filterText($s, $parentTag, $parentMask)
 {
+	global $mobileLayout;
+	
 	if ($parentMask & TAG_RAWCONTENTS) return $s;
+	
+	$limit = $mobileLayout ? 30 : 100;
+	$s = preg_replace('@\S{'.$limit.'}@', '$0<wbr>', $s);
+	
 	$s = nl2br($s);
 	$s = postDoReplaceText($s, $parentTag, $parentMask);
 	return $s;
