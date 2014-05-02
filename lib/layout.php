@@ -420,7 +420,7 @@ function makeThreadListing($threads, $pagelinks, $dostickies = true, $showforum 
 			//This is a hack, but given how icons are stored in the DB, I can do nothing about it without breaking DB compatibility.
 			if(startsWith($thread['icon'], "img/"))
 				$thread['icon'] = resourceLink($thread['icon']);
-			$tdata['icon'] = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\">";
+			$tdata['icon'] = "<img src=\"".htmlspecialchars($thread['icon'])."\" alt=\"\" class=\"smiley\" style=\"max-width:32px; max-height:32px;\">";
 		}
 		else
 			$tdata['icon'] = '';
