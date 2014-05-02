@@ -89,7 +89,7 @@ else if(isset($_POST['actionpost']))
 	//Now check if the post is acceptable.
 	$rejected = false;
 
-	if(!$_POST['text'])
+	if(!trim($_POST['text']))
 	{
 		Alert(__("Enter a message and try again."), __("Your post is empty."));
 		$rejected = true;
