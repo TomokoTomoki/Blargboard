@@ -161,6 +161,7 @@ function bbcodeQuoteGeneric($contents, $arg, $text)
 	}
 	else
 	{
+		if ($arg[0] == '"') $arg = substr($arg,1,-1);
 		$who = htmlspecialchars($arg);
 		return "<div class='quote'><div class='quoteheader'>$text $who</div><div class='quotecontent'>$contents</div></div>";
 	}

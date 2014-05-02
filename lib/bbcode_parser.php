@@ -11,8 +11,9 @@ define('TAG_GOOD', 			0x0001);	// valid tag
 define('TAG_BLOCK', 		0x0002);	// block tag (subject to newline removal after start/end tags)
 define('TAG_SELFCLOSING',	0x0004);	// self-closing (br, img, ...)
 define('TAG_CLOSEOPTIONAL',	0x0008);	// closing tag optional (tr, td, li, p, ...)
-define('TAG_RAWCONTENTS',	0x0010);	// tag whose contents shouldn't be parsed (<style>, [code], etc)
+define('TAG_RAWCONTENTS',	0x0010);	// tag whose contents shouldn't be parsed (<style>)
 define('TAG_NOAUTOLINK',	0x0020);	// prevent autolinking 
+define('TAG_NOFORMAT',		0x0040);	// no formatting (code, pre, etc)
 
 $HTMLTagList = array
 (
@@ -45,7 +46,7 @@ $HTMLTagList = array
 	'nobr'		=>	TAG_GOOD,
 	'ol'		=>	TAG_GOOD,
 	'p'			=>	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
-	'pre'		=>	TAG_GOOD | TAG_RAWCONTENTS,
+	'pre'		=>	TAG_GOOD | TAG_BLOCK,
 	's'			=>	TAG_GOOD,
 	'small'		=>	TAG_GOOD,
 	'span'		=>	TAG_GOOD,
@@ -88,7 +89,7 @@ $BBCodeTagList = array
 	'reply'		=>	TAG_GOOD | TAG_BLOCK,
 	
 	'spoiler' 	=>	TAG_GOOD | TAG_BLOCK,
-	'code'		=>	TAG_GOOD | TAG_BLOCK | TAG_RAWCONTENTS,
+	'code'		=>	TAG_GOOD | TAG_BLOCK | TAG_NOFORMAT,
 	
 	'table'		=> 	TAG_GOOD | TAG_BLOCK,
 	'tr'		=> 	TAG_GOOD | TAG_BLOCK | TAG_CLOSEOPTIONAL,
@@ -134,6 +135,8 @@ function filterText($s, $parentTag, $parentMask)
 	$limit = $mobileLayout ? 30 : 100;
 	$s = preg_replace('@\S{'.$limit.'}@', '$0<wbr>', $s);
 	
+	if ($parentMask & TAG_NOFORMAT) return $s;
+	
 	$s = nl2br($s);
 	$s = postDoReplaceText($s, $parentTag, $parentMask);
 	return $s;
@@ -166,7 +169,7 @@ function parseBBCode($text)
 			
 			// raw contents tags (<style> & co)
 			// continue outputting RAW content until we meet a matching closing tag
-			if (($currentmask & TAG_RAWCONTENTS) && (!$isclosing || $currenttag != $cur[0].$tagname))
+			if (($currentmask & (TAG_RAWCONTENTS|TAG_NOFORMAT)) && (!$isclosing || $currenttag != $cur[0].$tagname))
 			{
 				$outputstack[$si]['contents'] .= $cur;
 				continue;
