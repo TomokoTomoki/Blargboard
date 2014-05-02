@@ -153,6 +153,7 @@ function makePost($post, $type, $params=array())
 	$post['userlink'] = UserLink($poster);
 	
 	LoadBlockLayouts();
+	$pltype = Settings::get('postLayoutType');
 	$isBlocked = $poster['globalblock'] || $loguser['blocklayouts'] || $post['options'] & 1 || isset($blocklayouts[$poster['id']]);
 	
 	$post['type'] = $type;
@@ -216,7 +217,7 @@ function makePost($post, $type, $params=array())
 					{
 						if ($post['id'] != $post['firstpostid'])
 						{
-							$link = actionLink('editpost', $post['id'], 'delete=1&key='.$loguser['token']);
+							$link = htmlspecialchars(actionLink('editpost', $post['id'], 'delete=1&key='.$loguser['token']));
 							$onclick = HasPermission('mod.deleteposts', $forum) ? 
 								" onclick=\"deletePost(this);return false;\"" : ' onclick="if(!confirm(\'Really delete this post?\'))return false;"';
 							$links['delete'] = "<a href=\"{$link}\"{$onclick}>".__('Delete')."</a>";
@@ -321,11 +322,11 @@ function makePost($post, $type, $params=array())
 	
 	if(!$isBlocked)
 	{
-		$poster['postheader'] = trim($poster['postheader']);
+		$poster['postheader'] = $pltype ? trim($poster['postheader']) : '';
 		$poster['signature'] = trim($poster['signature']);
 		
 		$post['haslayout'] = $poster['postheader']?1:0;
-		$post['fulllayout'] = $poster['fulllayout'] && $post['haslayout'];
+		$post['fulllayout'] = $poster['fulllayout'] && $post['haslayout'] && ($pltype==2);
 		
 		if (!$post['haslayout'] && $poster['signature'])
 			$poster['signature'] = '<div class="signature">'.$poster['signature'].'</div>';

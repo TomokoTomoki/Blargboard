@@ -98,6 +98,13 @@ Well, what more could you [url=http://en.wikipedia.org]want to know[/url]? Perha
 		),
 		
 		
+		"postLayoutType" => array (
+			"type" => "options",
+			"options" => array('0' => 'Signature', '1' => 'Post header + signature', '2' => 'Post header + signature + sidebars'),
+			"default" => '2',
+			"name" => "Post layout type",
+			'category' => 'Functionality'
+		),
 		"customTitleThreshold" => array (
 			"type" => "integer",
 			"default" => "100",

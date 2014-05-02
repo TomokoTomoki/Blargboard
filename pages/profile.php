@@ -65,12 +65,23 @@ if($loguserid && $_REQUEST['token'] == $loguser['token'])
 
 if($loguserid)
 {
+	if (Settings::get('postLayoutType'))
+	{
+		$blocktext = __('Block layout');
+		$unblocktext = __('Unblock layout');
+	}
+	else
+	{
+		$blocktext = __('Block signature');
+		$unblocktext = __('Unblock signature');
+	}
+	
 	$rBlock = Query("select * from {blockedlayouts} where user={0} and blockee={1}", $id, $loguserid);
 	$isBlocked = NumRows($rBlock);
 	if($isBlocked)
-		$blockLayoutLink = actionLinkTag(__("Unblock layout"), "profile", $id, "block=0&token={$loguser['token']}");
+		$blockLayoutLink = actionLinkTag($unblocktext, "profile", $id, "block=0&token={$loguser['token']}");
 	else
-		$blockLayoutLink = actionLinkTag(__("Block layout"), "profile", $id, "block=1&token={$loguser['token']}");
+		$blockLayoutLink = actionLinkTag($blocktext, "profile", $id, "block=1&token={$loguser['token']}");
 }
 
 $daysKnown = (time()-$user['regdate'])/86400;

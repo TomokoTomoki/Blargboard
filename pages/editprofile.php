@@ -60,7 +60,7 @@ while ($g = Fetch($r))
 	$groups[$g['id']] = htmlspecialchars($g['title']);
 	
 
-// {$array.{$key}}
+$pltype = Settings::get('postLayoutType');
 	
 $epPages = array();
 $epCategories = array();
@@ -101,7 +101,8 @@ AddField('general', 'presentation', 'fontsize', __('Font scale'), 'number', arra
 
 AddCategory('general', 'options', __('Options'));
 
-AddField('general', 'options', 'blocklayouts', __('Block all layouts'), 'checkbox');
+$blockall = $pltype ? __('Hide post layouts') : __('Hide signatures');
+AddField('general', 'options', 'blocklayouts', $blockall, 'checkbox');
 
 
 // EDITPROFILE TAB -- PERSONAL ------------------------------------------------
@@ -174,17 +175,20 @@ if ($editUserMode)
 // EDITPROFILE TAB -- LAYOUT --------------------------------------------------
 if ($editUserMode || HasPermission('user.editpostlayout'))
 {
-	AddPage('layout', __('Post layout'));
+	$pltext = $pltype ? __('Post layout') : __('Signature');
+	AddPage('layout', $pltext);
 	
-	AddCategory('layout', 'postlayout', __('Post layout'));
+	AddCategory('layout', 'postlayout', $pltext);
 	
-	AddField('layout', 'postlayout', 'postheader', __('Post header'), 'textarea', array('rows'=>16));
+	if ($pltype) 
+		AddField('layout', 'postlayout', 'postheader', __('Post header'), 'textarea', array('rows'=>16));
 	AddField('layout', 'postlayout', 'signature', __('Signature'), 'textarea', array('rows'=>16));
 	
 	AddField('layout', 'postlayout', 'signsep', __('Show signature separator'), 'checkbox', array('negative'=>true));
 	
-	// TODO make a permission for this one?
-	AddField('layout', 'postlayout', 'fulllayout', __('Apply layout to whole post box'), 'checkbox');
+	// TODO make a per-user permission for this one?
+	if ($pltype == 2) 
+		AddField('layout', 'postlayout', 'fulllayout', __('Apply layout to whole post box'), 'checkbox');
 }
 
 
