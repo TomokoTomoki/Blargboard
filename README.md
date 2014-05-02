@@ -98,10 +98,24 @@ accordingly.
 http://board.example/?page=makelr -> regenerates the L/R tree used for forum listings and such.
 Use if some of your forums are showing up in wrong places.
 
-http://board.example/?page=editperms&gid=X -> edit permissions for group ID X. (do not edit 
-permissions for group #1 (localmod)-- it will not work right due to a yet unfixed bug)
+http://board.example/?page=editperms&gid=X -> edit permissions for group ID X.
 
 http://board.example/?page=secgroups -> assign secondary groups to a user.
+
+
+How to add groups: add to the usergroups table via PMA
+ * type: 0 for primary groups, 1 for secondary
+ * display: 0 for normal group, 1 for group listed as staff, -1 for hidden group
+ * rank: a user may not mess with users of higher ranks no matter his permissions
+
+ 
+How to add/remove secondary groups to someone: add to/remove from the secondarygroups table via PMA (or use ?page=secgroups for adding)
+ * userid: the user's ID
+ * groupid: the group's ID. Do not use the ID of a primary group!
+WARNING: when banning someone, make sure that the secondary groups' permissions won't override the banned group's permissions. If that happens, you'll need to delete the secondarygroups assignments for the user.
+
+
+How to <insert action>: first look into your board's admin panel, settings panel, etc... then if you still can't find, ask us. But please don't be a noob and ask us about every little thing.
 
 -------------------------------------------------------------------------------
 
@@ -121,8 +135,7 @@ YOU WILL NOT RECEIVE HELP IF YOU HAVEN'T READ THE INSTRUCTIONS WHEN INSTALLING Y
 
  * finish implementing templates
  * improve the permission editing interfaces
- * port the 'show/hide sidebar' feature from Kuribo64? or just nuke the sidebar?
- * allow plugins to add/override templates
+ * port the 'show/hide sidebar' feature from Kuribo64? or just nuke the sidebar? more leaning towards the latter.
  * merge/split threads a la phpBB (albeit without the shitty interface)
  * support multiple password hashing methods? (for importing from other board softwares, or for those who feel SHA256 with per-user salt isn't enough) (kinda addressed via login plugins)
  * more TODO at Kuribo64 and RVLution
