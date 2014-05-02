@@ -147,7 +147,7 @@ AddField('account', 'login', 'password', __('Password'), 'password', array('call
 
 AddCategory('account', 'email', __('Email information'));
 
-AddField('account', 'email', 'email', __('Email address'), 'text', array('width'=>24, 'length'=>60));
+AddField('account', 'email', 'email', __('Email address'), 'email', array('width'=>24, 'length'=>60));
 AddField('account', 'email', 'showemail', __('Make email address public'), 'checkbox');
 
 
@@ -765,6 +765,7 @@ foreach ($epFields as $catid => $cfields)
 				break;
 				
 			case "text":
+			case "email":
 				$output .= "<input id=\"".$field."\" name=\"".$field."\" type=\"".$item['type']."\" value=\"".htmlspecialchars($item['value'])."\"";
 				if(isset($item['width']))
 					$output .= " size=\"".$item['width']."\"";
