@@ -70,8 +70,6 @@ if ($loguser['flags'] & 0x2)
 
 if (!$fakeerror)
 {
-	$boardcwd = getcwd();
-	
 	try {
 		try {
 			if(array_key_exists($page, $pluginpages))
@@ -96,7 +94,7 @@ if (!$fakeerror)
 		}
 		catch(Exception $e)
 		{
-			chdir($boardcwd);
+			chdir(BOARD_CWD);
 			if ($e->getMessage() != 404)
 			{
 				throw $e;
@@ -109,7 +107,7 @@ if (!$fakeerror)
 		// Nothing. Just ignore this exception.
 	}
 	
-	chdir($boardcwd);
+	chdir(BOARD_CWD);
 }
 
 if($ajaxPage)

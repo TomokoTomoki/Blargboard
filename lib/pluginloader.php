@@ -19,7 +19,7 @@ if (isset($pluginbuckets[$bucket]))
 			chdir('plugins/'.$self['dir']);
 			include($bucket.".php");
 			unset($self);
-			chdir($boardcwd);
+			chdir(BOARD_CWD);
 		}
 	}
 }

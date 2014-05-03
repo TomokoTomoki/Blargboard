@@ -12,6 +12,7 @@ if(!is_file('config/database.php'))
 
 
 $boardroot = preg_replace('{/[^/]*$}', '/', $_SERVER['SCRIPT_NAME']);
+define('BOARD_CWD', getcwd());
 
 $dataDir = 'data/';
 $dataUrl = $boardroot.$dataDir;

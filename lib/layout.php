@@ -168,7 +168,7 @@ function makeCrumbs($path, $links='')
 	{
 		$pathPrefix = array(actionLink(0) => Settings::get("breadcrumbsMainName"));
 
-		$bucket = "breadcrumbs"; include("lib/pluginloader.php");
+		$bucket = "breadcrumbs"; include(BOARD_CWD."/lib/pluginloader.php");
 
 		$path = $pathPrefix + $path;
 	}
