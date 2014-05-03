@@ -35,7 +35,7 @@ function RenderTemplate($template, $options=null)
 	if ($options)
 		$tpl->assign($options);
 	
-	$tpl->display($tplname);
+	$tpl->display(BOARD_CWD.'/'.$tplname);
 }
 
 
