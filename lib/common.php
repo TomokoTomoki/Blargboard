@@ -104,5 +104,5 @@ $tpl->assign('config', array('date' => $loguser['dateformat'], 'time' => $loguse
 $tpl->assign('loguserid', $loguserid);
 
 $mainPage = "board";
-$bucket = "init"; include('lib/pluginloader.php');
+$bucket = "init"; include(BOARD_CWD."/lib/pluginloader.php");
 

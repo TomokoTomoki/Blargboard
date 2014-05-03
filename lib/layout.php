@@ -236,7 +236,7 @@ function makeForumListing($parent, $board='')
 	while($forum = Fetch($rFora))
 	{
 		$skipThisOne = false;
-		$bucket = "forumListMangler"; include("./lib/pluginloader.php");
+		$bucket = "forumListMangler"; include(BOARD_CWD."/lib/pluginloader.php");
 		if($skipThisOne)
 			continue;
 			

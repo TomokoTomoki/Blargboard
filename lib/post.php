@@ -98,7 +98,7 @@ function makePostText($post, $poster)
 		"date" => formatdate($post['date']),
 		"rank" => GetRank($poster['rankset'], $poster['posts']),
 	);
-	$bucket = "amperTags"; include("./lib/pluginloader.php");
+	$bucket = "amperTags"; include(BOARD_CWD."/lib/pluginloader.php");
 
 	if($poster['signature'])
 		if(!$poster['signsep'])
@@ -263,7 +263,7 @@ function makePost($post, $type, $params=array())
 				}
 				
 				// plugins should add to $extraLinks
-				$bucket = "topbar"; include("./lib/pluginloader.php");
+				$bucket = "topbar"; include(BOARD_CWD."/lib/pluginloader.php");
 			}
 			
 			$links['extra'] = $extraLinks;
@@ -343,7 +343,7 @@ function makePost($post, $type, $params=array())
 		$sidebar['isonline'] = __("User is <strong>online</strong>");
 	
 	$sidebarExtra = array();
-	$bucket = "sidebar"; include("./lib/pluginloader.php");
+	$bucket = "sidebar"; include(BOARD_CWD."/lib/pluginloader.php");
 	$sidebar['extra'] = $sidebarExtra;
 	
 	$post['sidebar'] = $sidebar;

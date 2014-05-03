@@ -210,7 +210,7 @@ function loadFieldLists()
 	global $fieldLists;
 
 	//Allow plugins to add their own!
-	$bucket = "fieldLists"; include('lib/pluginloader.php');
+	$bucket = "fieldLists"; include(BOARD_CWD."/lib/pluginloader.php");
 }
 
 ?>

@@ -30,7 +30,7 @@ $bbcodeCallbacks = array(
 );
 
 //Allow plugins to register their own callbacks (new bbcode tags)
-$bucket = "bbcode"; include("pluginloader.php");
+$bucket = "bbcode"; include(BOARD_CWD."/lib/pluginloader.php");
 
 function bbcodeBold($contents){
 	return "<strong>$contents</strong>";
