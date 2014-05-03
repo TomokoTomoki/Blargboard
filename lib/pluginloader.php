@@ -9,19 +9,20 @@ $oldself = $self;
 
 if (isset($pluginbuckets[$bucket]))
 {
-	$boardcwd = getcwd();
+	$oldcwd = getcwd();
 	
 	foreach ($pluginbuckets[$bucket] as $plugin)
 	{
 		if (isset($plugins[$plugin]))
 		{
 			$self = $plugins[$plugin];
-			chdir('plugins/'.$self['dir']);
+			chdir(BOARD_CWD.'/plugins/'.$self['dir']);
 			include($bucket.".php");
 			unset($self);
-			chdir(BOARD_CWD);
 		}
 	}
+	
+	chdir($oldcwd);
 }
 
 $self = $oldself;
