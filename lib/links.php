@@ -146,8 +146,6 @@ function userLink($user, $showMinipic = false, $customID = false)
 			$dorainbow = true;
 	}
 
-	$bucket = "userMangler"; include("./lib/pluginloader.php");
-
 	$fgroup = $usergroups[$user['primarygroup']];
 	$fsex = $user['sex'];
 	$fname = ($user['displayname'] ? $user['displayname'] : $user['name']);
@@ -171,7 +169,7 @@ function userLink($user, $showMinipic = false, $customID = false)
 	
 	$classing = ' style="color: '.htmlspecialchars($fgroup[$scolor]).';"';
 
-	$bucket = "userLink"; include('lib/pluginloader.php');
+	$bucket = "userLink"; include(BOARD_CWD.'/lib/pluginloader.php');
 	
 	if (!$isbanned && $luckybastards && in_array($user['id'], $luckybastards))
 	{
