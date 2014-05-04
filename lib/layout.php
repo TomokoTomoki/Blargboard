@@ -32,10 +32,15 @@ function RenderTemplate($template, $options=null)
 			$tplname = 'templates/'.$template.'.tpl';
 	}
 	
+	$oldcwd = getcwd();
+	chdir(BOARD_CWD);
+	
 	if ($options)
 		$tpl->assign($options);
 	
-	$tpl->display(BOARD_CWD.'/'.$tplname);
+	$tpl->display($tplname);
+	
+	chdir($oldcwd);
 }
 
 
