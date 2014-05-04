@@ -26,6 +26,9 @@ function cleanUpPost($postText, $poster = "", $noSmilies = false, $noBr = false)
 	$postPoster = $poster;
 
 	$s = $postText;
+	
+	$s = str_replace('<!--', '&lt;!--', $s);
+	$s = str_replace('-->', '--&gt;', $s);
 
 	$s = parseBBCode($s);
 
