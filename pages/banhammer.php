@@ -7,7 +7,7 @@ $user = Fetch(Query("SELECT u.(_userfields) FROM {users} u WHERE u.id={0}", $id)
 if (!$user)
 	Kill('Invalid user ID.');
 
-if ($usergroups[$user['u_id']]['rank'] >= $loguserGroup['rank'])
+if ($usergroups[$user['primarygroup']]['rank'] >= $loguserGroup['rank'])
 	Kill('You may not ban a user whose level is equal to or above yours.');
 
 if ($_POST['ban'])
