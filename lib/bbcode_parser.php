@@ -106,7 +106,7 @@ function filterTag($tag, $attribs, $contents, $close)
 {
 	global $HTMLTagList, $bbcodeCallbacks;
 	
-	$tagname = strtolower(substr($tag,1));
+	$tagname = substr($tag,1);
 	
 	if ($tag[0] == '<')
 	{
@@ -138,7 +138,7 @@ function filterText($s, $parentTag, $parentMask)
 	if ($parentMask & TAG_NOFORMAT) return $s;
 	
 	$s = nl2br($s);
-	$s = postDoReplaceText($s, strtolower($parentTag), $parentMask);
+	$s = postDoReplaceText($s, $parentTag, $parentMask);
 	return $s;
 }
 
@@ -159,11 +159,11 @@ function parseBBCode($text)
 	$i = 0; $nraw = count($raw);
 	while ($i < $nraw)
 	{
-		$cur = $raw[$i++];
+		$cur = strtolower($raw[$i++]);
 		if ($cur[0] == '<' || $cur[0] == '[') // we got a tag start-- find out where it ends
 		{
 			$isclosing = $cur[1] == '/';
-			$tagname = strtolower(substr($cur, ($isclosing ? 2:1)));
+			$tagname = substr($cur, ($isclosing ? 2:1));
 			$taglist = $TagLists[$cur[0]];
 			$closechar = ($cur[0] == '<') ? '>' : ']';
 			
@@ -287,7 +287,7 @@ function parseBBCode($text)
 						}
 						
 						$currenttag = $outputstack[$si]['tag'];
-						$currentmask = $TagLists[$currenttag[0]][strtolower(substr($currenttag,1))];
+						$currentmask = $TagLists[$currenttag[0]][substr($currenttag,1)];
 						
 						$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, true).filterText($followingtext, $currenttag, $currentmask);
 					}
@@ -309,7 +309,7 @@ function parseBBCode($text)
 						$ccontents = $closer['contents'];
 						$cattribs = $closer['attribs'];
 						$ctag = $closer['tag'];
-						$ctagname = strtolower(substr($ctag,1));
+						$ctagname = substr($ctag,1);
 						
 						if (!($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
 							$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
@@ -333,7 +333,7 @@ function parseBBCode($text)
 		$ccontents = $closer['contents'];
 		$cattribs = $closer['attribs'];
 		$ctag = $closer['tag'];
-		$ctagname = strtolower(substr($ctag,1));
+		$ctagname = substr($ctag,1);
 		
 		if (!($TagLists[$ctag[0]][$ctagname] & TAG_SELFCLOSING))
 			$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, false);
