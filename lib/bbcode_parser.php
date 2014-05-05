@@ -78,8 +78,8 @@ $BBCodeTagList = array
 	's'			=>	TAG_GOOD,
 	
 	'url'		=>	TAG_GOOD | TAG_NOAUTOLINK,
-	'img'		=>	TAG_GOOD | TAG_NOAUTOLINK,
-	'imgs'		=>	TAG_GOOD | TAG_NOAUTOLINK,
+	'img'		=>	TAG_GOOD | TAG_RAWCONTENTS,
+	'imgs'		=>	TAG_GOOD | TAG_RAWCONTENTS,
 	
 	'user'		=>	TAG_GOOD | TAG_SELFCLOSING,
 	'thread'	=>	TAG_GOOD | TAG_SELFCLOSING,
