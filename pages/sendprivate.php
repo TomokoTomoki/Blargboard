@@ -66,7 +66,7 @@ if($pid)
 }
 
 $uid = (int)$_GET['uid'];
-if($uid)
+if($uid && !$_POST['to'])
 {
 	$urlargs[] = 'uid='.$uid;
 	
