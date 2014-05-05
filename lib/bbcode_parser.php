@@ -159,9 +159,10 @@ function parseBBCode($text)
 	$i = 0; $nraw = count($raw);
 	while ($i < $nraw)
 	{
-		$cur = strtolower($raw[$i++]);
+		$cur = $raw[$i++];
 		if ($cur[0] == '<' || $cur[0] == '[') // we got a tag start-- find out where it ends
 		{
+			$cur = strtolower($cur);
 			$isclosing = $cur[1] == '/';
 			$tagname = substr($cur, ($isclosing ? 2:1));
 			$taglist = $TagLists[$cur[0]];
