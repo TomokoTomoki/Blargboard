@@ -198,7 +198,13 @@ function IsProxy()
 	if ($_SERVER['HTTP_X_FORWARDED_FOR'] && $_SERVER['HTTP_X_FORWARDED_FOR'] != $_SERVER['REMOTE_ADDR'])
 		return true;
 		
+	if (!function_exists('curl_init'))
+		return false;
+		
 	$page = curl_init('http://www.stopforumspam.com/api?ip='.$_SERVER['REMOTE_ADDR']);
+	if ($page === FALSE)
+		return false;
+	
 	curl_setopt($page, CURLOPT_TIMEOUT, 10);
 	curl_setopt($page, CURLOPT_CONNECTTIMEOUT, 10);
 	curl_setopt($page, CURLOPT_RETURNTRANSFER, TRUE);
