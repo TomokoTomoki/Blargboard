@@ -1,51 +1,55 @@
 <?php
 
-$bbcodeCallbacks = array(
-	"b" => "bbcodeBold",
-	"i" => "bbcodeItalics",
-	"u" => "bbcodeUnderline",
-	"s" => "bbcodeStrikethrough",
+$bbcodeCallbacks = array
+(
+	"[b" => "bbcodeBold",
+	"[i" => "bbcodeItalics",
+	"[u" => "bbcodeUnderline",
+	"[s" => "bbcodeStrikethrough",
 
-	"url" => "bbcodeURL",
-	"img" => "bbcodeImage",
-	"imgs" => "bbcodeImageScale",
+	"[url" => "bbcodeURL",
+	"[img" => "bbcodeImage",
+	"[imgs" => "bbcodeImageScale",
 
-	"user" => "bbcodeUser",
-	"thread" => "bbcodeThread",
-	"forum" => "bbcodeForum",
+	"[user" => "bbcodeUser",
+	"[thread" => "bbcodeThread",
+	"[forum" => "bbcodeForum",
 
-	"quote" => "bbcodeQuote",
-	"reply" => "bbcodeReply",
+	"[quote" => "bbcodeQuote",
+	"[reply" => "bbcodeReply",
 
-	"spoiler" => "bbcodeSpoiler",
-	"code" => "bbcodeCode",
-	"source" => "bbcodeCode",
+	"[spoiler" => "bbcodeSpoiler",
+	"[code" => "bbcodeCode",
 
-	"table" => "bbcodeTable",
-	"tr" => "bbcodeTableRow",
-	"trh" => "bbcodeTableRowHeader",
-	"td" => "bbcodeTableCell",
+	"[table" => "bbcodeTable",
+	"[tr" => "bbcodeTableRow",
+	"[trh" => "bbcodeTableRowHeader",
+	"[td" => "bbcodeTableCell",
 	
-	'youtube' => 'bbcodeYoutube',
+	'[youtube' => 'bbcodeYoutube',
 );
 
 //Allow plugins to register their own callbacks (new bbcode tags)
 $bucket = "bbcode"; include(BOARD_CWD."/lib/pluginloader.php");
 
-function bbcodeBold($contents){
+function bbcodeBold($contents, $arg, $parenttag)
+{
 	return "<strong>$contents</strong>";
 }
-function bbcodeItalics($contents){
+function bbcodeItalics($contents, $arg, $parenttag)
+{
 	return "<em>$contents</em>";
 }
-function bbcodeUnderline($contents){
+function bbcodeUnderline($contents, $arg, $parenttag)
+{
 	return "<u>$contents</u>";
 }
-function bbcodeStrikethrough($contents){
+function bbcodeStrikethrough($contents, $arg, $parenttag)
+{
 	return "<del>$contents</del>";
 }
 
-function bbcodeURL($contents, $arg)
+function bbcodeURL($contents, $arg, $parenttag)
 {
 	$dest = htmlentities($contents);
 	$title = $contents;
@@ -65,7 +69,7 @@ function bbcodeURLAuto($match)
 	return '<a href="'.htmlspecialchars($text).'">'.$match[0].'</a>';
 }
 
-function bbcodeImage($contents, $arg)
+function bbcodeImage($contents, $arg, $parenttag)
 {
 	$dest = $contents;
 	$title = "";
@@ -79,7 +83,7 @@ function bbcodeImage($contents, $arg)
 }
 
 
-function bbcodeImageScale($contents, $arg)
+function bbcodeImageScale($contents, $arg, $parenttag)
 {
 	$dest = $contents;
 	$title = "";
@@ -93,12 +97,12 @@ function bbcodeImageScale($contents, $arg)
 }
 
 
-function bbcodeUser($contents, $arg)
+function bbcodeUser($contents, $arg, $parenttag)
 {
 	return UserLinkById((int)$arg);
 }
 
-function bbcodeThread($contents, $arg)
+function bbcodeThread($contents, $arg, $parenttag)
 {
 	global $threadLinkCache, $loguser;
 	$id = (int)$arg;
@@ -116,7 +120,7 @@ function bbcodeThread($contents, $arg)
 	return $threadLinkCache[$id];
 }
 
-function bbcodeForum($contents, $arg)
+function bbcodeForum($contents, $arg, $parenttag)
 {
 	global $forumLinkCache, $loguser;
 	$id = (int)$arg;
@@ -134,12 +138,12 @@ function bbcodeForum($contents, $arg)
 	return $forumLinkCache[$id];
 }
 
-function bbcodeQuote($contents, $arg)
+function bbcodeQuote($contents, $arg, $parenttag)
 {
 	return bbcodeQuoteGeneric($contents, $arg, __("Posted by"));
 }
 
-function bbcodeReply($contents, $arg)
+function bbcodeReply($contents, $arg, $parenttag)
 {
 	return bbcodeQuoteGeneric($contents, $arg, __("Sent by"));
 }
@@ -167,7 +171,7 @@ function bbcodeQuoteGeneric($contents, $arg, $text)
 	}
 }
 
-function bbcodeSpoiler($contents, $arg)
+function bbcodeSpoiler($contents, $arg, $parenttag)
 {
 	if($arg)
 		return "<div class=\"spoiler\"><button class=\"spoilerbutton named\">".htmlspecialchars($arg)."</button><div class=\"spoiled hidden\">$contents</div></div>";
@@ -175,32 +179,27 @@ function bbcodeSpoiler($contents, $arg)
 		return "<div class=\"spoiler\"><button class=\"spoilerbutton\">Show spoiler</button><div class=\"spoiled hidden\">$contents</div></div>";
 }
 
-function bbcodeCode($contents, $arg)
+function bbcodeCode($contents, $arg, $parenttag)
 {
 	return '<div class="codeblock">'.htmlentities($contents).'</div>';
 }
 
-function bbcodeTable($contents, $arg)
+function bbcodeTable($contents, $arg, $parenttag)
 {
 	return "<table class=\"outline margin\">$contents</table>";
 }
 
-function bbcodeTableCell($contents, $arg)
+$bbcodeCellClass = 0;
+
+function bbcodeTableCell($contents, $arg, $parenttag)
 {
-	global $bbcodeIsTableHeader;
-
-	//I think this is not working as intended?
-	$contents = trimbr($contents);
-
-	if($bbcodeIsTableHeader)
+	if($parenttag == '[trh')
 		return "<th>$contents</th>";
 	else
 		return "<td>$contents</td>";
 }
 
-$bbcodeCellClass = 0;
-
-function bbcodeTableRow($contents, $arg)
+function bbcodeTableRow($contents, $arg, $parenttag)
 {
 	global $bbcodeCellClass;
 	$bbcodeCellClass++;
@@ -209,22 +208,13 @@ function bbcodeTableRow($contents, $arg)
 	return "<tr class=\"cell$bbcodeCellClass\">$contents</tr>";
 }
 
-function bbcodeTableRowHeader($contents, $arg)
+function bbcodeTableRowHeader($contents, $arg, $parenttag)
 {
 	global $bbcodeCellClass;
 	$bbcodeCellClass++;
 	$bbcodeCellClass %= 2;
 
 	return "<tr class=\"header0\">$contents</tr>";
-}
-
-function trimbr($string)
-{
-	$string = trim($string);
-	$string = preg_replace('/^(?:<br\s*\/?>\s*)+/', '', $string);
-	$string = preg_replace('/(?:<br\s*\/?>\s*)+$/', '', $string);
-	$string = trim($string);
-	return $string;
 }
 
 function getYoutubeIdFromUrl($url) 
@@ -252,7 +242,7 @@ function getYoutubeIdFromUrl($url)
     return false;
 }
 
-function bbcodeYoutube($contents, $arg)
+function bbcodeYoutube($contents, $arg, $parenttag)
 {
 	$contents = trim($contents);
 	$id = getYoutubeIdFromUrl($contents);
