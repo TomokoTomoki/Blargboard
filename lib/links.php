@@ -110,17 +110,45 @@ function prettyRainbow($s)
 	$s = html_entity_decode($s);
 	$len = strlen($s);
 	$out = '';
-	for ($i = 0; $i < $len; $i++)
+	for ($i = 0; $i < $len;)
 	{
-		if ($s[$i] == ' ')
+		$c = $s[$i++];
+		
+		if ($c == ' ')
 		{
 			$out .= '&nbsp;';
 			continue;
 		}
 		
-		$c = $s[$i];
-		if ($c == '<') $c = '&lt;';
-		else if ($c == '>') $c = '&gt;';
+		$ord = ord($c);
+		if ($ord & 0x80)		// UTF8 shiz
+		{
+			if ($ord & 0x40)
+			{
+				$c .= $s[$i++];
+				if ($ord & 0x20)
+				{
+					$c .= $s[$i++];
+					if ($ord & 0x10)
+					{
+						$c .= $s[$i++];
+						if ($ord & 0x08)
+						{
+							$c .= $s[$i++];
+							if ($ord & 0x04)
+							{
+								$c .= $s[$i++];
+							}
+						}
+					}
+				}
+			}
+		}
+		else 
+		{
+			if ($c == '<') $c = '&lt;';
+			else if ($c == '>') $c = '&gt;';
+		}
 		
 		$out .= '<span style="color:hsl('.$r.',100%,80.4%);">'.$c.'</span>';
 		$r += 31;
