@@ -310,7 +310,7 @@ function parseBBCode($text)
 						}
 						
 						$currenttag = $outputstack[$si]['tag'];
-						$currentmask = $TagLists[$currenttag[0]][substr($currenttag,1)];
+						$currentmask = $TagList[$currenttag];
 						
 						$outputstack[$si]['contents'] .= filterTag($ctag, $cattribs, $ccontents, true, $currenttag).filterText($followingtext, $currenttag, $currentmask);
 					}
