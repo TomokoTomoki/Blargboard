@@ -149,7 +149,7 @@ function filterText($s, $parentTag, $parentMask)
 	
 	$limit = $mobileLayout ? 30 : 100;
 	$repl = ($parentTag=='<pre') ? "$0\n" : '$0<wbr>'; // hack
-	$s = preg_replace('@\S{'.$limit.'}@', $repl, $s);
+	$s = preg_replace('@\S{'.$limit.'}@u', $repl, $s);
 	
 	if ($parentMask & TAG_NOFORMAT) return $s;
 	
