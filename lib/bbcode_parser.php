@@ -182,10 +182,10 @@ function parseBBCode($text)
 	$i = 0; $nraw = count($raw);
 	while ($i < $nraw)
 	{
-		$cur = $raw[$i++];
-		if ($cur[0] == '<' || $cur[0] == '[') // we got a tag start-- find out where it ends
+		$rawcur = $raw[$i++];
+		if ($rawcur[0] == '<' || $rawcur[0] == '[') // we got a tag start-- find out where it ends
 		{
-			$cur = strtolower($cur);
+			$cur = strtolower($rawcur);
 			$isclosing = $cur[1] == '/';
 			$tagname = $cur[0].substr($cur, ($isclosing ? 2:1));
 			$closechar = ($cur[0] == '<') ? '>' : ']';
@@ -194,14 +194,14 @@ function parseBBCode($text)
 			// continue outputting RAW content until we meet a matching closing tag
 			if (($currentmask & (TAG_RAWCONTENTS|TAG_NOFORMAT)) && (!$isclosing || $currenttag != $tagname))
 			{
-				$outputstack[$si]['contents'] .= $cur;
+				$outputstack[$si]['contents'] .= $rawcur;
 				continue;
 			}
 			
 			// invalid tag -- output it escaped
 			if (!array_key_exists($tagname, $TagList))
 			{
-				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($cur), $currenttag, $currentmask);
+				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($rawcur), $currenttag, $currentmask);
 				continue;
 			}
 			
@@ -267,7 +267,7 @@ function parseBBCode($text)
 			}
 			
 			if (!$endfound) // tag end not found-- call it invalid
-				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($cur.$next), $currenttag, $currentmask);
+				$outputstack[$si]['contents'] .= filterText(htmlspecialchars($rawcur.$next), $currenttag, $currentmask);
 			else
 			{
 				$tagattribs = substr($next,0,$j+1);
@@ -376,8 +376,8 @@ function parseBBCode($text)
 				}
 			}
 		}
-		else if ($cur)
-			$outputstack[$si]['contents'] .= filterText($cur, $currenttag, $currentmask);
+		else if ($rawcur)
+			$outputstack[$si]['contents'] .= filterText($rawcur, $currenttag, $currentmask);
 	}
 	
 	// close any leftover opened tags
