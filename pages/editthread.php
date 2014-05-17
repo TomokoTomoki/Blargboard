@@ -49,35 +49,38 @@ $OnlineUsersFid = $thread['forum'];
 $isHidden = !HasPermission('forum.viewforum', $forum['id'], true);
 
 $tags = ParseThreadTags($thread['title']);
-MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $isHidden?'':$tags[0]) => $tags[0], '' => __("Edit thread")));
+$urlname = $isHidden?'':$tags[0];
+MakeCrumbs(forumCrumbs($forum) + array(actionLink("thread", $tid, '', $urlname) => $tags[0], '' => __("Edit thread")));
+
+$ref = $_SERVER['HTTP_REFERER'] ?: actionLink('thread', $tid, '', $urlname);
 
 if($_GET['action']=="close" && $canClose)
 {
 	$rThread = Query("update {threads} set closed=1 where id={0}", $tid);
 	Report("[b]".$loguser['name']."[/] closed thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
 
-	die(header("Location: ".actionLink("thread", $tid)));
+	die(header("Location: ".$ref));
 }
 elseif($_GET['action']=="open" && $canClose)
 {
 	$rThread = Query("update {threads} set closed=0 where id={0}", $tid);
 	Report("[b]".$loguser['name']."[/] opened thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
 
-	die(header("Location: ".actionLink("thread", $tid)));
+	die(header("Location: ".$ref));
 }
 elseif($_GET['action']=="stick" && $canStick)
 {
 	$rThread = Query("update {threads} set sticky=1 where id={0}", $tid);
 	Report("[b]".$loguser['name']."[/] stickied thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
 
-	die(header("Location: ".actionLink("thread", $tid)));
+	die(header("Location: ".$ref));
 }
 elseif($_GET['action']=="unstick" && $canStick)
 {
 	$rThread = Query("update {threads} set sticky=0 where id={0}", $tid);
 	Report("[b]".$loguser['name']."[/] unstuck thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
 
-	die(header("Location: ".actionLink("thread", $tid)));
+	die(header("Location: ".$ref));
 }
 elseif(($_GET['action'] == "trash" && HasPermission('mod.trashthreads', $thread['forum']))
 	|| ($_GET['action'] == 'delete' && HasPermission('mod.deletethreads', $thread['forum'])))
@@ -109,20 +112,25 @@ elseif(($_GET['action'] == "trash" && HasPermission('mod.trashthreads', $thread[
 
 		Report("[b]".$loguser['name']."[/] {$verb} thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
 
-		die(header("Location: ".actionLink("forum", $thread['forum'])));
+		$forumname = '';
+		if (HasPermission('forum.viewforum', $thread['forum'], true))
+			$forumname = FetchResult("SELECT title FROM {forums} WHERE id={0}", $thread['forum']);
+			
+		die(header("Location: ".actionLink("forum", $thread['forum'], '', $forumname)));
 	}
 	else
 		Kill(__("No trash forum set. Check board settings."));
 }
 elseif($_POST['actionedit'])
 {
-
 	if($thread['forum'] != $_POST['moveTo'] && $canMove)
 	{
 		$moveto = (int)$_POST['moveTo'];
 		$dest = Fetch(Query("select * from {forums} where id={0}", $moveto));
 		if(!$dest)
 			Kill(__("Unknown forum ID."));
+			
+		$isHidden = HasPermission('forum.viewforum', $moveto, true);
 
 		//Tweak forum counters
 		$rForum = Query("update {forums} set numthreads=numthreads-1, numposts=numposts-{0} where id={1}", ($thread['replies']+1), $thread['forum']);
@@ -147,6 +155,8 @@ elseif($_POST['actionedit'])
 	{
 		if ($canRename)
 		{
+			$thread['title'] = $_POST['title'];
+			
 			if($_POST['iconid'])
 			{
 				$_POST['iconid'] = (int)$_POST['iconid'];
@@ -160,11 +170,15 @@ elseif($_POST['actionedit'])
 			$iconurl = $thread['icon'];
 
 		$rThreads = Query("update {threads} set title={0}, icon={1}, closed={2}, sticky={3} where id={4} limit 1", 
-			$canRename ? $_POST['title'] : $thread['title'], $iconurl, $isClosed, $isSticky, $tid);
+			$thread['title'], $iconurl, $isClosed, $isSticky, $tid);
 
 		Report("[b]".$loguser['name']."[/] edited thread [b]".$thread['title']."[/] -> [g]#HERE#?tid=".$tid, $isHidden);
+		
+		$tags = ParseThreadTags($thread['title']);
+		$urlname = $isHidden?'':$tags[0];
+		$ref = $_POST['ref'] ?: actionLink('thread', $tid, '', $urlname);
 
-		die(header("Location: ".actionLink("thread", $tid)));
+		die(header("Location: ".$ref));
 	}
 	else
 		Alert(__("Your thread title is empty. Enter a title and try again."));
@@ -245,6 +259,7 @@ RenderTemplate('form_editthread', array(
 echo "
 		<input type=\"hidden\" name=\"id\" value=\"$tid\">
 		<input type=\"hidden\" name=\"key\" value=\"".$loguser['token']."\">
+		<input type=\"hidden\" name=\"ref\" value=\"".htmlspecialchars($_SERVER['HTTP_REFERER'])."\">
 	</form>";
 
 ?>

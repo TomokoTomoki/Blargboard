@@ -415,7 +415,7 @@ if($_POST['actionsave'])
 			$his = HisHer($user['sex']);
 		Report("[b]".$loguser['name']."[/] edited ".$his." profile. -> [g]#HERE#?uid=".$userid, 1);
 
-		die(header("Location: ".actionLink("profile", $userid)));
+		die(header("Location: ".actionLink("profile", $userid, '', $_POST['name']?:$user['name'])));
 	}
 }
 

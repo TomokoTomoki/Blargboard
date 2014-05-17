@@ -67,7 +67,8 @@ if(isset($_GET['vote']))
 			Query("insert into {pollvotes} (poll, choiceid, user) values ({0}, {1}, {2})", $thread['poll'], $vote, $loguserid);
 	}
 	
-	die(header('Location: '.$_SERVER['HTTP_REFERER']));
+	$ref = $_SERVER['HTTP_REFERER'] ?: actionLink('thread', $tid, '', $urlname);
+	die(header('Location: '.$ref));
 }
 
 $firstpost = FetchResult("SELECT pt.text FROM {posts} p LEFT JOIN {posts_text} pt ON pt.pid=p.id AND pt.revision=p.currentrevision WHERE p.thread={0} AND p.deleted=0 ORDER BY p.date ASC LIMIT 1", $tid);
