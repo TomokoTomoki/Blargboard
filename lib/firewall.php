@@ -10,7 +10,7 @@ function do403()
 function do404()
 {
 	header('HTTP/1.1 404 Not Found');
-	header('Status: 404 Not Fount');
+	header('Status: 404 Not Found');
 	die('404 Not Found');
 }
 
