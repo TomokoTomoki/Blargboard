@@ -386,7 +386,7 @@ $fields = array(
 	'pollQuestion' => "<input type=\"text\" name=\"pollQuestion\" value=\"".htmlspecialchars($_POST['pollQuestion'])."\" size=80 maxlength=\"100\">",
 	'pollOptions' => $pollSettings,
 	'pollMultivote' => "<label><input type=\"checkbox\" ".($_POST['multivote'] ? "checked=\"checked\"" : "")." name=\"multivote\">&nbsp;".__("Multivote", 1)."</label>",
-	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">$prefill</textarea>",
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">\n$prefill</textarea>",
 	'mood' => "<select size=1 name=\"mood\">".$moodOptions."</select>",
 	'nopl' => "<label><input type=\"checkbox\" ".getCheck('nopl')." name=\"nopl\">&nbsp;".__("Disable post layout", 1)."</label>",
 	'nosm' => "<label><input type=\"checkbox\" ".getCheck('nosm')." name=\"nosm\">&nbsp;".__("Disable smilies", 1)."</label>",

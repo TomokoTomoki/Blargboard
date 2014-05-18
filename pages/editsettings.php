@@ -127,9 +127,9 @@ foreach($settings as $name => $data)
 	else if($type == "password")
 		$input = "<input type=\"password\" id=\"$name\" name=\"$name\" value=\"$value\" class=\"width75\"/>";
 	else if($type == "textbox" || $type == "textbbcode")
-		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"8\">$value</textarea>";
+		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"8\">\n$value</textarea>";
 	else if($type == "texthtml")
-		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"30\">$value</textarea>";
+		$input = "<textarea id=\"$name\" name=\"$name\" rows=\"30\">\n$value</textarea>";
 	else if($type == "forum")
 		$input = makeForumList($name, $value, true);
 	else if ($type == 'group')

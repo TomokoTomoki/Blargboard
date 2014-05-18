@@ -779,7 +779,7 @@ foreach ($epFields as $catid => $cfields)
 			case "textarea":
 				if(!isset($item['rows']))
 					$item['rows'] = 8;
-				$output .= "<textarea id=\"".$field."\" name=\"".$field."\" rows=\"".$item['rows']."\">".htmlspecialchars($item['value'])."</textarea>";
+				$output .= "<textarea id=\"".$field."\" name=\"".$field."\" rows=\"".$item['rows']."\">\n".htmlspecialchars($item['value'])."</textarea>";
 				break;
 				
 			case "checkbox":

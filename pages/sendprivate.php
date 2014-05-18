@@ -230,7 +230,7 @@ if($_POST['actionpreview'] || $draftID)
 $fields = array(
 	'to' => "<input type=\"text\" name=\"to\" size=40 maxlength=\"128\" value=\"".htmlspecialchars($_POST['to'])."\">",
 	'title' => "<input type=\"text\" name=\"title\" size=80 maxlength=\"60\" value=\"".htmlspecialchars($trefill)."\">",
-	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">".htmlspecialchars($prefill)."</textarea>",
+	'text' => "<textarea id=\"text\" name=\"text\" rows=\"16\">\n".htmlspecialchars($prefill)."</textarea>",
 	
 	'btnSend' => "<input type=\"submit\" name=\"actionsend\" value=\"".__("Send")."\">",
 	'btnPreview' => "<input type=\"submit\" name=\"actionpreview\" value=\"".__("Preview")."\">",
