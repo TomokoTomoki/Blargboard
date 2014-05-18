@@ -170,7 +170,10 @@ else if(isset($_POST['actionpost']))
 			// mark the thread as new if we edited the last post
 			// all we have to do is update the thread's lastpostdate
 			if($isLastPost)
+			{
 				Query("UPDATE {threads} SET lastpostdate={0} WHERE id={1}", $now, $thread['id']);
+				Query("UPDATE {forums} SET lastpostdate={0} WHERE id={1}", $now, $fid);
+			}
 		}
 		else
 			Query("update {posts} set options={0}, mood={1} where id={2} limit 1",
