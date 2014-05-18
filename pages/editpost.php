@@ -168,9 +168,9 @@ else if(isset($_POST['actionpost']))
 							$options, (int)$_POST['mood'], $pid);
 
 			// mark the thread as new if we edited the last post
-			// just decrementing the thread's last read time will do
+			// all we have to do is update the thread's lastpostdate
 			if($isLastPost)
-				Query("UPDATE {threadsread} SET date={2} WHERE thread={0} AND id!={1}", $thread['id'], $loguserid, $post['date']-1);
+				Query("UPDATE {threads} SET lastpostdate={0} WHERE id={1}", $now, $thread['id']);
 		}
 		else
 			Query("update {posts} set options={0}, mood={1} where id={2} limit 1",
