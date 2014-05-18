@@ -108,7 +108,7 @@ function checkForImage(&$image, $external, $file)
 	checkForImage($layout_logopic, false, "themes/$theme/logo.gif");
 	checkForImage($layout_logopic, false, "themes/$theme/logo.png");
 	checkForImage($layout_logopic, false, "img/logo.png");*/
-	$layout_logopic = $dataUrl.'logos/logo.jpg';
+	$layout_logopic = 'img/logo.png';
 
 	die(resourceLink($themeFile)."|".$layout_logopic);
 }

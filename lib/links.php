@@ -218,8 +218,8 @@ function userLink($user, $showMinipic = false, $customID = false)
 		$classing .= " id=\"$customID\"";
 	
 	$title = htmlspecialchars($user['name']) . ' ('.$user["id"].') ['.htmlspecialchars($fgroup['title']).']';
-	if ($user['id'] == 0) return "<strong$classing>$fname</strong>";
-	return actionLinkTag("<span$classing title=\"$title\">$fname</span>", "profile", $user["id"], "", $user["name"]);
+	if ($user['id'] == 0) return "<strong$classing class=\"userlink fake\">$fname</strong>";
+	return actionLinkTag("<span$classing class=\"userlink\" title=\"$title\">$fname</span>", "profile", $user["id"], "", $user["name"]);
 }
 
 function userLinkById($id)
